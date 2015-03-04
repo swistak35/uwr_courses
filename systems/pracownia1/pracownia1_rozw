@@ -1,0 +1,46 @@
+=== Zadanie 1
+ps -A
+  wszystkie procesy
+ps -a
+  wszystkie oprócz session leaderów i procesów odczepionych od jakiegokolwiek terminala
+ps -o pid,ppid,pgid,tty,cmd
+
+ps --ppid 2 -p 2
+http://unix.stackexchange.com/questions/78583/can-ps-display-only-non-kernel-processes-on-linux
+
+ps -A --forest
+ps -A -L
+  sie kloca ze soba (glupie?)
+  ale mozna uzyc pstree
+
+=== Zadanie 2
+domyslnie kill wysyla TERM (15)
+niewychwytywalny jest KILL (9)
+man 7 signal
+
+=== Zadanie 3
+SIGKILL ubija tylko shella, a proces jest przepinany do innego shella, albo powinno byc do inita
+za to jak ubije thready.rb to dzieci sa rzeczywiscie przepinane do 1
+http://stackoverflow.com/questions/8533377/why-child-process-still-alive-after-parent-process-was-killed-in-linux
+
+=== Zadanie 4
+tty
+
+=== Zadanie 5:
+normalnie ma 0
+sigkill daje 137
+sighup daje 129
+sigterm daje 143
+wniosek - po kodzie wyjscia mozna poznac tez, jaki sygnal go ubil (pomijajac nasze wlasne kody bledow)
+ciekawostka -> exit code = 128 + signal
+
+
+=== Zadanie 6
+cat environ | tr '\0' '\n'
+cat cmdline | tr '\0' '\n'
+cat maps G stack
+cat maps G heap
+http://linux.die.net/man/5/proc
+http://www.ualberta.ca/CNS/RESEARCH/LinuxClusters/mem.html
+
+
