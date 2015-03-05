@@ -1,0 +1,42 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+% \usepackage{a4wide}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+% \usepackage{amssymb}
+% \usepackage{amsthm}
+\usepackage{listings}
+
+
+\title{
+  \textbf{Pracownia 35}\\
+  {\Large Podstawy elektroniki, elektrotechniki i miernictwa}
+}
+\author{Rafał Łasocha}
+\setcounter{equation}{0}
+
+\begin{document}
+
+\maketitle
+
+\section{Zagadnienia teoretyczne}
+
+\subsection{Szyna IEC-625}
+Jest to magistrala służąca do komunikacji urządzeń laboratoryjnych z komputerem, opracowana przez HP w latach 70. Każde z urządzeń ustawia \textbf{numer selekcyjny urządzenia}, robi się to przez ustawienie pięciu przełączników binarnych np. z tyłu urządzenia. Przewody mogą mieć długość do 20m. Jest to złącze 24 pinowe.
+
+\subsection{Charakterystki prądowo-napięciowe}
+
+
+
+\section{Przebieg ćwiczenia}
+
+Najpierw złożyliśmy układ, a następnie dobraliśmy optymalne napięcie wstępnej polaryzacji diody. Wynosiło ono 2.25V.
+\subsection{}
+
+
+\section{Wnioski}
+
+\end{document}

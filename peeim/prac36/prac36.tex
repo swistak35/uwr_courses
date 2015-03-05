@@ -1,0 +1,100 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+% \usepackage{a4wide}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+% \usepackage{amssymb}
+% \usepackage{amsthm}
+\usepackage{listings}
+
+
+\title{
+  \textbf{Pracownia 36}\\
+  {\Large Podstawy elektroniki, elektrotechniki i miernictwa}
+}
+\author{Rafał Łasocha}
+\setcounter{equation}{0}
+
+\begin{document}
+
+\maketitle
+
+\section{Zagadnienia teoretyczne}
+
+\subsection{Elementy optoelektroniczne}
+Są to przyrządy, które wykorzystują światło w celu przetwarzania, gromadzenia, pozyskiwania, przesyłania i prezentowania informacji.
+
+\subsection{Dioda elektroluminescencyjne}
+Jest to dioda, która jest zaliczana do przyrządów optoelektronicznych. Emituje promieniowanie w zakresie światła widzialnego, podczerwieni i ultrafioletu.
+
+\subsection{Fotodetektory}
+Fotodetektor to czujnik reagujący na światło. Fotodetektory służą przetwarzaniu na inne sygnały, np. w tym na sygnały elektryczne. Fotodetektorem jest np. fotodioda, fotorezystor, fototranzystor czy fotoogniwo.
+
+\subsection{Transoptor}
+Jest to element optoelektroniczny złożony z jednego fotoemitera i jednego fotodetektora w jednej obudowie. Częstotliwość graniczna przenoszonego sygnału wynosi od kilkudziesięciu kHz do 100MHz w zależności od zastosowanych elementów.
+
+\subsection{Pasmo przenoszenia}
+Jest to zakres częstotliwości, w którym tłumienie sygnału jest nie większe niż 3dB. 
+
+\section{Przebieg ćwiczenia}
+
+Najpierw złożyliśmy układ, a następnie dobraliśmy optymalne napięcie wstępnej polaryzacji diody. Wynosiło ono 2.25V.
+Następnie zmierzyliśmy czas narostu sygnału, wyniósł on 76 $\mu$ s. Następnie obliczyliśmy częstotliwość graniczną.
+
+\begin{equation}
+  f_{gr} = \frac{0.35}{t_{gr}} = \frac{0.35}{0.000076 s} \approx 4605 \texttt{Hz}
+\end{equation}
+
+\subsection{Pomiar amplitud}
+
+Następnie przeprowadziliśmy pomiar amplitudy wyjściowej dla różnych częstotliwości.
+
+\begin{center}
+\begin{tabular}{|l|l|l|}\hline
+Częstotliwość (Hz) & Amp. wyj. (V) & Amp. wej. (V) \\ \hline
+10.0 & 6.5 & 1.16 \\
+250.0 & 6.5 & 1.16 \\
+500.0 & 6.4 & 1.16 \\
+750.0 & 6.4 & 1.16 \\
+1000.0 & 6.4 & 1.16 \\
+1250.0 & 6.3 & 1.16 \\
+1500.0 & 6.2 & 1.16 \\
+1750.0 & 6.0 & 1.16 \\
+2000.0 & 5.9 & 1.16 \\
+2250.0 & 5.8 & 1.16 \\
+2500.0 & 5.6 & 1.16 \\
+2750.0 & 5.5 & 1.16 \\
+3000.0 & 5.3 & 1.16 \\
+3250.0 & 5.2 & 1.16 \\
+3500.0 & 5.1 & 1.16 \\
+3750.0 & 4.9 & 1.16 \\
+4000.0 & 4.8 & 1.16 \\
+4250.0 & 4.7 & 1.16 \\
+4500.0 & 4.6 & 1.16 \\
+4750.0 & 4.4 & 1.16 \\
+5000.0 & 4.3 & 1.16 \\
+5250.0 & 4.2 & 1.16 \\
+5500.0 & 4.1 & 1.16 \\
+6000.0 & 3.9 & 1.16 \\
+6500.0 & 3.7 & 1.16 \\
+7000.0 & 3.5 & 1.16 \\
+7500.0 & 3.4 & 1.16 \\
+8000.0 & 3.2 & 1.16 \\ \hline
+\end{tabular}
+\end{center}
+
+\subsection{Obliczenie częstotliwości granicznej}
+W paśmie przenoszenia amplituda osiąga wartość nie mniejszą niż $\frac{1}{\sqrt{2}}$ swojej wartości maksymalnej. W naszym przypadku:
+\begin{equation}
+ \frac{1}{\sqrt{2}} \ 6.5 V = 4.59V
+\end{equation}
+Z tabeli możemy odczytać że wartość $4.59 V$ jest przyjmowana dla częstotliwości pomiędzy 4500 Hz (dla 4.5V) a 4750 Hz (dla 4.75V), co potwierdza, że wynik 4605 Hz jest najprawdopodobniej prawidłowy.
+
+\section{Wnioski}
+Jedna próba policzenia częstotliwości granicznej została częściowo (niedokładnie) potwierdzona przez drugą, więc można uznać laboratoria za udane. Można jednak było wykonywać obliczenia na bieżąco i sprawić, że druga próba dokładniej potwierdzi (lub zaprzeczy) wynikom ze wzoru.
+
+
+\end{document}

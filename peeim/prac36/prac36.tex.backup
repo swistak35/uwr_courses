@@ -1,0 +1,50 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+% \usepackage{a4wide}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+% \usepackage{amssymb}
+% \usepackage{amsthm}
+\usepackage{listings}
+
+
+\title{
+  \textbf{Pracownia 36}\\
+  {\Large Podstawy elektroniki, elektrotechniki i miernictwa}
+}
+\author{Rafał Łasocha}
+\setcounter{equation}{0}
+
+\begin{document}
+
+\maketitle
+
+\section{Zagadnienia teoretyczne}
+
+\subsection{Elementy optoelektroniczne}
+Są to przyrządy, które wykorzystują światło w celu przetwarzania, gromadzenia, pozyskiwania, przesyłania i prezentowania informacji.
+
+\subsection{Dioda elektroluminescencyjne}
+Jest to dioda, która jest zaliczana do przyrządów optoelektronicznych. Emituje promieniowanie w zakresie światła widzialnego, podczerwieni i ultrafioletu.
+
+\subsection{Fotodetektory}
+Fotodetektor to czujnik reagujący na światło. Fotodetektory służą przetwarzaniu na inne sygnały, np. w tym na sygnały elektryczne. Fotodetektorem jest np. fotodioda, fotorezystor, fototranzystor czy fotoogniwo.
+
+\subsection{Transoptor}
+Jest to element optoelektroniczny złożony z jednego fotoemitera i jednego fotodetektora w jednej obudowie. Częstotliwość graniczna przenoszonego sygnału wynosi od kilkudziesięciu kHz do 100MHz w zależności od zastosowanych elementów.
+
+\subsection{Pasmo przenoszenia}
+Jest to zakres częstotliwości, w którym tłumienie sygnału jest nie większe niż 3dB. 
+
+\section{Przebieg ćwiczenia}
+
+Najpierw złożyliśmy układ, a następnie dobraliśmy optymalne napięcie wstępnej polaryzacji diody. Wynosiło ono 2.25V.
+\subsection{}
+
+
+\section{Wnioski}
+
+\end{document}

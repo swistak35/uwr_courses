@@ -1,0 +1,126 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+% \usepackage{a4wide}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+% \usepackage{amssymb}
+% \usepackage{amsthm}
+\usepackage{listings}
+
+
+\title{
+  \textbf{Pracownia 26}\\
+  {\Large Podstawy elektroniki, elektrotechniki i miernictwa}
+}
+\author{Rafał Łasocha}
+\setcounter{equation}{0}
+
+\begin{document}
+
+\maketitle
+
+\section{Zagadnienia teoretyczne}
+
+\subsection{Kod binarny}
+Kod binarny to zapis liczby w systemie dwójkowym.
+
+\subsection{Kod BCD}
+Kod BCD polega na zapisie liczby dziesiętnej, jako zapis każdej z cyfr zapisu dziesiętnego za pomocą 4 bitów w kodzie binarnym.
+
+\subsection{Kod Graya}
+Kod dwójkowy charakteryzujący się tym, że reprezentacja dwóch kolejnych liczb różni się wartością dokładnie jednego bitu.
+
+\subsection{Kod 4221}
+Jest to kod BCD, ale poszczególne bity nie oznaczają 8, 4, 2, 1, ale 4, 2, 2, 1 - zauważmy, że ciągle możemy dzięki temu zapisać wszystkie cyfry od 0 do 9.
+
+\subsection{Kod XS-3}
+Jest to modyfikacja kodu BCD, taka że 0 nie koduje się na 0000, tylko na 0011 - innymi słowy, kod XS-3 to kod BCD przesunięty o 3, więc 0000 oznaczałoby w nim -3.
+
+\subsection{Kod U2}
+Jest to kod, który pozwala reprezentować liczby ujemne (jeden bit jest bitem znaku), istotną zaletą jest fakt, że w tej reprezentacji działa prosty algorytm dodawania. Dzięki temu, aby przejść z -1 do 0, wystarczy dodać jedynkę do liczby oznaczającej -1 (np. 1111 + 0001 = 0000).
+
+\subsection{Kod heksadecymalny}
+Kod binarny to zapis liczby w systemie szesnastkowym (z braku cyfr korzystamy z liter A..F dla wartości 10..15)
+
+\subsection{Dioda}
+Dioda jest elementem elektronicznym, który przewodzi prąd elektryczny niesymetrycznie, tj. w jedną stronę bardziej niż w drugą, z reguły chcemy całkowicie zablokować przepływ prądu w jednym kierunku.
+
+\subsection{Margines zakłóceń}
+Margines zakłóceń to maksymalna amplituda sygnału zakłócającego nie powodująca błędnego działania układu.
+
+\subsection{Bramka logiczna}
+Jest to układ scalony, wykonujący pewną prostą operację logiczną, np. te zgodne z Algebrą Boole'a.
+
+\subsection{Czas propagacji}
+Czas upływający od ustawienia wejść w układzie logicznym do ustawienia wyjść.
+
+\subsection{Algebra Boole'a}
+Jest to struktura algebraiczna działająca na zbiorze dwuelementowym $\{0,1\}$ oraz 3 operacjami: AND, OR oraz NOT.
+
+\section{Przebieg ćwiczenia}
+
+\subsection{Translacja kodu dziesiętnego na kod binarny}
+Na początku trzeba było wykonać układ zamieniający kod dziesiętny na kod binarny. W tym celu musieliśmy przylutować diody w odpowiednich miejscach, tak aby LED świeciły wyświetlając odpowiedni kod. Dowiedzieliśmy się jak rozpoznać w którą stronę dioda pozwala na przepływ prądu.
+
+\begin{center}
+	\begin{tabular}{|l|l|}\hline
+	Kod dziesiętny & Kod binarny \\ \hline
+	0 & 0000 \\
+	1 & 0001 \\
+	2 & 0010 \\
+	3 & 0011 \\
+	4 & 0100 \\
+	5 & 0101 \\
+	6 & 0110 \\
+	7 & 0111 \\
+	8 & 1000 \\
+	9 & 1001 \\ \hline
+	\end{tabular}
+\end{center}
+
+\subsection{Układ kontroli parzystości}
+
+Następnie korzystając z zestawu UNILOG mieliśmy wykonać układ kontroli parzystości 8-bitowego słowa za pomocą bramek XOR. 
+
+\begin{center}
+	\begin{tabular}{|l|l|l|l|l|l|l|l||l|}\hline
+	A & B & C & D & E & F & G & H & Q \\ \hline
+	1 & 0 & 0 & 1 & 1 & 1 & 0 & 0 & 0 \\
+	0 & 0 & 1 & 1 & 0 & 0 & 1 & 0 & 1 \\
+	1 & 0 & 1 & 1 & 0 & 0 & 1 & 1 & 1 \\ \hline
+	\end{tabular}
+\end{center}
+
+\subsection{Przygotowanie układów}
+
+Następnie mieliśmy przygotować dwa układy podane w treści zadania. Poniższa tabela przedstawia tabelę prawdy obu układów. Kolumna $Q$ przedstawia wyniki eksperymentalne, a $Q_1$ jakie wyniki powinny wyjść - jak widać się zgadzają.
+
+\begin{center}
+	\begin{tabular}{|l|l||l||l|} \hline
+	A & B & Q & $Q_1$ \\ \hline
+	0 & 0 & 0 & 0   \\
+	1 & 0 & 1 & 1   \\
+	0 & 1 & 1 & 1   \\
+	0 & 0 & 0 & 0   \\ \hline
+	\end{tabular}
+\end{center}
+
+\subsection{Czas propagacji sygnału}
+
+W ostatniej części pracowni musieliśmy podłączyć oscyloskop do zestawu UNILOG i mierzyć czasy propagacji przez różne.
+Na początku mieliśmy wyznaczyć czas propagacji sygnału przez bramkę NOT, w tym celu zrobiliśmy układ skonstruowany z 4 bramek NOT połączonych szeregowych. Z oscyloskopu odczytaliśmy wartość $1.4 \cdot \frac{1}{100} \mu s$, do daje $3.5 ns$ na jedną bramkę.
+
+Następnie skonstruowaliśmy układ przedstawiony w zadaniu, jednak zamiast 5 bramek NOT użyliśmy 4 oraz zastąpiliśmy bramkę NOT-XOR (której nie było) bramką XOR. Wyszedł nam taki sam wynik jak w powyższym przykładzie.
+
+\section{Wnioski}
+
+Wygląda na to że zadania z kodem binarnym, układem kontroli parzystości i konstruowaniem zadanych wykładów zostały wykonane prawidłowo i wyniki potwierdzają wszystkie oczekiwania.
+
+Jednakże w zadaniach dotyczących czasu propagacji sygnału mogło coś pójść nie tak. Wg różnych danych, bramki logiczne mają z reguły czas propagacji od około 3 do kilkudziesięciu ns. Nasz wynik $3.5 ns$ na bramkę może wydawać się mało prawdopodobny, ale możliwy.
+
+Niestety, w drugim zadaniu wyszedł nam dokładnie taki czas, a w tym zadaniu jest o jedną bramkę (XOR) więcej, więc wygląda na to że otrzymany wynik jest niepoprawny.
+
+\end{document}
