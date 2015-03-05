@@ -1,0 +1,104 @@
+V "GNAT Lib v4.8"
+M P W=b
+A -gnatwa
+A -O0
+A -Wall
+A -gnat05
+A -gnata
+P SS ZX
+
+RN
+RV NO_DELAY
+RV NO_FIXED_POINT
+RV NO_IO
+RV NO_RELATIVE_DELAY
+RV NO_SECONDARY_STACK
+RV SPARK
+
+U ada_prog%b		ada_prog.adb		541389b4 NE OO SU IL
+W ada%s			ada.ads			ada.ali
+W ada.calendar.delays%s	a-caldel.adb		a-caldel.ali
+W ada.integer_text_io%s	a-inteio.ads		a-inteio.ali
+W ada.strings%s		a-string.ads		a-string.ali
+W ada.strings.fixed%s	a-strfix.adb		a-strfix.ali
+W ada.text_io%s		a-textio.adb		a-textio.ali
+W system.img_int%s	s-imgint.adb		s-imgint.ali
+W system.secondary_stack%s  s-secsta.adb	s-secsta.ali
+
+D ada.ads		20070406091342 3ffc8e18
+D a-calend.ads		20120515092648 d86d6c8c
+D a-caldel.ads		20090409150019 9f20b83d
+D a-charac.ads		20070912115821 2d3ec45b
+D a-chlat1.ads		20070912115821 2825df20
+D a-except.ads		20120716125141 10fcae55
+D a-finali.ads		20111121113555 52ecdc1b
+D a-inteio.ads		20070406091342 f64b89a4
+D a-ioexce.ads		20091130110856 8b9de6cd
+D a-stream.ads		20090409150019 2ca4ee37
+D a-string.ads		20070406091342 90ac6797
+D a-strfix.ads		20101008130255 d07c346e
+D a-strmap.ads		20090409150019 9cb836fb
+D a-tags.ads		20111212115430 6c0509d0
+D a-textio.ads		20130104124955 386df5d4
+D a-tiinio.ads		20090409150019 aa04e5d6
+D a-unccon.ads		20070406091342 f9eb8f06
+D ada_prog.adb		20140406230732 4a49c1aa
+D interfac.ads		20110906094621 129923ea
+D i-cstrea.ads		20130102105938 3286f6aa
+D system.ads		20120723080122 90249111
+D s-crtl.ads		20130102105938 1ea48bce
+D s-exctab.ads		20090417131547 66e51330
+D s-ficobl.ads		20120709130952 55a71d43
+D s-finmas.ads		20111024091915 b95bb341
+D s-finroo.ads		20120426095924 4ff27390
+D s-imgint.ads		20090409150019 02dbe0c2
+D s-parame.ads		20110830140625 b6e20cc0
+D s-pooglo.ads		20110804083314 542f33d0
+D s-secsta.ads		20110830140625 eea35a36
+D s-soflin.ads		20120515094619 24c8153c
+D s-stache.ads		20090417130712 596fc1b4
+D s-stalib.ads		20130104124955 f78bcf95
+D s-stoele.ads		20090417130712 facd7d98
+D s-stoele.adb		20100617152355 afc5dc80
+D s-stopoo.ads		20111013103733 7b8fbeee
+D s-traent.ads		20090417130712 5221ee41
+D s-unstyp.ads		20090409150019 6ae15c76
+D s-wchcon.ads		20090417130712 bfeb2e3d
+X 1 ada.ads
+16K9*Ada 19e8 18|1r6 1r31 2r6 2r31 3r6 3r31 82r57
+X 8 a-inteio.ads
+18K13*Integer_Text_IO[16|45] 18|2w10 2r35
+X 11 a-string.ads
+16K13*Strings 35e16 18|3r10 3r35 82r61
+33n24*Left{33E9} 18|82r69
+X 12 a-strfix.ads
+18K21*Fixed 251e22 18|3w18 3r43
+195V13*Trim{string} 18|82s21
+X 15 a-textio.ads
+49K13*Text_IO 471e16 18|1w10 1r35
+240U14*Get 18|38s17 50s25
+242U14*Put 18|82s17
+X 16 a-tiinio.ads
+55U14*Get 18|29s9[8|18] 30s9[8|18]
+X 18 ada_prog.adb
+5U11*ada_prog 5b11 85t4
+6i9 m{integer} 29m13 49r29
+7i9 n{integer} 30m13 33r41 34r41 35r33 36r33 41r30 52r38 82r50
+8i9 rmod{integer} 69r66
+9A14 myArray(integer)<integer> 33r29 34r29
+11V18 check_lt{boolean} 11>27 12b18 15l13 15t21 42s29 56s45
+11e27 x{character} 12b27 14r26 14r44 14r62 14r80
+17V18 check_ul{boolean} 17>27 18b18 21l13 21t21 60s45
+17e27 x{character} 18b27 20r26 20r44 20r62 20r80
+23V18 check_up{boolean} 23>27 24b18 27l13 27t21 65s37
+23e27 x{character} 24b27 26r26 26r44 26r62 26r80
+33a17 count_tab{9A14} 53m33 57m49 57r65 57r80 61m49 61r65 66m41 66r57 69m33
+. 69r49 72r38 82r40
+34a17 count_pre{9A14} 40m17 43m33 43r49 45m33 61r80 66r72 72m25
+35a17 tab{string} 50m29 56r54 73r32
+36a17 pre{string} 38m21 42r38 60r54 65r46 73m25
+41i21 i{integer} 42r42 43r43 43r59 45r43
+49i21 k{integer}
+52i29 i{integer} 53r43 55r37 56r58 57r59 57r75 57r90 60r58 61r59 61r75 61r90
+. 65r50 66r51 66r67 66r82 69r43 69r59
+

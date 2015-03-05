@@ -1,0 +1,289 @@
+module AVLTree =
+	struct
+		type tree = Leaf | Node of int * int * tree * tree
+		type cmp  = Less | Equal | More
+
+		let icomp x y =
+			if x < y then Less
+		 	else if x == y then Equal
+		 	else More
+
+		let depth t = match t with
+			| Leaf				-> 0
+			| Node(w,_,_,_) 	-> w
+
+		let max1 x y = (max x y) + 1
+		let from_Some x = match x with Some y -> y
+
+		let empty = Leaf
+
+		let rotate_left p =
+			let Node(_,pi,alfa,Node(_,vi,beta,gamma)) = p
+			in let pdepth = max1 (depth alfa) (depth beta)
+			in let vdepth = max1 pdepth (depth gamma)
+			in Node(vdepth,vi,Node(pdepth,pi,alfa,beta),gamma)
+
+		let rotate_right p =
+			let Node(_,pi,Node(_,vi,alfa,beta),gamma) = p
+			in let pdepth = max1 (depth beta) (depth gamma)
+			in let vdepth = max1 pdepth (depth alfa)
+			in Node(vdepth,vi,alfa,Node(pdepth,pi,beta,gamma))
+
+		let opt_min x y = match y with
+			| None 		-> Some x
+			| Some v 	-> Some (min x v)
+
+		let rec _upper t x m = match t with
+			| Leaf 			-> m
+			| Node(_,v,lt,rt) -> (match (icomp x v) with
+				| Less  -> _upper lt x (opt_min v m)
+				| Equal -> Some x
+				| More  -> _upper rt x m)
+		let upper t x = _upper t x None
+
+		let opt_max x y = match y with
+			| None 		-> Some x
+			| Some v 	-> Some (max x v)
+		let rec _lower t x m = match t with
+			| Leaf 			-> m
+			| Node(_, v,lt,rt) -> (match (icomp x v) with
+				| Less  -> _lower lt x m
+				| Equal -> Some x
+				| More  -> _lower rt x (opt_max v m))
+		let lower t x = _lower t x None
+
+		let balanceL (Node(h,v,(Node(lh,lv,llt,lrt) as lt),rt) as t) = match ((depth llt) - (depth lrt)) with
+			| -1 		-> let new_lt = rotate_left lt
+							in rotate_right (Node(max1 (depth new_lt) (depth rt),v,new_lt,rt))
+			| 1 | 0 	-> rotate_right t
+
+		let balanceR (Node(h,v,lt,(Node(rh,rv,rlt,rrt) as rt)) as t) = match ((depth rlt) - (depth rrt)) with
+			| 1 		-> let new_rt = rotate_right rt
+							in rotate_left (Node(max1 (depth lt) (depth new_rt),v,lt,new_rt))
+			| -1 | 0 	-> rotate_left t
+
+		let balanceP t = match t with
+			| Leaf 				-> Leaf
+			| Node(h,v,lt,rt) 	-> (match ((depth lt) - (depth rt)) with
+					| -2 			-> balanceR t
+					| -1 | 0 | 1 	-> t
+					| 2				-> balanceL t
+			)
+
+		let rec insert t x = match t with
+			| Leaf 				-> Node(1, x, Leaf, Leaf)
+			| Node(h,v,lt,rt) 	-> (match (icomp x v) with
+				| Less 	->
+					let new_lt = insert lt x
+					in balanceP (Node(max1 (depth new_lt) (depth rt),v,new_lt,rt))
+				| Equal -> t
+				| More  ->
+					let new_rt = insert rt x
+					in balanceP (Node(max1 (depth lt) (depth new_rt),v,lt,new_rt))
+			)
+
+		let rec find_max t = match t with
+			| Node(_,v,_,Leaf)	-> v
+			| Node(_,_,_,rt)	-> find_max rt
+
+		(* dodać warunek, dzięki któremu możemy się już zatrzymać przy delete i nie iść w górę *)
+		let rec delete t x = match t with
+			| Leaf				-> None
+			| Node(_,v,lt,rt)	-> (match (icomp x v) with
+				| Less 		-> (match (delete lt x) with
+						| None 			-> None
+						| Some new_lt 	->
+							let new_node = Node(max1 (depth new_lt) (depth rt), v, new_lt, rt)
+							in 	Some (balanceP new_node))
+				| Equal 	-> Some (delete_ t)
+				| More 		-> (match (delete rt x) with
+						| None 			-> None
+						| Some new_rt 	->
+							let new_node = Node(max1 (depth lt) (depth new_rt), v, lt, new_rt)
+							in 	Some (balanceP new_node))
+		)
+		and delete_ (Node(h,v,lt,rt)) = match (lt,rt) with
+			| (Leaf, Leaf)	-> Leaf
+			| (Leaf, _)		-> rt
+			| (_, Leaf)		-> lt
+			| (_, _)		->
+				let lt_max = find_max lt
+				in let new_lt = from_Some (delete lt lt_max)
+				in let new_node = Node(max1 (depth new_lt) (depth rt), lt_max, new_lt, rt)
+				in balanceP new_node
+		(* let rec delete t x = match t with
+			| Leaf				-> None
+			| Node(_,v,lt,rt)	-> (match (icomp x v) with
+				| Less 		-> (match (delete lt x) with
+						| None 			-> None
+						| Some new_lt 	->
+							let new_node = (Node(max1 (depth new_lt) (depth rt), v, new_lt, rt))
+							in 	if (abs ((depth new_lt) - (depth rt))) == -2
+								then Some (rotate_left new_node)
+								else Some new_node)
+				| Equal 	-> Some (delete_ t)
+				| More 		-> (match (delete rt x) with
+						| None 			-> None
+						| Some new_rt 	->
+							let new_node = Node(max1 (depth lt) (depth new_rt), v, lt, new_rt)
+							in 	if (abs ((depth lt) - (depth new_rt))) == 2
+								then Some (rotate_right new_node)
+								else Some new_node)
+		)
+		and delete_ (Node(h,v,lt,rt)) = match (lt,rt) with
+			| (Leaf, Leaf)	-> Leaf
+			| (Leaf, _)		-> rt
+			| (_, Leaf)		-> lt
+			| (_, _)		->
+				let lt_max = find_max lt
+				in let new_lt = from_Some (delete lt lt_max)
+				in let new_node = Node(max1 (depth new_lt) (depth rt), lt_max, new_lt, rt)
+				in	if (abs ((depth new_lt) - (depth rt))) == -2
+					then rotate_left new_node
+					else new_node *)
+
+		let print_tabs n = begin
+			for i = 1 to n do
+  				Printf.printf("\t")
+			done
+			end
+		let rec print_tree_tabs t n = match t with
+			| Leaf 				-> (print_tabs n; Printf.printf("* Leaf\n"))
+			| Node(h,v,lt,rt) 	-> begin
+				print_tree_tabs lt (n+1);
+				print_tabs n;
+				Printf.printf "* [v: %d] [height: %d]\n" v h;
+				print_tree_tabs rt (n+1);
+			end
+		let print_tree t = print_tree_tabs t 1
+
+		(*
+		let rec delete t x = match t with
+			| Leaf				-> None
+			| Node(_,v,lt,rt)	-> (match (icomp x v) with
+				| Less 		-> (match (delete lt x) with
+						| None 			-> None
+						| Some new_lt 	->
+							let new_node = (Node(max1 (depth new_lt) (depth rt), v, new_lt, rt))
+							in 	if (abs ((depth new_lt) - (depth rt))) == -2
+								then Some (rotate_left new_node)
+								else Some new_node)
+				| Equal 	-> let Node (delete_ t)
+				| More 		-> (match (delete rt x) with
+						| None 			-> None
+						| Some new_rt 	->
+							let new_node = Node(max1 (depth lt) (depth new_rt), v, lt, new_rt)
+							in 	if (abs ((depth lt) - (depth new_rt))) == 2
+								then Some (rotate_right new_node)
+								else Some new_node)
+		)
+		and delete_ (Node(h,v,lt,rt)) = match (lt,rt) with
+			| (Leaf, Leaf)	-> Leaf
+			| (Leaf, _)		-> rt
+			| (_, Leaf)		-> lt
+			| (_, _)		->
+				let lt_max = find_max lt
+				in let new_lt = from_Some (delete lt lt_max)
+				in let new_node = Node(max1 (depth new_lt) (depth rt), lt_max, new_lt, rt)
+				in	if (abs ((depth new_lt) - (depth rt))) == -2
+					then rotate_left new_node
+					else new_node *)
+	end;;
+
+
+let asd = ref 100 and pos = ref 100;;
+let buf = String.create 100 ;;
+let getbuf () = input stdin buf 0 100;;
+let gettok () = if !pos >= !asd then
+        (if !asd = 0 then char_of_int 0
+        else (asd := getbuf (); if !asd = 0 then char_of_int 0 else (pos := 1; buf.[0] )))
+        else ( incr pos; buf.[!pos-1] );;
+
+let mread_int () =
+    let v = ref 0 and tok = ref '#' and negative = ref false in
+	begin
+        while !tok < '0' || !tok == '-'
+        do
+        		if !tok == '-' then negative := true;
+                tok := gettok ();
+
+        done;
+        v := int_of_char(!tok) - 48;
+        tok := gettok ();
+        while !tok >= '0'
+        do
+                v := !v * 10;
+                v := !v + int_of_char !tok - 48;
+                tok := gettok ()
+        done;
+        if !negative then -(!v) else !v
+	end
+
+let mread_cmd () = let x = gettok () in (gettok(); x)
+
+
+let cmd_upper t x = match (AVLTree.upper t x) with
+	| None 		-> begin
+		print_string "BRAK";
+		print_newline ();
+		t
+	end
+	| Some y 	-> begin
+		print_int y;
+		print_newline ();
+		t
+	end
+
+let cmd_lower t x = match (AVLTree.lower t x) with
+	| None 		-> begin
+		print_string "BRAK";
+		print_newline ();
+		t
+	end
+	| Some y 	-> begin
+		print_int y;
+		print_newline ();
+		t
+	end
+
+let cmd_delete t x = (match (AVLTree.delete t x) with
+	| None 		-> begin
+		print_string "BRAK";
+		print_newline ();
+		t
+	end
+	| Some t2	-> begin
+		print_string "OK";
+		print_newline ();
+		AVLTree.balanceP t2
+	end)
+
+let execute_command t c x = match c with
+			| 'I'	-> AVLTree.insert t x
+			| 'D'	-> cmd_delete t x
+			| 'U'	-> cmd_upper t x
+			| 'L'	-> cmd_lower t x
+
+(* let read_command t =
+	let line = read_line ()
+	in let cmd = line.[0]
+	in let x = int_of_string (String.sub line 2 ((String.length line) - 2))
+	in execute_command t cmd x *)
+
+let read_command t =
+	let cmd = mread_cmd ()
+	in let x = mread_int ()
+	in (execute_command t cmd x)
+	(* in (Printf.printf "Wczytałem [%c, %d]" cmd x;execute_command t cmd x) *)
+
+let rec read_commands n t =
+	if n == 0 then ()
+	else let new_t = read_command t
+			in read_commands (n-1) new_t
+
+let main () =
+	let n = mread_int ()
+	in read_commands n AVLTree.empty
+
+let _ = main ()
+
