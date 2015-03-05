@@ -1,0 +1,212 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{a4wide}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{textcomp}
+
+\newtheorem{theorem}{Theorem}
+
+\theoremstyle{definition}
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{definition}{Definition}
+\newtheorem*{fact}{Fact}
+\newtheorem{case}{Case}
+
+\title{
+  \textbf{Sigma Calculus}\\
+  {\Large Homework solution}
+}
+\author{Rafał Łasocha}
+\setcounter{equation}{0}
+
+% numeracja przypadków
+% trochę posprzątać i pododawać equation
+
+\begin{document}
+
+\maketitle
+
+\section{Problem}
+
+For any two terms $b$ and $c$ if $b \leftrightarrow c$ then there exists such $d$ that $b \twoheadrightarrow d$
+and $c \twoheadrightarrow d$.
+
+\section{Solution}
+
+\subsection{Old definitions}
+
+Firstly, let's recall Church-Rosser property and definition of $\rightarrow$ relation.
+
+\begin{theorem}[Church-Rosser property]
+  If $a \twoheadrightarrow b$ and $a \twoheadrightarrow c$, then there exists $d$ such
+  that $b \twoheadrightarrow d$ and $c \twoheadrightarrow d$.
+\end{theorem}
+
+\begin{definition}
+  $a \rightarrow b$ if $\exists_{\text{$a'$, $b'$, $C$}} \quad a \equiv C[a'] \wedge b \equiv C[b'] \wedge a' \rightarrowtail b'$
+\end{definition}
+
+Later, we will use this fact, and call it Fact:
+
+\begin{fact}
+ If $a \twoheadrightarrow b$ then $\exists_d a \twoheadrightarrow d \wedge b \twoheadrightarrow d$ (for $d = b$).
+\end{fact}
+
+\subsection{Useful lemma}
+
+Now, let's prove useful lemma.
+
+\begin{lemma}
+ Given $a$ and $b$, if there exists $C$, $a'$, $b'$ such that $a = C[a']$, $b = C[b']$ and $a' \twoheadrightarrow b'$,
+ then $a \twoheadrightarrow b$.
+\end{lemma}
+
+\begin{proof}
+ Simple induction on $a' \twoheadrightarrow b'$ path.
+ \begin{case}[Induction basis, for reflexive step]
+  Assume that $a' \twoheadrightarrow a'$, and there exists context $C$ such that $a = C[a']$.
+  Then obviously (from reflexivity of $\twoheadrightarrow$) $a \twoheadrightarrow a$.
+ \end{case}
+ 
+ \begin{case}[Induction basis, for single reduction]
+   Assume that there exists $C$, $a'$ and $b'$ such that $a \equiv C[a']$, $b \equiv C[b']$ and $a' \rightarrow b'$.
+   From definition of $\rightarrow$, there exists $C'$, $a''$ and $b''$ such
+   that $a' \equiv C'[a'']$, $b' \equiv C'[b'']$ and $a'' \rightarrowtail b''$.
+   Let's define $C^\clubsuit = C[C'[-]]$ (the fact that we can define such nested context is pretty obvious and left without a proof).
+   Thus, $C^\clubsuit[a''] \equiv a$, $C^\clubsuit[b''] \equiv b$ and $a'' \rightarrowtail b''$, so $a \rightarrow b$.
+ \end{case}
+
+ \begin{case}[Induction step, for paths longer than one step]
+   Assume that there exists $C$, $a'$ and $b'$ such that $a \equiv C[a']$, $b \equiv C[b']$ and $a' \twoheadrightarrow b'$.
+   Let's split our $a' \twoheadrightarrow b'$ into $a' \twoheadrightarrow c' \rightarrow b'$.
+   Let's $c = C[c']$. From inductive hypothesis, $a \twoheadrightarrow c$.
+   From anothr application of inductive hypothesis, $c \twoheadrightarrow b$.
+   Thus, from transitivity of the relation $\twoheadrightarrow$, $a \twoheadrightarrow b$.
+ \end{case}
+\end{proof}
+
+\subsection{Main theorem proof}
+
+\setcounter{case}{0}
+
+\begin{proof}
+ Induction on derivation tree of $a \leftrightarrow b$.
+ \begin{case}[Induction basis - \textbf{Eq Refl} rule] The rule: \\
+  \begin{equation*}
+   \cfrac{}{x \leftrightarrow x}
+  \end{equation*}
+  Proof goes straightforward from reflexivity of $\twoheadrightarrow$ and Fact.
+ \end{case}
+ 
+ \begin{case}[Induction basis - \textbf{Eval Select} rule] The rule: \\
+   \begin{equation*}
+    \cfrac{}{o.l_j \leftrightarrow b_j\{\lvert x_j \leftarrow o \rvert \}}
+   \end{equation*}
+   Using the top-level invocation reduction and empty context ($C[-] = -$),
+   we have that:
+   \begin{equation*}
+    o.l_j \rightarrow b_j\{\lvert x_j \leftarrow o \rvert \}
+   \end{equation*}
+   From Fact, we have proven this case too.
+ \end{case}
+ 
+ \begin{case}[Induction basis - \textbf{Eval Update} rule] The rule: \\
+   \begin{equation*}
+    \cfrac{}{o.l_j \Lleftarrow \varsigma(x)b \leftrightarrow [l_j = \varsigma(x)b, l_i = \varsigma(x_i)b_i^{i \in \{1,..,n\} - \{j\}}]}
+    \quad \text{given} \quad o \equiv [l_i = \varsigma(x_i)b_i^{i \in \{1,..,n\}}]
+   \end{equation*}
+   
+   Using the top-level update reduction and empty context we have that: 
+   \begin{equation*}
+    o.l_j \twoheadrightarrow \varsigma(x)b \leftrightarrow [l_j = \varsigma(x)b, l_i = \varsigma(x_i)b_i^{i \in \{1,..,n\} - \{j\}}]
+   \end{equation*}
+   Again, from the Fact we can conclude that this case of induction basis holds.
+ \end{case}
+
+ \begin{case}[Induction step - \textbf{Eq Trans} rule] The rule: \\
+  \begin{equation*}
+   \cfrac{a \leftrightarrow b \quad b \leftrightarrow c}{a \leftrightarrow c}
+  \end{equation*}
+  From inductive hypothesis we have that:
+  \begin{align*}
+   \exists_{d_1} & a \twoheadrightarrow d_1 \wedge b \twoheadrightarrow d_1 \\
+   \exists_{d_2} & b \twoheadrightarrow d_2 \wedge c \twoheadrightarrow d_2
+  \end{align*}
+  From Church-Russer property on $d_1$, $d_2$ and transitivity of $\twoheadrightarrow$,
+  we have that $\exists_d a \twoheadrightarrow d \wedge c \twoheadrightarrow d$.
+ \end{case}
+ 
+ \begin{case}[Induction step - \textbf{Eq Select} rule] The rule: \\
+  \begin{equation*}
+   \cfrac{a \leftrightarrow a'}{a.l \leftrightarrow a'.l}
+  \end{equation*}
+  From inductive hypothesis we have that:
+  \begin{equation*}
+   \exists_d a \twoheadrightarrow d \wedge a' \twoheadrightarrow d
+  \end{equation*}
+  Using the context $C[-] = -.l$, relation above and Lemma, we may conclude that
+  \begin{equation*}
+   a.l \twoheadrightarrow d.l \wedge a'.l \twoheadrightarrow d.l
+  \end{equation*}
+ \end{case}
+ 
+ \begin{case}[Inductive step - \textbf{Eq Symm} rule] The rule: \\
+  \begin{equation*}
+   \cfrac{a \leftrightarrow b}{b \leftrightarrow a}
+  \end{equation*}
+  Obvious case, from inductive hypothesis and from the fact that $\wedge$ is commutative.
+ \end{case}
+ 
+ \begin{case}[Inductive step - \textbf{Eq Update} rule] The rule: \\
+  \begin{equation*}
+   \cfrac{a \leftrightarrow a' \quad b \leftrightarrow b'}{a.l \Lleftarrow \varsigma(x)b \leftrightarrow a'.l \Lleftarrow \varsigma(x)b'}
+  \end{equation*}
+  From inductive hypothesis, we know that:
+  \begin{align*}
+   & \exists_d a \twoheadrightarrow d \wedge a' \twoheadrightarrow d \\
+   & \exists_c b \twoheadrightarrow c \wedge b' \twoheadrightarrow c
+  \end{align*}
+  Then
+  \begin{equation*}
+   a.l \Lleftarrow \varsigma(x)b \quad \stackrel{1}{\twoheadrightarrow} \quad
+   d.l \Lleftarrow \varsigma(x)b \quad \stackrel{2}{\twoheadrightarrow} \quad
+   d.l \Lleftarrow \varsigma(x)c
+  \end{equation*}
+  \begin{enumerate}
+   \item Top-level update reduction
+   \item Using the Lemma and fact that $b \twoheadrightarrow d$, with context $C[-] = [l=\varsigma(x)-, l_i = \varsigma(x_i)b_i]$.
+   \item Iteratively, $\forall_i$ conversion $b_i \twoheadrightarrow c_i$, again using the Lemma and context similar to proposed above.
+  \end{enumerate}
+  
+  Now, we could proceed with analogous proof that $a' \twoheadrightarrow [l=\varsigma(x)d, l_i = \varsigma(x_i)c_i]$.
+ \end{case}
+ 
+ \begin{case}[Inductive step - \textbf{Eq Object} rule] The rule: \\
+  \begin{equation*}
+   \cfrac{b_i \leftrightarrow b_i' \qquad \forall i \in \{1,\dots,n\}}{[l_i = \varsigma(x_i)b_i] \leftrightarrow [l_i = \varsigma(x_i)b'_i] \qquad i \in \{1,\dots,n\}}
+  \end{equation*}
+  The proof is very similar to the above.
+  From inductive hypothesis we know that:
+  \begin{equation*}
+   \forall_i \exists_{c_i} b_i \twoheadrightarrow c_i \wedge b'_i \twoheadrightarrow c_i
+  \end{equation*}
+  Now, we can perform similar chain like in previous case:
+  \begin{equation*}
+   [l_i = \varsigma(x_i)b_i^{\forall 0 < i < n}] \quad \stackrel{1}{\twoheadrightarrow} \quad
+   [l_1 = \varsigma(x_1)c_1, l_i = \varsigma(x_i)b_i^{\forall 1 < i < n}] \quad \twoheadrightarrow \stackrel{2}{\dots} \twoheadrightarrow \quad
+   [l_i = \varsigma(x_i)c_i^{\forall 0 < i < n}]
+  \end{equation*}
+  \begin{enumerate}
+   \item Using the Lemma and fact that $b_i \twoheadrightarrow c_i$, with context $C[-] = [l_1=\varsigma(x_1)-, l_i = \varsigma(x_i)b_i^{\forall 1 < i < n}]$.
+   \item Iteratively, we can perform similar conversion for all $b_i$.
+  \end{enumerate}
+
+ \end{case}
+ 
+\end{proof}
+\end{document}

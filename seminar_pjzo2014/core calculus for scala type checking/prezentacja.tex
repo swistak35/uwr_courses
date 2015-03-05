@@ -1,0 +1,762 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage{etex}
+\usepackage[utf8]{inputenc}
+\usepackage{default}
+\usepackage{proof}
+\usepackage{bussproofs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{setspace}
+\usepackage{listings}
+
+\title{A Core Calculus for Scala Type Checking}
+\author{Rafał Łasocha}
+\date{Wrocław, 11th June 2014}
+\subject{Computer Science}
+
+\usetheme{Warsaw}
+
+\newcommand{\ra}{\rightarrow}
+\newcommand{\subtype}{<:}
+\newcommand{\stp}{\subtype}
+\newcommand{\wf}{\texttt{ WF}}
+\newcommand{\type}{\textbf{type}}
+\newcommand{\ovl}[1]{\overline{#1}}
+\newcommand{\vpath}{\vdash_{path}}
+\newcommand{\RL}{\RightLabel}
+\newcommand{\tenv}{S,\varGamma \vdash}
+\newcommand{\tenvs}{S,\varGamma \vdash_*}
+\newcommand{\tenvp}{S,\varGamma \vdash_{path}}
+\newcommand{\trait}[3]{\texttt{trait}_n #1 \ \texttt{extends}\ (#2) \{ \varphi\ |\ \overline{#3} \}}
+\newcommand{\stypeq}[2]{\texttt{type}_n #1 (= #2)^?}
+\newcommand{\stypef}[2]{\texttt{type}_n #1 = #2}
+\newcommand{\stype}[1]{\texttt{type}_n #1}
+\newcommand{\svalq}[4][n]{\texttt{val}_{#1} #2 : #3 (= #4)^?}
+\newcommand{\svalf}[4][n]{\texttt{val}_{#1} #2 : #3 = #4}
+\newcommand{\sval}[3][n]{\texttt{val}_{#1} #2 : #3}
+\newcommand{\sdefq}[5]{\texttt{def}_n #1 ( \overline{#2 : #3} ) : #4 ( = #5)^?}
+\newcommand{\mmbrs}[2]{(\ovl{#1}) \{ \varphi\ |\ \ovl{#2}\}}
+\newcommand{\vstr}{\vdash_*}
+\newcommand\NL\noLine
+
+\EnableBpAbbreviations
+\setbeamersize{text margin left=2pt,text margin right=2pt}
+\beamertemplatenavigationsymbolsempty
+% \setbeamertemplate{footline}[page number]{}
+
+ \definecolor{mygray}{rgb}{0.5,0.5,0.5}
+
+\lstdefinelanguage{scala}{
+  morekeywords={abstract,case,catch,class,def,%
+    do,else,extends,false,final,finally,%
+    for,if,implicit,import,match,mixin,%
+    new,null,object,override,package,%
+    private,protected,requires,return,sealed,%
+    super,this,throw,trait,true,try,%
+    type,val,var,while,with,yield},
+  otherkeywords={=>,<-,<\%,<:,>:,\#,@},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[n]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+  morestring=[b]"""
+}
+
+\lstset{
+  language=scala,
+  numbers=left,
+  numbersep=5pt,
+  firstnumber = auto,
+  numberstyle=\tiny\color{gray},
+  basicstyle=\footnotesize\ttfamily,
+  aboveskip={0.0\baselineskip},
+  keywordstyle=\footnotesize\color{blue}\ttfamily
+}
+
+
+
+  
+\begin{document}  
+
+\frame{\titlepage}
+
+\begin{frame}
+  \frametitle{Motivation}
+  \begin{itemize}
+    \item Featherweight Scala
+    \item problem of decidability of Scala type checking
+    \item mostly I want to show how may look complete system for type checking and reduction for such language like Scala
+  \end{itemize}
+\end{frame}
+
+\section{Featherweight Scala}
+
+\subsection{Motivation}
+
+\begin{frame}
+  \frametitle{Featherweight Scala}
+  \begin{itemize}
+  \item a minimal core calculus of classes that captures an essential set of features of Scala's type system
+  \item subset of Scala (except explicit \texttt{self} names)
+  \item classes can have types, values, methods and other classes as members
+  \item types, methods and values can be abstract
+  \item call-by-name evaluation
+  \item deduction rules are syntax-directed
+  \end{itemize}
+\end{frame}
+
+\subsection{Example: Peano numbers}
+
+\begin{frame}[fragile]
+\frametitle{Peano numbers}
+\pause
+\begin{lstlisting}
+trait Any extends { this0 | }
+trait Nat extends Any { this0 |
+  def isZero(): Boolean
+  def pred(): Nat
+  trait Succ extends Nat { this1 |
+    def isZero(): Boolean = false
+    def pred(): Nat = this0
+  }
+  def succ(): Nat = ( val result = new this0.Succ; result )
+  def add(other : Nat): Nat = (
+    if (this0.isZero()) other
+    else this0.pred().add(other.succ()))
+}
+val zero = new Nat { this0 |
+  def isZero(): Boolean = true
+  def pred(): Nat = error(”zero.pred”)
+}
+\end{lstlisting}
+\end{frame}
+
+\subsection{Example: List class hierarchy}
+
+\begin{frame}[fragile]
+\frametitle{List class hierarchy}
+\pause
+\begin{lstlisting}
+trait List extends Any { this0 |
+  type Elem
+  type ListOfElem = List { this1 | type Elem = this0.Elem }
+  def isEmpty(): Boolean
+  def head(): this0.Elem
+  def tail(): this0.ListOfElem }
+
+trait Nil extends List { this0 |
+  def isEmpty(): Boolean = true
+  def head(): this0.Elem = error("Nil.head")
+  def tail(): this0.ListOfElem = error("Nil.tail") }
+trait Cons extends List { this0 |
+  val hd : this0.Elem
+  val tl : this0.ListOfElem
+  def isEmpty(): Boolean = false
+  def head(): this0.Elem = hd
+  def tail(): this0.ListOfElem = tl }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{List class hierarchy}
+\begin{lstlisting}
+val nilOfNat = new Nil { type Elem = Nat }
+
+val list2 = new Cons { this0 |
+  type Elem = Nat
+  val hd : Nat = zero.succ().succ()
+  val tl : this0.ListOfElem = nilOfNat
+}
+
+val list12 = new Cons { this0 |
+  type Elem = Nat
+  val hd : Nat = zero.succ()
+  val tl : this0.ListOfElem = list2
+}
+\end{lstlisting}
+\end{frame}
+
+\subsection{Example: Functions}
+
+\begin{frame}[fragile]
+\frametitle{First class functions}
+\pause
+\begin{lstlisting}
+trait Function extends Any { this0 |
+  type Dom
+  type Range
+  def apply(x : this0.Dom): this0.Range
+}
+
+val inc = new Function { this0 |
+  type Dom = Nat
+  type Range = Nat
+  def apply(x : this0.Dom): this0.Range = x.succ()
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\pause
+\frametitle{Mapper class (implementation of map function)}
+\begin{lstlisting}
+trait Mapper extends Any { t0 |
+  type A
+  type B
+  def map(f: Function { type Dom = t0.A; type Range = t0.B },
+      xs: List { type Elem = t0.A }): List { type Elem = t0.B } =
+    if (xs.isEmpty()) (
+      val result = new Nil {
+        type Elem = t0.B
+      }; result
+    ) else (
+      val result = new Cons {
+        type Elem = t0.B
+        val hd: t0.B = f.apply(xs.head())
+        val tl: List { type Elem = t0.B } = t0.map(f, xs.tail())
+      }; result
+    )
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Mapper class usage}
+\begin{lstlisting}
+val list23 : List { type Elem = Nat } = (
+  val mapper = new Mapper { type A = Nat; type B = Nat };
+  mapper.map(inc, list12)
+)
+\end{lstlisting}
+\end{frame}
+
+\section{Calculus}
+
+\subsection{Syntax and Reduction}
+
+\begin{frame}
+\frametitle{Syntax}
+\begin{itemize}
+ \item each member in class is associated with unique integer $n$ (it's used for detecting cycles during the static analysis)
+ \item value of fields and methods, type fields may be abstract
+ \item concrete type field is also called type alias
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Syntax}
+\begin{tabular}{ll}
+  $x, y, z$ & Variable \\
+  $a$ & Value label \\
+  $A$ & Type label \\
+  $P ::= \{x\ |\ \overline{M}\ t\}$ & Program \\
+  
+  $M, N ::=$ & Member decl \\
+  $\quad \texttt{val}_na : T (= t)^?$ & \quad Field decl \\
+  $\quad \texttt{def}_na ( \overline{y : S} ) : T ( = t)^?$ & \quad Method decl \\
+  $\quad \texttt{type}_nA (= T)^?$ & \quad Type decl \\
+  $\quad \texttt{trait}_nA\ \texttt{extends}\ (T) \{ \varphi\ |\ \overline{M} \}$ & \quad Class decl \\
+  
+  $s, t, u ::=$ & Term \\
+  $\quad x$ & \quad Variable \\
+  $\quad t.a$ & \quad Field selection \\
+  $\quad s.a(\overline{t})$ & \quad Method call \\
+  $\quad \texttt{val}\ x = \texttt{new}\ T;t$ & Object creation \\
+\end{tabular}
+\end{frame}
+
+\begin{frame}
+\frametitle{Syntax (paths)}
+\begin{tabular}{ll}
+$p ::=$ & Path \\
+$\quad x$ & \quad Variable \\
+$\quad p.a$ & \quad Field selection \\
+
+$T,U ::=$ & Type \\
+$\quad p.A$ & \quad Type selection \\
+$\quad p.\textbf{type}$ & \quad Singleton type \\
+$\quad (\overline{T})\ \{\varphi\ |\ \overline{M}\}$ & \quad Type signature \\
+\end{tabular}
+\end{frame}
+
+\begin{frame}
+\frametitle{Reduction}
+\begin{prooftree}
+  \AXC{$\texttt{val}_na : T = t \in \varSigma(x)$}
+  \RL{(RED-VALUE)}
+  \UIC{$\varSigma\ ;\ x.a \rightarrow \varSigma\ ;\ t$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\texttt{def}_na ( \overline{z : S} ) : T  = t \in \varSigma(x)$}
+  \RL{(RED-METHOD)}
+  \UIC{$\varSigma\ ;\ x.a(\overline{y}) \rightarrow \varSigma\ ;\ [\overline{y}/\overline{z}]t$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\varSigma \vdash T \prec_x \overline{M}$}
+  \RL{(RED-NEW)}
+  \UIC{$\varSigma\ ;\ \texttt{val}\ x = \texttt{new}\ T;t \ra \varSigma,x : \overline{M}\ ;\ t$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\varSigma\ ;\ t \ra \varSigma'\ ;\ t'$}
+  \RL{(RED-CONTEXT)}
+  \UIC{$\varSigma\ ;\ e[t] \ra \varSigma' \ ;\ e[t']$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Evaluation contexts}
+$e::= \qquad \textbf{term evaluation context}$ \\
+$\quad \langle\rangle$ \\
+$\quad e.a$ \\
+$\quad e.a(t)$ \\
+$\quad x.a(\overline{s}, e, \overline{u})$ \\
+$\quad \texttt{val}\ x = \texttt{new}\ E;t$ \\
+$E ::= \qquad \textbf{type evaluation context}$ \\
+$\quad e.A$ \\
+$\quad (\overline{T},E,\overline{U})\ \{\varphi\ |\ \overline{M}\}$
+\end{frame}
+
+\begin{frame}
+\frametitle{Lookup}
+\begin{prooftree}
+  \AXC{$\texttt{type}_nA = T \in \varSigma(y)$}
+  \AXC{$\varSigma \vdash T \prec_\varphi \overline{M}$}
+  \RL{(LOOKUP-ALIAS)}
+  \BIC{$\varSigma \vdash y.A \prec_\varphi \overline{M}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\texttt{trait}_nA\ \texttt{extends}\ (T) \{ \varphi\ |\ \overline{M} \} \in \varSigma(y)$}
+  \AXC{$\varSigma \vdash (\overline{T})\{\varphi\ |\ \overline{M}\} \prec_\varphi \overline{N}$}
+  \RL{(LOOKUP-CLASS)}
+  \BIC{$\varSigma \vdash y.A \prec_\varphi \overline{N}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\forall_i, \varSigma \vdash T_i \prec_\varphi \overline{N_i}$}
+  \RL{(LOOKUP-SIG)}
+  \UIC{$\varSigma \vdash (\overline{T})\ \{\varphi\ |\ \overline{M}\} \prec_\varphi (\biguplus_i \overline{N_i}) \uplus \overline{M}$}
+\end{prooftree}
+\end{frame}
+
+\subsection{Typing}
+
+\begin{frame}
+\frametitle{Path Typing}
+\begin{prooftree}
+  \AXC{$x : T \in \varGamma$}
+  \RL{(PATH-VAR)}
+  \UIC{$S, \varGamma \vdash_{path} x:T$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$S, \varGamma \vdash p.\textbf{type} \ni \texttt{val}_n\ a : T (= t)^?$}
+  \RL{(PATH-SELECT)}
+  \UIC{$S, \varGamma \vdash_{path} p.a : T$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Type Assignment}
+\begin{prooftree}
+  \AxiomC{$S, \varGamma \vdash_{path} p : T$}
+  \RightLabel{(PATH)}
+  \UnaryInfC{$S, \varGamma \vdash p : p.\textbf{type}$}
+\end{prooftree}
+\begin{prooftree}
+  \AxiomC{$S, \varGamma \vdash t : U$}
+  \AxiomC{$t \text{ is not a path}$}
+  \AXC{$S, \varGamma \vdash U \ni \texttt{val}_n\ a : T (= u)^?$}
+  \RightLabel{(SELECT)}
+  \TIC{$S, \varGamma \vdash t.a : T$}
+\end{prooftree}
+\begin{prooftree}
+  \AxiomC{$S, \varGamma \vdash s : V$}
+  \AxiomC{$S, \varGamma \vdash \overline{t} : \overline{T'}$}
+  \AxiomC{$S, \varGamma \vdash \overline{T'} \subtype \overline{T}$}
+  \noLine
+  \TrinaryInfC{$S, \varGamma \vdash V \ni \texttt{def}_na ( \overline{x : T} ) : U ( = u)^?$}
+  \RightLabel{(METHOD)}
+  \UnaryInfC{$S, \varGamma \vdash s.a(\overline{t}) : U$}
+\end{prooftree}
+\begin{prooftree}
+  \AxiomC{$S, \varGamma, x : T \vdash t : U$}
+  % \noLine
+  \AXC{$S, \varGamma \vdash T \prec_\varphi \overline{M_c}$}
+  \AxiomC{$x \notin fn(U)$}
+  % \noLine
+  \AXC{$S, \varGamma \vdash T \wf$}
+  \RightLabel{(NEW)}
+  \QuaternaryInfC{$S, \varGamma \vdash \texttt{val}\ x = \texttt{new}\ T;t : U$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Expansion}
+\begin{prooftree}
+  \AXC{$n \notin S$}
+  \AXC{$\{n\} \cup S, \varGamma \vdash (\overline{T})\ \{\varphi\ |\ \overline{M}\} \prec_\varphi \overline{N}$}
+  \noLine
+  \BIC{$S, \varGamma \vdash p.\textbf{type} \ni \texttt{trait}_nA\ \texttt{extends}\ (T) \{ \varphi\ |\ \overline{M} \}$}
+  \RightLabel{($\prec$-CLASS)}
+  \UIC{$S,\varGamma \vdash p.A \prec_\varphi \overline{N}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$n \notin S$}
+  \AXC{$\{n\} \cup S, \varGamma \vdash T \prec_\varphi \overline{M}$}
+  \noLine
+  \BIC{$S, \varGamma \vdash p.\type \ni \texttt{type}_nA = T$}
+  \RightLabel{($\prec$-TYPE)}
+  \UIC{$S,\varGamma \vdash p.A \prec_\varphi \overline{M}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\forall_i, S, \varGamma \vdash T_i \prec_\varphi \overline{N_i}$}
+  \RightLabel{($\prec$-SIGNATURE)}
+  \UIC{$S, \varGamma \vdash (\overline{T})\ \{\varphi\ |\ \overline{M}\} \prec_\varphi (\biguplus_i \overline{N_i}) \uplus \overline{M}$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Membership}
+\begin{prooftree}
+  \AXC{$S, \varGamma \vdash p \simeq q$}
+  \noLine
+  \UIC{$\psi(p) \cup S, \varGamma \vdash T \prec_\varphi \overline{M}$}
+  \AXC{$S, \varGamma \vdash_{path} q : T$}
+  \noLine
+  \UIC{$\psi(p) \nsubseteq S$}
+  \RightLabel{($\ni$-SINGLETON)}
+  \BIC{$S, \varGamma \vdash p.\type \ni [p/\varphi]M_i$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$T$ is not a singleton type}
+  \noLine
+  \UIC{$S, \varGamma \vdash T \prec_\varphi \ovl{M}$}
+  \AXC{$\varphi \notin fn(M_i)$}
+  \RightLabel{($\ni$-OTHER)}
+  \BIC{$S,\varGamma \vdash T \ni M_i$}
+\end{prooftree}
+\end{frame}
+
+\subsection{Subtyping}
+
+\begin{frame}
+\frametitle{Type Alias Expansion}
+\begin{prooftree}
+  \AXC{}
+  \RL{($\simeq$-SINGLETON)}
+  \UIC{$\tenv p.\type \simeq p.\type$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{}
+  \RL{($\simeq$-SIGNATURE)}
+  \UIC{$\tenv \mmbrs{T}{M} \simeq \mmbrs{T}{M}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv p.\type \ni \trait{A}{T}{M}$}
+  \RL{($\simeq$-CLASS)}
+  \UIC{$\tenv p.A \simeq p.A$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv p.\type \ni \stype{A}$}
+  \RL{($\simeq$-ABSTYPE)}
+  \UIC{$\tenv p.A \simeq p.A$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv p.\type \ni \stypef{A}{T}$}
+  \AXC{$\{n\} \cup \tenv T \simeq U$}
+  \AXC{$n \notin S$}
+  \RL{($\simeq$-TYPE)}
+  \TIC{$\tenv p.A \simeq U$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Path Alias Expansion}
+\begin{prooftree}
+  \AXC{$\tenvp p : q.\type$}
+  \AXC{$\psi(p) \cup \tenv q \simeq q'$}
+  \AXC{$\psi(p) \nsubseteq S$}
+  \RL{($\simeq$-STEP)}
+  \TIC{$\tenv p \simeq q'$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$T$ is not a singleton type}
+  \AXC{$\tenvp p : T$}
+  \RL{($\simeq$-REFL)}
+  \BIC{$\tenv p \simeq p$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Path Alias Expansion: Example}
+\begin{lstlisting}[mathescape]
+trait D { x|
+  val a : y.type = (val y = new (...) {...}; y)
+}
+
+// let's name "(...) {...}" as YSYG signature
+\end{lstlisting}
+\begin{prooftree}
+  \AXC{$\tenvp x : D$}
+  \LL{($\simeq$-REFL)}
+  \UIC{$\tenv x \simeq x$}
+  \AXC{$\tenvp x : D$}
+  \AXC{\dots}
+  \LL{($\ni$-SINGLETON)}
+  \TIC{$\tenv x.\type \ni \sval{a}{y.\type}$}
+  \LL{(PATH-SELECT)}
+  \UIC{$\tenvp x.a : y.\type$}
+  \AXC{$\tenvp y : YSYG$}
+  \RL{($\simeq$-REFL)}
+  \UIC{$\tenv y \simeq y$}
+  \RL{($\simeq$-STEP)}
+  \BIC{$\tenv x.a \simeq y$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithmic Subtyping}
+\begin{prooftree}
+  \AXC{$\tenv T \simeq T'$}
+  \AXC{$\tenv U \simeq U'$}
+  \AXC{$\tenvs T' \stp U'$}
+  \RL{($\stp$-UNALIAS)}
+  \TIC{$\tenv T \stp U$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv p \simeq p'$}
+  \AXC{$\tenv q \simeq p'$}
+  \RL{($\stp$-SINGLETON-RIGHT)}
+  \BIC{$\tenvs p.\type \stp q.\type$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$U$ is not singleton type}
+  \NL
+  \UIC{$\tenvp q : T$}
+  \AXC{$\tenv T \stp U$}
+  \noLine
+  \UIC{$\tenv p \simeq q$}
+  \RL{($\stp$-SINGLETON-LEFT)}
+  \BIC{$\tenvs p.\type \stp U$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithmic Subtyping}
+\begin{prooftree}
+  \AXC{$\tenv p \simeq p'$}
+  \AXC{$\tenv q \simeq p'$}
+  \RL{($\stp$-PATHS)}
+  \BIC{$\tenvs p.A \stp q.A$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$A \neq A'$}
+  \AXC{$n \notin S$}
+  \AXC{$\{ n \} \cup \tenv T_i \stp p'.A'$}
+  \noLine
+  \TIC{$\tenv p.\type \ni \trait{A}{T}{M}$}
+  \RL{($\stp$-CLASS)}
+  \UIC{$\tenvs p.A \stp p'.A'$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv T_i \stp p.A$}
+  \RL{($\stp$-SIG-LEFT)}
+  \UIC{$\tenvs \mmbrs{T}{M} \stp p.A$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithmic Subtyping}
+\begin{prooftree}
+  \AXC{$dom(\ovl{M}) \subseteq dom(\ovl{N})$}
+  \NL
+  \UIC{$\tenv T \prec_\varphi \ovl{N}$}
+  \NL
+  \UIC{$\forall_i, \tenv T \stp T_i$}
+  \AXC{$T$ is not a singleton type}
+  \noLine
+  \UIC{$\varphi : \mmbrs{T}{M}, \tenv \ovl{N} \ll \ovl{M}$}
+  \RL{($\stp$-SIG-RIGHT)}
+  \BIC{$\tenvs T \stp \mmbrs{T}{M}$}
+\end{prooftree}
+\pause
+\begin{block}{Definition}
+ $\ovl{N} \ll \ovl{N'} \Leftrightarrow (\forall (N, N') \in \ovl{N} \times \ovl{N'}, dom(N) = dom(N') \Rightarrow N \stp N')$
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Member Subtyping}
+\begin{prooftree}
+  \AXC{}
+  \RL{($\stp$-MEMBER-TYPE)}
+  \UIC{$\tenv \stypef{A}{T} \stp \stypeq{A}{T}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv T \stp T'$}
+  \RL{($\stp$-MEMBER-FIELD)}
+  \UIC{$\tenv \svalq{a}{T}{t} \stp \svalq[m]{a}{T'}{t'}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{($\stp$-MEMBER-CLASS)}
+  \UIC{$\tenv \trait{A}{T}{M} \stp \trait{A}{T}{M}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv \ovl{S'} \stp \ovl{S}$}
+  \AXC{$\tenv T \stp T'$}
+  \AXC{($\stp$-MEMBER-METHOD)}
+  \TIC{$\tenv \sdefq{a}{x}{S}{T}{t} \stp \sdefq{a}{x}{S'}{T'}{t'}$}
+\end{prooftree}
+\end{frame}
+
+\subsection{Well Formedness}
+
+\begin{frame}
+\frametitle{Well-Formedness}
+\begin{prooftree}
+  \AXC{$S,\varGamma \vpath p : T$}
+  \AXC{$\psi(p) \nsubseteq S$}
+  % \noLine
+  \AXC{$\psi(p) \cup S, \varGamma \vdash T\wf$}
+  \RL{(WF-SINGLETON)}
+  \TIC{$\tenv p.\type\wf$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv p.\type \ni \trait{A}{T}{M}$}
+  \RL{(WF-CLASS)}
+  \UIC{$\tenv p.A\wf$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$S, \varGamma, \varphi : (\overline{T}) \{ \varphi\ |\ \ovl{M}\} \vdash (\overline{T}) \{ \varphi\ |\ \ovl{M}\} \wf_\varphi$}
+  \RL{(WF-SIGNATURE)}
+  \UIC{$\tenv (\overline{T}) \{ \varphi\ |\ \ovl{M}\} \wf$}
+\end{prooftree}
+\begin{prooftree}
+  % \NL
+  \AXC{$\tenv p.\type \ni \stypeq{A}{T}$}
+  \AXC{$(\{n\} \cup \tenv T\wf)^?$}
+  \AXC{$(n \notin S)^?$}
+  \RL{(WF-TYPE)}
+  \TIC{$\tenv p.A \wf$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Member Well-Formedness}
+\begin{prooftree}
+  \AXC{$\tenv T \wf$}
+  \AXC{$(\tenv t : T')^?$}
+  \AXC{$(\tenv T' \subtype T)^?$}
+  \RL{(WF-X-FIELD)}
+  \TIC{$\tenv \svalq{a}{T}{t} \wf_x$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv \ovl{S},T \wf$}
+  \AXC{$(\ovl{x : S}, \tenv t : T')^?$}
+  \AXC{$(\tenv T' \subtype T)^?$}
+  \NL
+  \TIC{$\ovl{S}$ does not contain singleton types}
+  \RL{(WF-X-METHOD)}
+  \UIC{$\tenv \sdefq{a}{x}{S}{T}{t}$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$(\tenv T \wf)^?$}
+  \RL{(WF-X-TYPE)}
+  \UIC{$\tenv \stypeq{A}{T} \wf_x$}
+\end{prooftree}
+\end{frame}
+
+\begin{frame}
+\frametitle{Member Well-Formedness}
+\begin{prooftree}
+  \AXC{$\varphi : x.A, \tenv (\ovl{T})\{\varphi\ |\ \ovl{M}\}\ \wf_\varphi$}
+  \RL{(WF-X-CLASS)}
+  \UIC{$\tenv \trait{A}{T}{M} \wf_x$}
+\end{prooftree}
+\begin{prooftree}
+  \AXC{$\tenv \ovl{M} \wf_\varphi$}
+  \noLine
+  \UIC{$\tenv \ovl{T} \wf$}
+  \AXC{$\forall_i, \tenv T_i \prec_\varphi \ovl{N_i}$}
+  \noLine
+  \UIC{$\forall_{(i,j)}, \tenv (\ovl{N_{i+j}}, \ovl{M}) \ll \ovl{N_i}$}
+  \RL{(WF-X-SIGNATURE)}
+  \BIC{$\tenv \mmbrs{T}{M} \wf_\varphi$}
+\end{prooftree}
+\end{frame}
+
+\section{Properties}
+
+\subsection{Lemmas}
+
+\begin{frame}
+\frametitle{Properties}
+\begin{Lemma}
+  If a term $t$ can be assigned a type T by the \textbf{Path Typing} judgment, then it is unique.
+\end{Lemma}
+\pause
+\begin{Lemma}
+ The calculus defines a deterministic algorithm.
+\end{Lemma}
+\pause
+\begin{lemma}
+ The \textbf{Path Typing}, \textbf{Expansion}, \textbf{Membership} and \textbf{Path Alias Expansion} judgments terminate on all inputs.
+\end{lemma}
+\pause
+\begin{corollary}
+ The \textbf{Type Alias Expansion} judgment terminates on all inputs.
+\end{corollary}
+\end{frame}
+
+\begin{frame}
+\begin{lemma}
+ The \textbf{Algorithmic Subtyping} and \textbf{Member Subtyping} judgments terminate on all inputs.
+\end{lemma}
+\begin{lemma}
+The \textbf{Type Assignment}, \textbf{Well-Formedness} and \textbf{Member Well-Formedness} judgments terminate on all inputs.
+\end{lemma}
+\end{frame}
+
+\subsection{Conclusions}
+
+\begin{frame}
+\frametitle{Conclusions}
+\begin{itemize}
+ \item FS type checking is decidable, we know how to construct a program which is performing type checking for FS
+ \item Scala is \textbf{probably} decidable, it's not (AFAIK) proved. There are some problems with the lower/upper bounds of types, details are explained in the paper
+\end{itemize}
+
+\end{frame}
+
+\section{}
+\subsection{}
+
+\begin{frame}
+\begin{center}
+\Huge{Questions?}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Homework}
+\begin{block}{Info}
+ Deadline: 29th June
+\end{block}
+\begin{block}{Theoretical variant}
+  Formulate CBV semantics and extend FS with mutable state (in pdf format).
+  I am not sure, how hard this task is. It may be very easy or not.
+  I am accepting solutions for this task for 5.0 grade, even if these are not complete,
+  however you have to show me what you achieved and explain me where you got stuck.
+\end{block}
+\begin{block}{Practical variant}
+  Try to make a static analysis program for Featherweight Scala (with basic features like finding dead code, unused variables and so on). Of course in any functional and reasonable language.
+\end{block}
+\end{frame}
+
+
+
+
+
+
+
+\end{document}

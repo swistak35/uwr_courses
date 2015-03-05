@@ -1,0 +1,179 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{a4wide}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{textcomp}
+\usepackage{bussproofs}
+
+\newtheorem{theorem}{Theorem}
+\newcommand{\nf}[1]{#1^{nf}}
+\newcommand{\ttop}{\text{Top}}
+\newcommand{\ceqv}{\leftrightarrow}
+
+\theoremstyle{definition}
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{definition}{Definition}
+\newtheorem*{fact}{Fact}
+\newtheorem{case}{Case}
+\newtheorem{subcase}{Subcase}
+
+\EnableBpAbbreviations
+
+\title{
+  \textbf{Higher Order Calculus}\\
+  {\Large Homework solution}
+}
+\author{Rafał Łasocha}
+\setcounter{equation}{0}
+
+% numeracja przypadków
+% trochę posprzątać i pododawać equation
+
+\begin{document}
+
+\maketitle
+
+\section{Problem}
+
+\begin{theorem}[Equivalence to a normal form]
+
+If $E \vdash A :: K$, then $E \vdash A \leftrightarrow A^{nf} :: K$
+
+\end{theorem}
+
+\section{Analysis}
+
+\subsection{Transformations to normal form}
+Let's look at the transformations, which induce normal form.
+\begin{enumerate}
+ \item $\nf{X} = X$
+ \item $\nf{\ttop} = \ttop$
+ \item $\nf{[l_iv_i:B_i^{i \in 1 .. n}]} = [l_iv_i:B_i^{nf\ i \in 1 .. n}]$
+ \item $\nf{(\forall(X <: A :: K)B)} = (\forall(X <: \nf{A} :: K)\nf{B})$
+ \item $\nf{(\mu(X)A)} = \mu(X)\nf{A}$
+ \item $\nf{(\lambda(X::K)B)} = \lambda(X::K)\nf{B}$
+ \item $\nf{(B(A))} = \text{if } \nf{B} \equiv \lambda(X::K)C\{X\} \text{ for some $X$, $K$, $C$, then } \nf{(C\{A\})} \text{ else } \nf{B}(\nf{A})$
+\end{enumerate}
+
+\setcounter{case}{0}
+\section{Proof}
+Let's imagine, that we have a tree which represents how we are transforming our $\nf{A}$ to regular constructor.
+We have an assumption that $E \vdash A :: K$, so our tree exists and is finite.
+We will prove a theorem by induction on that tree. Transformation $X$ is the transformation associated with the number on the list above.
+
+\begin{proof}
+ 
+ \begin{case}[Induction basis - Transformation 1 \& 2] \ \\
+  Both transformations are easy. Let's consider Transformation 1.
+    \begin{equation*}
+      \nf{X} = X
+    \end{equation*}
+    We also have an assumption that
+    \begin{equation*}
+     E \vdash X :: K
+    \end{equation*}
+    Thus, equivalence between $X$ and $\nf{X}$ is obvious (from rule \textbf{Con Eq X}). \\
+    For Transformation 2, proof looks exactly the same.
+ \end{case}
+ 
+ \begin{case}[Induction step - Transformation 3] \ \\
+  If our constructor has shape $[l_iv_i:B_i^{i \in 1 .. n}]$, we have to consider transformation 3.
+    \begin{equation*}
+      \nf{[l_iv_i:B_i^{i \in 1 .. n}]} = [l_iv_i:B_i^{nf\ i \in 1 .. n}]
+    \end{equation*}
+    We can conclude equivalence from the judgment \textbf{Con Eq Object}.
+    \begin{prooftree}
+    \AXC{from induction hypothesis}
+    \UIC{$E \vdash B_i \leftrightarrow \nf{B_i}$}
+    \AXC{$\forall i \in 1 .. n$}
+    \RL{(Con Eq Object)}
+    \BIC{$E \vdash [l_iv_i:B_i^{i \in 1 .. n}] \leftrightarrow [l_iv_i:B_i^{nf\ i \in 1 .. n}]$}
+    \end{prooftree}
+ \end{case}
+ 
+ \begin{case}[Induction step - Transformation 4] \ \\
+  If our constructor has shape $\forall(X <: A :: K)B$, we have to consider transformation 4.
+    \begin{equation*}
+      \nf{(\forall(X <: A :: K)B)} = (\forall(X <: \nf{A} :: K)\nf{B})
+    \end{equation*}
+    We can conclude equivalence from the judgment \textbf{Con Eq All}.
+    \begin{prooftree}
+    \AXC{from induction hypothesis}
+    \UIC{$E \vdash A \leftrightarrow \nf{A} :: K$}
+    \AXC{from induction hypothesis}
+    \UIC{$E, X <: A :: K \vdash B \ceqv \nf{B}$}
+    \RL{(Con Eq Object)}
+    \BIC{$E \vdash \forall(X <: A :: K)B \ceqv \forall(X <: \nf{A} :: K)\nf{B}$}
+    \end{prooftree}
+ \end{case}
+ 
+ \begin{case}[Induction step - Transformation 5] \ \\
+  If our constructor has shape $\mu(X)A$, we have to consider transformation 5.
+    \begin{equation*}
+      \nf{(\mu(X)A)} = \mu(X)\nf{A}
+    \end{equation*}
+    We can conclude equivalence from the judgment \textbf{Con Eq Rec}.
+    \begin{prooftree}
+    \AXC{from induction hypothesis}
+    \UIC{$E, X \vdash B \ceqv \nf{B}$}
+    \RL{(Con Eq Object)}
+    \UIC{$E \vdash \mu(X)A \ceqv \mu(X)\nf{A}$}
+    \end{prooftree}
+ \end{case}
+ 
+ \begin{case}[Induction step - Transformation 6] \ \\
+ If our constructor has shape $\lambda(X::K)B$, we have to consider transformation 6.
+  \begin{equation*}
+   \nf{(\lambda(X::K)B)} = \lambda(X::K)\nf{B}
+  \end{equation*}
+  We can conclude equivalence from the judgment \textbf{Con Eq Abs}:
+  \begin{prooftree}
+  \AXC{from induction hypothesis}
+  \UIC{$E, X :: K \vdash B \leftrightarrow \nf{B} :: L$}
+  \RL{(Con Eq Abs)}
+  \UIC{$E \vdash \lambda(X::K)B \leftrightarrow \lambda(X::K)\nf{B} :: K \Rightarrow L$}
+  \end{prooftree}
+ \end{case}
+ 
+ 
+ \begin{case}[Induction step - Transformation 7] \ \\
+ If our constructor has shape $B(A)$, we have to consider transformation 7.
+  \begin{equation*}
+   \nf{(B(A))} = \text{if } \nf{B} \equiv \lambda(X::K)C\{X\} \text{ for some $X$, $K$, $C$, then } \nf{(C\{A\})} \text{ else } \nf{B}(\nf{A})
+  \end{equation*}
+  Now we have two subcases.
+  \begin{subcase}[$\nf{B} \equiv \lambda(X::K)C\{X\}$ for some $X$, $K$, $C$]
+    We can conclude equivalence from the judgment \textbf{Con Eval Beta} and transitivity.
+    \begin{prooftree}
+      \AXC{from Assumption}
+      \UIC{$E, X :: K \vdash C\{X\} :: L$}
+      \AXC{from Assumption}
+      \UIC{$E \vdash A :: K$}
+      \RL{(Con Eq Abs)}
+      \BIC{$E \vdash (\lambda(X::K)C\{X\})(A) \leftrightarrow C\{A\} :: L$}
+      
+      \AXC{$E \vdash C\{A\} \ceqv \nf{(C\{A\})} :: L$}
+      \BIC{$E \vdash (\lambda(X::K)C\{X\})(A) \leftrightarrow \nf{(C\{A\})} :: L$}
+    \end{prooftree}
+  \end{subcase}
+  
+  \begin{subcase}[else]
+    We can conclude equivalence from the judgment \textbf{Con Eq Appl}.
+    \begin{prooftree}
+      \AXC{from induction hypothesis}
+      \UIC{$E \vdash B \ceqv \nf{B} :: K \Rightarrow L$}
+      \AXC{from induction hypothesis}
+      \UIC{$E \vdash A \ceqv \nf{A} :: K$}
+      \RL{(Con Eq Abs)}
+      \BIC{$E \vdash B(A) \ceqv \nf{B}(\nf{A}) :: L$}
+    \end{prooftree}
+  \end{subcase}
+ \end{case}
+ 
+\end{proof}
+\end{document}

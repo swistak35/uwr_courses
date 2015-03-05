@@ -1,0 +1,99 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[OT4,plmath]{polski}
+
+
+\usepackage{a4wide}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+% \usepackage{amssymb}
+% \usepackage{amsthm}
+\usepackage{listings}
+
+
+\title{
+  \textbf{Class-based programming languages}\\
+  {\Large Homework}
+}
+\author{Rafał Łasocha}
+\setcounter{equation}{0}
+
+\begin{document}
+
+\maketitle
+
+Solutions of this homework have to be sent at \texttt{me@swistak35.com} till 30.03.2014. If you have any questions or you found an error somewhere in this document, feel free to ask by writing an email to me.
+
+\section{Problem}
+\subsection{Description}
+Write an interpreter of class-based programming language.
+By interpreter I mean only program, which runs AST (you can assume, that you give correct AST to your program, no need for checking it).
+Your interpreter has to have (except classes): \textbf{subclassing} and \textbf{method override}.
+There is no need for method's arguments.
+\textbf{Obligatory:} some examples to run.
+
+\subsection{Language requirements}
+Interpreter may be written in any language, which I can run on my 64-bit linux machine.
+Suggestions: Haskell, OCaml, Racket, Python, Ruby, C...
+\textbf{Don't} write your interpreter in C\#, F\#, Visual Basic or anything else weakly supported on linux
+ (I am aware of Mono, but I don't want to fight with it).
+
+\subsection{AST}
+AST below is strong suggestion, but it's not obligatory. For example, you can change fields, methods and/or classdefs and implement it as lists.
+You can assume, that your interpreter is always running the \texttt{main} method from fresh instance of \texttt{Main} class as starting point, or something similar.
+
+\lstset{
+  basicstyle=\scriptsize
+}
+ 
+\begin{lstlisting}
+int 	  = integer number
+
+id 	  = identifier, for example string
+
+aexp 	  = Constant(int) | Var(id)
+	  | Add(aexp, aexp) | Mul(aexp, aexp)	   // sum and multiplication
+
+bexp 	  = True | False
+	  | And(bexp, bexp) | Not(bexp, bexp)	   // logical &, !
+	  | Leq(aexp, aexp) | Equal(aexp, aexp)	   // <=, =
+stm 	  = Skip 				   // do nothing
+	  | Assign(id, aexp)			   // assign new int value to var
+	  | Cond(bexp, stm, stm)		   // if statement
+	  | While(bexp, stm)			   // while loop
+	  | Write(id) | Read(id)		   // IO: read and write integers
+	  | Cons(stm1, stm2)			   // two consecutive statements, ";"
+	  | CreateObject(id)			   // create new instance of object
+						   // id: name of the variable
+	  | Call(id, id)			   // 1st id: name of the object
+						   // 2nd id: name of the called method
+classdef  = ClassDef(id, fields, methods)
+	  | SubclassDef(id, id, fields, methods)   // 1st id: name of subclass
+						   // 2nd id: name of parent class
+field  	  = ClassFieldPrimitive(id, aexp)
+	  | ClassFieldObject(id, id)		   // 1st id: name of the object
+						   // 2nd id: name of the class
+method    = Method(id, stm)			   // definition of method
+	  | Override(id, stm)			   // definition of overriding method
+methods   = Methods(method, methods) | None
+fields    = Fields(field, fields) | None
+classdefs = ClassDefs(classdef, classdefs) | None
+program   = classdefs 
+\end{lstlisting}
+
+\subsection{Evaluation}
+Evaluation criteria:
+\begin{enumerate}
+ \item Correctness of interpreter
+ \item Examples
+ \item Code readability
+\end{enumerate}
+
+\subsection{Update 16.03.2014}
+Added Cons and CreateObject to statements. Furthermore, if you have any gotchas
+you can choose what will be more convenient to you to implement - but remember to satisfy basic criteria of 
+interpreter (mentioned in Problem/Description).
+
+
+\end{document}

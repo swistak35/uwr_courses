@@ -1,0 +1,142 @@
+--{-# LANGUAGE OverloadedRecordFields #-}
+
+import qualified Data.Map.Strict as M
+import Data.Maybe
+import Debug.Trace
+
+
+type KlassName = String
+type MethodName = String
+type FieldName = String
+type ObjectName = String
+
+data Klass = Klass
+        { kName :: KlassName
+        , kParent :: KlassName
+        , kFields :: [(FieldName, KlassName)]
+        , kMethods :: M.Map MethodName Method
+}
+
+data Method = Method
+        { mName :: MethodName
+        , mArgs :: [(ObjectName, KlassName)]
+        , mExpr :: Expr
+        , mRetType :: KlassName
+}
+
+data Expr = Arg ObjectName
+        | FieldCall Expr FieldName
+        | MethodCall Expr MethodName [Expr]
+        | NewObject KlassName [Expr]
+        | TypeCast Expr KlassName deriving Show
+
+data TypeRelation = Subtype | Supertype | Equal | None
+
+type KlassTable = M.Map KlassName Klass
+type Program = (KlassTable, Expr)
+
+
+cerror str = traceStack "" (error str)
+
+--nie wykrywa pętli klas, przerobić na akumulator
+inh_tree :: KlassTable -> KlassName -> [KlassName]
+inh_tree kt "Object" = ["Object"]
+inh_tree kt name = name:(inh_tree kt $ kParent $ klassLookup kt name)
+
+type_relation :: KlassTable -> KlassName -> KlassName -> TypeRelation
+type_relation kt x y = case (x `elem` ytree, y `elem` xtree) of
+        (True, True)    -> Equal
+        (True, False)   -> Supertype
+        (False, True)   -> Subtype
+        (False, False)  -> None
+        where   xtree = inh_tree kt x
+                ytree = inh_tree kt y
+
+isSubtypeOf :: KlassTable -> KlassName -> KlassName -> Bool
+isSubtypeOf kt x y = case (type_relation kt x y) of
+        Equal   -> True
+        Subtype -> True
+        _       -> False
+
+fields :: KlassTable -> KlassName -> [KlassName]
+fields kt "Object" = []
+fields kt name = (fields kt pname) ++ (map snd fs)
+        where Klass _ pname fs _ = klassLookup kt name
+
+mtype :: KlassTable -> KlassName -> MethodName -> Maybe ([KlassName], KlassName)
+mtype kt "Object" _ = Nothing
+mtype kt kName name = case (M.lookup name $ kMethods klass) of
+        Just method     -> Just (map snd (mArgs method), mRetType method)
+        Nothing         -> mtype kt (kParent klass) name
+        where   klass = klassLookup kt kName
+
+klassLookup :: KlassTable -> KlassName -> Klass
+klassLookup kt name = case (M.lookup name kt) of
+        Just klass      -> klass
+        Nothing         -> cerror ("There is no `"++name++"` in Class Table.")
+
+fieldLookup :: KlassTable -> KlassName -> FieldName -> KlassName
+fieldLookup kt "Object" name = cerror ("There is no field `"++name++"`.")
+fieldLookup kt kName name = case (lookup name fs) of
+        Just kName      -> kName
+        Nothing         -> fieldLookup kt pname name
+        where   Klass _ pname fs _ = klassLookup kt kName
+
+compare_types :: KlassTable -> [KlassName] -> [KlassName] -> Bool
+compare_types kt xs ys = ((length xs) == (length ys)) && (all (uncurry $ isSubtypeOf kt) $ zip xs ys)
+
+equal_types :: [KlassName] -> [KlassName] -> Bool
+equal_types xs ys = ((length xs) == (length ys)) && (all (uncurry (==)) $ zip xs ys)
+
+checketype :: M.Map ObjectName KlassName -> Program -> KlassName
+checketype args (kt, e@(TypeCast expr name)) = case (type_relation kt name (checketype args (kt,expr))) of
+        Supertype       -> name -- T-UCast
+        Subtype         -> name -- T-UCast
+        Equal           -> name -- T-DCast
+        None            -> name -- T-SCast
+
+checketype args (kt, e@(NewObject name es)) = -- T-New
+        if compare_types kt est fst
+        then name else cerror ("Argument types are not ok in constructor of `"++name++"`.")
+        where   est = map (curry (checketype args) kt) es
+                fst = fields kt name
+
+checketype args (kt, e@(MethodCall expr name es)) = -- T-Invk
+        if compare_types kt est argTypes
+        then retType else cerror "Argument's types are not ok in method call."
+        where   expr_type = checketype args (kt, expr)
+                est = map (curry (checketype args) kt) es
+                (argTypes, retType) = fromJust $ mtype kt expr_type name
+-- fromJust wyzej powoduje error, zamiast tego powinien byc jakiś ładny
+
+checketype args (kt, e@(FieldCall expr name)) = fieldLookup kt expr_type name -- T-Field
+        where   expr_type = checketype args (kt, expr)
+
+checketype args (kt, e@(Arg name)) = case (M.lookup name args) of
+        Just kName      -> kName
+        Nothing         -> cerror "There is no `"++name++"` variable."
+
+example1 = (kt, expr)
+        where   expr = MethodCall (NewObject "Pair" [NewObject "A" [], NewObject "B" []]) "setfst" [NewObject "B" []]
+                kt = M.fromList [                        ("A", Klass "A" "Object" [] (M.fromList [])),                        ("B", Klass "B" "Object" [] (M.fromList [])),                        ("Pair", Klass "Pair" "Object" [("fst", "Object"), ("snd", "Object")] (M.fromList [("setfst", Method "setfst" [("newfst", "Object")] (NewObject "Pair" [Arg "newfst", FieldCall (Arg "this") "snd"]) "Pair")]))                ]
+
+checkclass :: KlassTable -> KlassName -> Bool
+checkclass kt name = and $ map (checkmethod kt name) $ M.keys $ kMethods $ klassLookup kt name
+
+-- Dokonczyc
+checkmethod :: KlassTable -> KlassName -> MethodName -> Bool
+checkmethod kt kName name = case (mtype kt (kParent klass) name) of
+        Just (mArgs', mRetType')        -> isSubtypeOf kt expr_type (mRetType method) &&
+                mRetType' == (mRetType method) && (equal_types mArgs' (map snd $ mArgs method))
+        Nothing                         -> isSubtypeOf kt expr_type (mRetType method)
+        where   klass = klassLookup kt kName
+                method = (kMethods klass) M.! name
+                expr = mExpr method
+                expr_type = checketype (M.insert "this" kName (M.fromList (mArgs method))) (kt, expr)
+
+
+
+main = do
+        putStrLn $ "Expr type: "++(checketype M.empty example1)
+        mapM (\x -> putStrLn ("Klass '"++x++"': "++(show $ checkclass kt x))) (M.keys kt)
+        where kt = fst example1

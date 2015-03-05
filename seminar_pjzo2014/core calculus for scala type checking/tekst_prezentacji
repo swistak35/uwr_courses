@@ -1,0 +1,77 @@
+# Peano numbers
+  we know already how they works
+  notice explicit self names: this0, this1
+  nested class: Succ
+  FS allows instance creation expressions only as right-hand sides of value definitions
+# List class hierarchy
+  abstract types (Elem) instead of parametrized types
+  notice ListOfElem definition and List.tail() type (however remember, that it's only an alias and it could be done without ListOfElem type)
+  classes in FS don't have constructors, but we can use member redefinition to initialize values (or types)
+# Functions
+  in scala there are both type parameters and abstract types
+  all kinds of usage of type parameters can be done using abstract types
+  you can't pass polymorphic higher-order functions as arguments
+# Syntax
+  call by name semantics
+  n is unique integer required to prevent cycles
+  explain singleton type (when we have val = ... with no explicit type)
+  note that type selection is available only on paths, and it "ruin" path, so
+    x.a.b.A.a is NOT a path and we can't write such a chain (because x.a.b.A is not a path)
+# Reduction
+  explain bigSigma mapping (from variables to set of members)
+  RED-VALUE and RED-CONTEXT easey
+  explain <_x (lookup) in RED-NEW
+# Lookup
+  explain \uplus notation (sum with overriding)
+# Path typing
+  ? this judgement finds bound for path, which is more informative but less precise type
+# Type assignment
+  the first three judgments are straightforward
+  (NEW):
+    x not in fn(S)	->	because we want x to not be overriden
+    T < M_c 		-> 	it's saying "all the type fields are concrete"
+# Expansion
+  (<-CLASS) and (<-TYPE) are easy
+  (<-SIGNATURE) is explaining going down with the recursion
+# Membership
+  (OTHER) is easy, again fn() is used to prevent overriding self name
+# Path alias expansion
+  if we have `val a : p.type` then p is an alias for x.a (if x is the self reference)
+  look at example
+# Type alias expansion
+  idea is very simple "unalias" the type alias until it's not type alias.
+# Algorithmic subtyping
+  UNALIAS, after that, we have non abstract types, and we assume them in vdash_star
+  SINGLETON_RIGHT, two paths are equivalent if they expand to the same path
+  SINGLETON-LEFT, easy, we take bound of p, and compare it with U
+  PATHS, easy, if we take two type aliases, we have to make sure that the paths before them are equivalent
+  CLASS, SIG-LEFT, we want all of the parents to be subtype of the matching type
+  SIG-RIGHT:
+    dom: all of the members from sig has to be in the type, but not necessarily the other way around
+    obviously type T has to be intersection of the parents, and subtype of all of them
+    members have to satisfy some constraints
+# Member subtyping
+  most of them we already know
+  METHOD, FIELD and TYPE are easy
+  CLASS is saying that classes have to be the same! (strange?)
+# Well Formedness
+  SINGLETON, it just has to be typeable
+  CLASS, it just has to belong to the path. Note that we are not checking the members here, we are only checking them when we have signature, for example with "new ... = ..."
+  TYPE easy
+  SIGNATURE we will explain it below
+# Member Well-Formedness
+  FIELD - easy
+  METHOD - easy, note only that argument can't be singleton types
+    this restriction isn't really important
+    it has the advantage that some proofs are simpler
+  TYPE - easy
+  CLASS - we really care only about signature (with added self name)
+  SIGNATURE
+    all of the members have to be well formed
+    all of the parents have to be well formed
+    all of the parents can be expanded (forbids singleton and abstract types)
+    not sure what the last judgment is saying
+      I wasn't sure what the last judgment is saying before the presentation
+      Now I know, that this means, that order of parents does matter, and members from latter parents have to preserve well-formedness of members,
+      for example if we have two traits A and B, both with method "foo", and we are creating new value with signature (A,B), then
+      to be well formed, it has to be: B.foo <: A.foo
