@@ -385,27 +385,16 @@ evaluate([],P,P) :- write('------------- Koniec testów ----------------'), nl.
 evaluate([Z|Zs],AP,P) :-
 
   prepareTests(Z,Testy),
-  write('foo1'),
 
   [Z],
-  write('foo2'),
 
   speed(Scale),
-  write('foo3'),
 
   te(Testy, Errors, Time),
-  write('foo4'),
 
   fileSize(Z,Size), %write(Size),nl,
-  write('foo5'),
 
-  write(Z), nl,
-  write(Errors), nl,
-  write(Time*Scale), nl,
-  write(Size), nl,
-  write(PP), nl,
   ocena(Z,Errors,Time*Scale,Size,PP),  % Wypisuje raport
-  write('foo6'),
 
   AP1 is AP+PP,
 
