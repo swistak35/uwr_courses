@@ -19,11 +19,11 @@ term2(Sig, Size, Term) :-
   Term =.. [Name|Args],
   argsWithGoodSize(Sig, Args, ArgsSize).
 
-term(Sig, Term, Size) :-
+term(Sig, Size, Term) :-
   nonvar(Size),
   term2(Sig, Size, Term).
 
-term(Sig, Term, Size) :-
+term(Sig, Size, Term) :-
   nonvar(Term),
   length(_, Size),
   term2(Sig, Size, Term),
