@@ -37,6 +37,5 @@ inference(Facts, Rules, MaximumFaktLength, Result) :-
   tryToApplySomeRule(Facts, Rules, MaximumFaktLength, Conclusions),
   !,
   append(Facts, Conclusions, NewFacts),
-  write(NewFacts),
   inference(NewFacts, Rules, MaximumFaktLength, Result).
 inference(Facts, _Rules, _MaximumFaktLength, Facts).

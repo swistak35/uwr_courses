@@ -16,8 +16,7 @@ randsort3(List, RandSize, Sorted) :-
   switchpairs(List, Chosen, UpdatedList),
   randsort3(UpdatedList, RandSize, Sorted).
 
-randsort(List, Sorted) :-
+bubsort(List, Sorted) :-
   length(List, ListSize),
   RandSize is ListSize - 1,
   randsort3(List, RandSize, Sorted).
-
