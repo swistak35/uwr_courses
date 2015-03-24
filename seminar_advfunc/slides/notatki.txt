@@ -1,0 +1,40 @@
+
+PHANTOM TYPES
+
+This looks strange since at first it seems the type parameter is unused and could be anything, without affecting the value inside. Indeed, one can write:
+
+changeType :: FormData a -> FormData b
+changeType (FormData str) = FormData str
+
+to change it from any type to any other. However, if the constructor is not exported then users of the library that defined
+FormData
+can't define functions like the above, so the type parameter can only be set or changed by library functions. So we might do:
+
+data Validated
+data Unvalidated
+ 
+-- since we don't export the constructor itself,
+-- users with a String can only create Unvalidated values
+formData :: String -> FormData Unvalidated
+formData str = FormData str
+ 
+-- Nothing if the data doesn't validate
+validate :: FormData Unvalidated -> Maybe (FormData Validated)
+validate (FormData str) = ...
+ 
+-- can only be fed the result of a call to validate!
+useData :: FormData Validated -> IO ()
+useData (FormData str) = ...
+
+The beauty of this is that we can define functions that work on all kinds of
+FormData
+, but still can't turn unvalidated data into validated data:
+
+-- the library exports this
+liftStringFn :: (String -> String) -> FormData a -> FormData a
+liftStringFn fn (FormData str) = FormData (fn str)
+ 
+-- the validation state is the *same* in the return type and the argument
+
+
+

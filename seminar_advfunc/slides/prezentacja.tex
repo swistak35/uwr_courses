@@ -1,4 +1,4 @@
-\documentclass[aspectratio=169]{beamer}
+\documentclass[aspectratio=43]{beamer}
 \usepackage{etex}
 \usepackage[utf8]{inputenc}
 \usepackage{default}
@@ -7,7 +7,9 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{setspace}
+\usepackage{hyperref}
 \usepackage{listings}
+% \usepackage{minted}
 
 \title{Functional stuff}
 \author{Rafał Łasocha}
@@ -43,35 +45,30 @@
 \setbeamersize{text margin left=2pt,text margin right=2pt}
 \beamertemplatenavigationsymbolsempty
 % \setbeamertemplate{footline}[page number]{}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
 
- \definecolor{mygray}{rgb}{0.5,0.5,0.5}
-
-\lstdefinelanguage{scala}{
-  morekeywords={abstract,case,catch,class,def,%
-    do,else,extends,false,final,finally,%
-    for,if,implicit,import,match,mixin,%
-    new,null,object,override,package,%
-    private,protected,requires,return,sealed,%
-    super,this,throw,trait,true,try,%
-    type,val,var,while,with,yield},
-  otherkeywords={=>,<-,<\%,<:,>:,\#,@},
-  sensitive=true,
-  morecomment=[l]{//},
-  morecomment=[n]{/*}{*/},
-  morestring=[b]",
-  morestring=[b]',
-  morestring=[b]"""
-}
 
 \lstset{
-  language=scala,
+  frame=none,
+  xleftmargin=2pt,
+  stepnumber=1,
   numbers=left,
   numbersep=5pt,
-  firstnumber = auto,
-  numberstyle=\tiny\color{gray},
-  basicstyle=\footnotesize\ttfamily,
-  aboveskip={0.0\baselineskip},
-  keywordstyle=\footnotesize\color{blue}\ttfamily
+  numberstyle=\ttfamily\tiny\color[gray]{0.3},
+  belowcaptionskip=\bigskipamount,
+  captionpos=b,
+  escapeinside={*'}{'*},
+  language=haskell,
+  tabsize=2,
+  emphstyle={\bf},
+  commentstyle=\it,
+  stringstyle=\mdseries\rmfamily,
+  showspaces=false,
+  keywordstyle=\bfseries\rmfamily,
+  columns=flexible,
+  basicstyle=\small\ttfamily,
+  showstringspaces=false,
+  morecomment=[l]\%,
 }
 
 
@@ -93,6 +90,95 @@
 \section{Recap}
 
 \subsection{Phantom types}
+
+\begin{frame}[fragile]
+ \frametitle{Phantom types}
+ \begin{itemize}
+  \item \textit{A \textbf{phantom type} is a parametrised type whose parameters do not all appear on the right-hand side of its definition}
+ \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Phantom types}
+ \begin{lstlisting}
+  data FormData a = FormData String
+ \end{lstlisting}
+ \pause
+ \begin{lstlisting}
+  data Validated
+  data Unvalidated
+ \end{lstlisting}
+ \pause
+ \begin{lstlisting}
+  formData :: String -> FormData Unvalidated
+  formData str = FormData str
+ \end{lstlisting}
+ \pause
+ \begin{lstlisting}
+  validate :: FormData Unvalidated -> Maybe (FormData Validated)
+  validate (FormData str) = ...
+ \end{lstlisting}
+ \pause
+ \begin{lstlisting}
+  useData :: FormData Validated -> IO ()
+  useData (FormData str) = ...
+ \end{lstlisting}
+ \pause
+ \begin{lstlisting}
+  liftStringFn :: (String -> String) -> FormData a -> FormData a
+  liftStringFn fn (FormData str) = FormData (fn str)
+ \end{lstlisting}
+ \pause
+ \begin{lstlisting}
+  dataToUpper :: FormData a -> FormData a
+  dataToUpper = liftStringFn (map toUpper)
+ \end{lstlisting}
+\end{frame}
+
+\subsection{Generalized Algebraic Data Types}
+
+\begin{frame}[fragile]
+ \frametitle{Generalized Algebraic Data Types}
+ \begin{itemize}
+  \item \textit{\textbf{Generalised Algebraic Datatypes} (GADTs) are datatypes for which a constructor has a non standard type.}
+ \end{itemize}
+ \pause
+ \begin{lstlisting}
+  data Empty
+  data NonEmpty
+  data List x y where
+     Nil :: List a Empty
+     Cons:: a -> List a b ->  List a NonEmpty
+ \end{lstlisting}
+ \pause
+ \begin{lstlisting}
+  safeHead:: List x NonEmpty -> x
+  safeHead (Cons a b) = a
+ \end{lstlisting}
+ \pause
+ \begin{lstlisting}
+  silly 0 = Nil
+  silly 1 = Cons 1 Nil
+ \end{lstlisting}
+ \pause
+ \begin{itemize}
+  \item it can't infer proper type!
+ \end{itemize}
+\end{frame}
+
+\subsection{Existential types}
+
+\begin{frame}[fragile]
+  \frametitle{Existential types}
+  \begin{itemize}
+   \item \textit{An \textbf{Existential type} is a type which is using in constructors parameters which are not parameters of this type (they are not declared in left hand side of the type's definition).}
+  \end{itemize}
+\end{frame}
+
+
+
+
+
 
 
 
@@ -148,6 +234,27 @@
   values (App _ l r) = valu
  \end{lstlisting}
 \end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+ \frametitle{References}
+ \begin{itemize}
+  \item \url{https://wiki.haskell.org/Phantom_type}
+  \item \url{https://wiki.haskell.org/Generalised_algebraic_datatype}
+ \end{itemize}
+\end{frame}
+
 
 
 
