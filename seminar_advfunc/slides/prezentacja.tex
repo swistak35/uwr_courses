@@ -437,6 +437,54 @@
  \end{lstlisting}
 \end{frame}
 
+\subsection{Red-Black Trees with types}
+
+\begin{frame}
+ \begin{itemize}
+  \item Red-black trees properties:
+  \begin{itemize}
+    \item every black node has two black children
+    \item every path from the root to an empty tree passes through the same number of black nodes
+  \end{itemize}
+ \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{lstlisting}
+  type Tr t a b = (t a b,a,t a b)
+  data Red t a b = C (t a b) | R (Tr t a b)
+  data Black a b = E | B(Tr (Red Black) a [b])
+ \end{lstlisting}
+ \pause
+ \begin{itemize}
+  \item \texttt{Red} is really \texttt{MaybeRed}
+  \pause
+  \item \texttt{C (...)} constructor means that there's Black node inside
+  \pause
+  \item When there's Red node inside of Red node, we need to do something. Thus, type \texttt{Red (Red Black) a b} means dangerous situation.
+  \pause
+  \item Note that Black nodes are always increasing their depth, by passing it down increased by one (look at \texttt{[b]} at Black constructor)
+ \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{lstlisting}
+  type Tr t a b = (t a b,a,t a b)
+  data Red t a b = C (t a b) | R (Tr t a b)
+  data Black a b = E | B(Tr (Red Black) a [b]) *' \pause '*
+  
+  balanceL :: RR a [b] -> a -> Red Black a [b] -> Red Black a b *' \pause '*
+  balanceL (R(R(a,x,b),y,c)) z d = R(B(C a,x,C b),y,B(c,z,d)) *' \pause '*
+  balanceL (R(a,x,R(b,y,c))) z d = R(B(a,x,C b),y,B(C c,z,d)) *' \pause '*
+  balanceL (R(C a,x,C b)) z d = C(B(R(a,x,b),z,d)) *' \pause '*
+  balanceL (C a) x b = C(B(a,x,b))
+ \end{lstlisting}
+\end{frame}
+
+
+
+
+
 
 
 

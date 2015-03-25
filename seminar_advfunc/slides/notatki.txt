@@ -73,3 +73,12 @@ An error indicating that an IO operation failed because the end of file has been
 An infix synonym for fmap.
 
 getLine :: IO String
+
+
+
+RED BLACK
+
+Red should be named MaybeRed
+C (...) means that there is Black inside
+Dangerous solution for us is when there's "Red (Red Black) a [b]"  because MaybeRed in MaybeRed means that there may be 2 reds in row which is forbidden
+Note that after balancing, [b] is always increasing when going down to the tree
