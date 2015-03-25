@@ -11,10 +11,12 @@
 \usepackage{listings}
 % \usepackage{minted}
 
-\title{Functional stuff}
+\title{Functional stuff: \\
+GADT, Existential types, Rank-N-Types, ...}
+
 \author{Rafał Łasocha}
 \date{Wrocław, 25th March 2015}
-\subject{Computer Science}
+\subject{Institute of Computer Science}
 
 \usetheme{Warsaw}
 
@@ -92,14 +94,12 @@
 \subsection{Phantom types}
 
 \begin{frame}[fragile]
- \frametitle{Phantom types}
  \begin{itemize}
   \item \textit{A \textbf{phantom type} is a parametrised type whose parameters do not all appear on the right-hand side of its definition}
  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
- \frametitle{Phantom types}
  \begin{lstlisting}
   data FormData a = FormData String
  \end{lstlisting}
@@ -138,7 +138,6 @@
 \subsection{Generalized Algebraic Data Types}
 
 \begin{frame}[fragile]
- \frametitle{Generalized Algebraic Data Types}
  \begin{itemize}
   \item \textit{\textbf{Generalised Algebraic Datatypes} (GADTs) are datatypes for which a constructor has a non standard type.}
  \end{itemize}
@@ -166,10 +165,11 @@
  \end{itemize}
 \end{frame}
 
-\subsection{Existential types}
+\section{Existential types}
+
+\subsection{Definition}
 
 \begin{frame}[fragile]
-  \frametitle{Existential types}
   \begin{itemize}
    \item \textit{An \textbf{Existential type} is a type which is using in constructors parameters which are not parameters of this type (they are not declared in left hand side of the type's definition).}
   \end{itemize}
@@ -198,8 +198,9 @@
   \end{itemize}
 \end{frame}
 
+\subsection{Usage}
+
 \begin{frame}[fragile]
-  \frametitle{Existential types}
   \begin{lstlisting}
    data Worker b x = Worker {buffer :: b, input :: x}
    data Worker x =
@@ -222,10 +223,13 @@
   \end{lstlisting}
 \end{frame}
 
+\section{Rank-N Types}
+
+\subsection{Definition}
+
 \begin{frame}[fragile]
- \frametitle{Rank-N-Types}
  \begin{itemize}
-  \item definition ...
+  \item Rank-N types are types, which are using ``forall'' keyword in their's definition, and it cannot be moved above (in AST of type sense).
  \end{itemize}
  \pause
  \begin{lstlisting}
@@ -235,8 +239,9 @@
  \end{lstlisting}
 \end{frame}
 
+\subsection{Example}
+
 \begin{frame}[fragile]
- \frametitle{Rank-N-Types}
  \begin{lstlisting}
   ghci> liftTup (\x -> [x]) (5, "Blah") # We want to achieve this!
     ([5], ["Blah"]) *' \pause '*
@@ -247,12 +252,11 @@
     No instance for (Num [Char]) arising from literal '5'
     ... *' \pause '*
   ghci> :t liftTup
-  liftTup :: (t -> t1) -> (t, t) -> (t1, t1) *' \pause '*
+  liftTup :: (t -> t1) -> (t, t) -> (t1, t1)
  \end{lstlisting}
 \end{frame}
 
 \begin{frame}[fragile]
- \frametitle{Rank-N-Types}
  \begin{lstlisting}
   ghci> liftTup (\x -> [x]) (5, "Blah") # We want to achieve this!
     ([5], ["Blah"])
@@ -268,13 +272,12 @@
   liftTup liftFunc (t, v) = (liftFunc t, liftFunc v) *' \pause '*
   
   ghci> :l test.hs
-    Couldnt match expected type 'x' against inferred type 'b' 
+    Couldnt match expected type 'x' against inferred type 'a' 
     ...
  \end{lstlisting}
 \end{frame}
 
 \begin{frame}[fragile]
- \frametitle{Rank-N-Types}
  \begin{lstlisting}
   ghci> liftTup (\x -> [x]) (5, "Blah") # We want to achieve this!
     ([5], ["Blah"])
@@ -297,7 +300,6 @@
 \subsection{Prompt monad}
 
 \begin{frame}[fragile]
- \frametitle{Example: Prompt monad}
  \begin{itemize}
   \item It uses RankNTypes and GADTs
   \pause
@@ -473,7 +475,7 @@
   data Red t a b = C (t a b) | R (Tr t a b)
   data Black a b = E | B(Tr (Red Black) a [b]) *' \pause '*
   
-  balanceL :: RR a [b] -> a -> Red Black a [b] -> Red Black a b *' \pause '*
+  balanceL :: Red (Red Black) a [b] -> a -> Red Black a [b] -> Red Black a b *' \pause '*
   balanceL (R(R(a,x,b),y,c)) z d = R(B(C a,x,C b),y,B(c,z,d)) *' \pause '*
   balanceL (R(a,x,R(b,y,c))) z d = R(B(a,x,C b),y,B(C c,z,d)) *' \pause '*
   balanceL (R(C a,x,C b)) z d = C(B(R(a,x,b),z,d)) *' \pause '*
@@ -481,81 +483,156 @@
  \end{lstlisting}
 \end{frame}
 
-% \begin{frame}[fragile]
-%  \begin{lstlisting}
-%   
-%  \end{lstlisting}
-% \end{frame}
-
-
-
-
-
-
-
-
-    
-    
-    
-
-
-
-
-
-
-
-\section{Countdown problem}
-
-\subsection{Definition}
-
-\begin{frame}
- \frametitle{Problem definition}
- \begin{itemize}
-  \item based on British TV quiz
-  \item Given list of source numbers and a single target number, attempt to construct an arithmetic expression using each of the source numbers at most once, and such that the result of evaluating the expression is the target number.
-  \item numbers (source, target and intermediate results) are non-zero naturals
-  \item operations are additions, subtraction, multiplication and division
- \end{itemize}
-\end{frame}
-
-\begin{frame}
- \frametitle{Example}
- \begin{itemize}
-  \item Source numbers: [1, 3, 7, 10, 25, 50]
-  \item For target number 765, there is a expression which solves it: $(1 + 50)*(25 - 10)$
-  \item There are even 780 solutions for this target number
-  \item But, for target number 781 there are no solutions
- \end{itemize}
-\end{frame}
-
 \begin{frame}[fragile]
- \frametitle{}
  \begin{lstlisting}
-  data Op = Add | Sub | Mul | Div
-  
-  valid :: Op -> Int -> Int -> Bool 
-  valid Add _ _ = True
-  valid Sub x y = x > y
-  valid Mul _ _ = True
-  valid Div x y = x `mod` y == 0
-  
-  apply :: Op -> Int -> Int -> Int
-  apply Add x y = x + y
-  apply Sub x y = x - y
-  apply Mul x y = x * y
-  apply Div x y = x `div` y
-  \end{lstlisting}
-\end{frame}
+  insB :: Ord a => a -> Black a b -> Red Black a b
+  insB x E = R(E,x,E)
+  insB x t@(B(a,y,b))
+    | x<y = balanceL (insR x a) y b
+    | x>y = balanceR a y (insR x b)
+    | otherwise = C t *' \pause '*
 
-\begin{frame}[fragile]
- \frametitle{}
- \begin{lstlisting}
-  data Expr = Val Int | App Op Expr Expr
-  values :: Expr -> [Int]
-  values (Val n) = [n]
-  values (App _ l r) = valu
+  insR :: Ord a => a -> Red Black a b -> RR a b
+  insR x (C t) = C(insB x t)
+  insR x t@(R(a,y,b))
+    | x<y = R(insB x a,y,C b)
+    | x>y = R(C a,y,insB x b)
+    | otherwise = C t 
  \end{lstlisting}
 \end{frame}
+
+
+\begin{frame}[fragile]
+ \begin{lstlisting}
+  tickB :: Black a b -> Black a c
+  tickB E = E
+  tickB (B(a,x,b)) = B(tickR a,x,tickR b) *' \pause '*
+
+  tickR :: Red Black a b -> Red Black a c
+  tickR (C t) = C(tickB t)
+  tickR (R(a,x,b)) = R(tickB a,x,tickB b) *' \pause '*
+  
+  inc :: Black a b -> Black a [b]
+  inc = tickB
+ \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{lstlisting}
+  ghci> (E :: Black a [[[b]]])
+  E
+  it :: Black a [[[b]]] *' \pause '*
+  
+  newtype Tree a = forall b . ENC (Black a b) *' \pause '*
+  
+  empty :: Tree a
+  empty = ENC E *' \pause '*
+
+  insert :: Ord a => a -> Tree a -> Tree a
+  insert x (ENC t) = ENC(blacken (insB x t)) *' \pause '*
+
+  blacken :: Red Black a b -> Black a b
+  blacken (C u) = u
+  blacken (R(a,x,b)) = B(C(inc a),x,C(inc b)) 
+ \end{lstlisting}
+\end{frame}
+
+\subsection{Existential types}
+
+\begin{frame}[fragile]
+ \begin{lstlisting}
+  class Renderable a where
+    boundingSphere :: a -> Sphere
+    hit :: a -> [Fragment] -- returns the "fragments" of all hits with ray *' \pause '*
+    
+  hits :: Renderable a => [a] -> [Fragment]
+  hits xs = sortByDistance $ concatMap hit xs *' \pause '*
+  
+  data AnyRenderable = forall a. Renderable a => AnyRenderable a *' \pause '*
+ 
+  instance Renderable AnyRenderable where
+      boundingSphere (AnyRenderable a) = boundingSphere a
+      hit (AnyRenderable a) = hit a *' \pause '*
+      
+  [ AnyRenderable x
+  , AnyRenderable y
+  , AnyRenderable z ]
+ \end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+
+
+
+
+
+
+
+% \section{Countdown problem}
+% 
+% \subsection{Definition}
+% 
+% \begin{frame}
+%  \frametitle{Problem definition}
+%  \begin{itemize}
+%   \item based on British TV quiz
+%   \item Given list of source numbers and a single target number, attempt to construct an arithmetic expression using each of the source numbers at most once, and such that the result of evaluating the expression is the target number.
+%   \item numbers (source, target and intermediate results) are non-zero naturals
+%   \item operations are additions, subtraction, multiplication and division
+%  \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}
+%  \frametitle{Example}
+%  \begin{itemize}
+%   \item Source numbers: [1, 3, 7, 10, 25, 50]
+%   \item For target number 765, there is a expression which solves it: $(1 + 50)*(25 - 10)$
+%   \item There are even 780 solutions for this target number
+%   \item But, for target number 781 there are no solutions
+%  \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+%  \frametitle{}
+%  \begin{lstlisting}
+%   data Op = Add | Sub | Mul | Div
+%   
+%   valid :: Op -> Int -> Int -> Bool 
+%   valid Add _ _ = True
+%   valid Sub x y = x > y
+%   valid Mul _ _ = True
+%   valid Div x y = x `mod` y == 0
+%   
+%   apply :: Op -> Int -> Int -> Int
+%   apply Add x y = x + y
+%   apply Sub x y = x - y
+%   apply Mul x y = x * y
+%   apply Div x y = x `div` y
+%   \end{lstlisting}
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+%  \frametitle{}
+%  \begin{lstlisting}
+%   data Expr = Val Int | App Op Expr Expr
+%   values :: Expr -> [Int]
+%   values (Val n) = [n]
+%   values (App _ l r) = valu
+%  \end{lstlisting}
+% \end{frame}
 
 
 
@@ -574,8 +651,11 @@
  \begin{itemize}
   \item \url{https://wiki.haskell.org/Phantom_type}
   \item \url{https://wiki.haskell.org/Generalised_algebraic_datatype}
+  \item \url{https://wiki.haskell.org/Existential_type}
   \item \url{http://stackoverflow.com/questions/3071136/what-does-the-forall-keyword-in-haskell-ghc-do}
   \item \url{https://themonadreader.files.wordpress.com/2010/01/issue15.pdf}
+  \item Red-black trees with types. Stefan Kahrs, 2001.
+  \item ``Adventures in Three Monads'', Edward Z. Yang. The Monad Reader, issue 15.
  \end{itemize}
 \end{frame}
 
