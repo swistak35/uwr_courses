@@ -414,8 +414,28 @@
  \end{itemize}
 \end{frame}
 
-% \begin{frame}[fragile]
-% \end{frame}
+\begin{frame}[fragile]
+ \begin{lstlisting}
+  type Input = [String]
+  type Output = [String] *' \pause '*
+
+  handleRWS :: Request a -> RWS r Output Input a
+  handleRWS (Echo s) = tell (return s)
+  handleRWS GetLine = do
+    lines <- get
+    if null lines
+      then return Nothing
+      else do
+        put (tail lines)
+        return (Just (head lines)) *' \pause '*
+  
+  rwsCat :: RWS r Output Input ()
+  rwsCat = runPromptM handleRWS cat *' \pause '*
+  
+  simulateCat :: Input -> Output
+  simulateCat input = snd $ evalRWS rwsCat undefined input
+ \end{lstlisting}
+\end{frame}
 
 
 
@@ -423,27 +443,6 @@
     
     
     
-%   type Input = [String]
-%   type Output = [String]
-% 
-%   handleRWS :: Request a -> RWS r Output Input a
-%   handleRWS (Echo s) = tell (return s)
-%   handleRWS GetLine = do
-%     lines <- get
-%     if null lines
-%       then return Nothing
-%       else do
-% 	put (tail lines)
-% 	return (Just (head lines))
-%   
-%   rwsCat :: RWS r Output Input ()
-%   rwsCat = runPromptM handleRWS cat
-%   
-%   simulateCat :: Input -> Output
-%   simulateCat input = snd $ evalRWS rwsCat undefined input
-%  \end{lstlisting}
-% \end{frame}
-
 
 
 
