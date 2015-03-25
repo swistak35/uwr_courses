@@ -38,3 +38,38 @@ liftStringFn fn (FormData str) = FormData (fn str)
 
 
 
+EXISTENTIAL TYPES
+
+Workers:
+
+-- it's impossible for function to \textbf{demand} specific Buffer
+So user can't write function which works ONLY for MemoryBuffer
+
+-- you're more limited in what you can do with Worker like that
+So you always has to assume that this is "some buffer", and the only things you can do with it are functions declared in Buffer class
+(or functions which work for any datatype, for example "id")
+
+* Mention "OOP" dynamic dispatch
+
+
+
+
+:: Exception e	 
+=> (e -> Maybe b)	
+Predicate to select exceptions
+-> IO a	
+Computation to run
+-> (b -> IO a)	
+Handler
+-> IO a	 
+
+guard :: MonadPlus m => Bool -> m ()
+guard b is return () if b is True, and mzero if b is False.
+
+isEOFError :: IOError -> Bool
+An error indicating that an IO operation failed because the end of file has been reached.
+
+(<$>) :: Functor f => (a -> b) -> f a -> f b
+An infix synonym for fmap.
+
+getLine :: IO String

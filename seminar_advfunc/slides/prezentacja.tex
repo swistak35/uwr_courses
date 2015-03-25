@@ -173,7 +173,276 @@
   \begin{itemize}
    \item \textit{An \textbf{Existential type} is a type which is using in constructors parameters which are not parameters of this type (they are not declared in left hand side of the type's definition).}
   \end{itemize}
+  \pause
+  \begin{lstlisting}
+   data Worker b x = Worker {buffer :: b, input :: x}
+  \end{lstlisting}
+  \pause
+  \begin{lstlisting}
+   data Worker x =
+     forall b. Buffer b => Worker {buffer :: b, input :: x}
+  \end{lstlisting}
+  \pause
+  \begin{lstlisting}
+   data MemoryBuffer = MemoryBuffer
+   memoryWorker = Worker MemoryBuffer (1 :: Int)
+  \end{lstlisting}
+  \pause
+  \begin{lstlisting}
+   memoryWorker :: Worker Int
+  \end{lstlisting}
+  \pause
+  \begin{itemize}
+   \item it's impossible for function to \textbf{demand} specific Buffer
+   \item you're more limited in what you can do with Worker like that
+  \end{itemize}
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Existential types}
+  \begin{lstlisting}
+   data Worker b x = Worker {buffer :: b, input :: x}
+   data Worker x =
+     forall b. Buffer b => Worker {buffer :: b, input :: x}
+   
+   data MemoryBuffer = MemoryBuffer
+   memoryWorker = Worker MemoryBuffer (1 :: Int)
+   memoryWorker :: Worker Int
+  \end{lstlisting}
+  \pause
+  \begin{lstlisting}
+   data NetBuffer = NetBuffer
+   netWorker = Worker NetBuffer (2 :: Int)
+   netWorker :: Worker Int
+  \end{lstlisting}
+  \pause
+  \begin{lstlisting}
+   workers = [netWorker, memoryWorker]
+   workers :: [Worker Int]
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Rank-N-Types}
+ \begin{itemize}
+  \item definition ...
+ \end{itemize}
+ \pause
+ \begin{lstlisting}
+  ghci> let putInList x = [x] *' \pause '*
+  ghci> liftTup putInList (5, "Blah") # We want to achieve this!
+    ([5], ["Blah"])
+ \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Rank-N-Types}
+ \begin{lstlisting}
+  ghci> liftTup (\x -> [x]) (5, "Blah") # We want to achieve this!
+    ([5], ["Blah"]) *' \pause '*
+  
+  -- First try:
+  ghci> let liftTup liftFunc (a, b) = (liftFunc a, liftFunc b) *' \pause '*
+  ghci> liftTup (\x -> [x]) (5, "Hello")
+    No instance for (Num [Char]) arising from literal '5'
+    ... *' \pause '*
+  ghci> :t liftTup
+  liftTup :: (t -> t1) -> (t, t) -> (t1, t1) *' \pause '*
+ \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Rank-N-Types}
+ \begin{lstlisting}
+  ghci> liftTup (\x -> [x]) (5, "Blah") # We want to achieve this!
+    ([5], ["Blah"])
+  
+  -- First try:
+  ...
+  ghci> :t liftTup
+  liftTup :: (t -> t1) -> (t, t) -> (t1, t1) *' \pause '*
+  
+  -- Second try
+  -- test.hs:
+  liftTup :: (x -> f x) -> (a, b) -> (f a, f b)
+  liftTup liftFunc (t, v) = (liftFunc t, liftFunc v) *' \pause '*
+  
+  ghci> :l test.hs
+    Couldnt match expected type 'x' against inferred type 'b' 
+    ...
+ \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Rank-N-Types}
+ \begin{lstlisting}
+  ghci> liftTup (\x -> [x]) (5, "Blah") # We want to achieve this!
+    ([5], ["Blah"])
+    
+  -- Second try
+  liftTup :: (x -> f x) -> (a, b) -> (f a, f b)
+  ...
+  
+  -- Third try
+  liftTup :: (forall x. x -> f x) -> (a, b) -> (f a, f b)
+  
+  ghci> liftTup putInList (5, "Hello")
+  ([5], ["Hello"])
+ \end{lstlisting} 
+\end{frame}
+
+
+\section{Examples}
+
+\subsection{Prompt monad}
+
+\begin{frame}[fragile]
+ \frametitle{Example: Prompt monad}
+ \begin{itemize}
+  \item It uses RankNTypes and GADTs
+  \pause
+  \item It adds abstract layer above IO
+  \pause
+  \item It describes how our program want to use IO
+  \item ...but it doesn't show to the user internals of the communication
+  \pause
+  \item It's pure!
+ \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+ \begin{lstlisting}
+  class Monad m => MonadPrompt p m where
+    prompt :: p a -> m a *' \pause '*
+    
+  data Prompt p r
+  instance MonadPrompt p (Prompt p)
+  instance MonadPrompt p (PromptT p m) *' \pause '*
+  
+  runPrompt :: (forall a. p a -> a) -> Prompt p r -> r
+  runPromptM :: Monad m => (forall a. p a -> m a) -> Prompt p r -> m r
+ \end{lstlisting}
+\end{frame}
+  
+\begin{frame}[fragile]
+ \begin{lstlisting}  
+  data Request a where
+    Echo :: String -> Request ()
+    GetLine :: Request (Maybe String)
+    GetTime :: Request UTCTime *' \pause '*
+
+  handleIO :: Request a -> IO a *' \pause '*
+  handleIO (Echo s) = putStrLn s
+  handleIO GetLine = catchJust
+    (guard . isEOFError)
+    (Just <$> getLine)
+    (const (return Nothing))
+  handleIO GetTime = getCurrentTime
+ \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{lstlisting}
+  handleIO :: Request a -> IO a *' \pause '*
+  
+  cat :: Prompt Request ()
+  cat = do
+    line <- prompt GetLine
+    maybe (return ()) (\x -> prompt (Echo x) >> cat) line  *' \pause '*
+  
+  runPromptM :: Monad m =>
+     (forall a. p a -> m a) ->
+     Prompt p r ->
+     m r *' \pause '*
+  
+  runCat :: IO ()
+  runCat = runPromptM handleIO cat *' \pause '*
+ \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{itemize}
+  \item Why \texttt{runPromptM} needs to be Rank2Type function?
+ \end{itemize}
+ \begin{lstlisting}
+  data Request a where
+    Echo :: String -> Request ()
+    GetLine :: Request (Maybe String)
+    GetTime :: Request UTCTime *' \pause '*
+    
+  handleIO :: Request a -> IO a *' \pause '*
+  
+  runPromptM :: Monad m =>
+     (forall a. p a -> m a) ->
+     Prompt p r ->
+     m r
+ \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+ \begin{itemize}
+  \item What we achieved?
+  \pause
+  \item Why is that cool?
+ \end{itemize}
+\end{frame}
+
+\begin{frame}
+ \frametitle{RWS monad}
+ \begin{itemize}
+  \item RWS (Reader, Writer, State) Monad
+  \pause
+  \item Reader: Something, from which we can read data (for example, configuration datatype)
+  \pause
+  \begin{itemize}
+   \item We won't use Reader monad from RWS.
+  \end{itemize}
+  \pause
+  \item Writer: Something, to which we can write data (for example, logging to file)
+  \pause
+  \begin{itemize}
+   \item \texttt{tell} function is writing to the Writer monad
+  \end{itemize}
+  \pause
+  \item State we already know.
+  \pause
+  \begin{itemize}
+   \item \texttt{get} gets the state
+   \item \texttt{put} sets the state
+  \end{itemize}
+ \end{itemize}
+\end{frame}
+
+% \begin{frame}[fragile]
+% \end{frame}
+
+
+
+
+    
+    
+    
+%   type Input = [String]
+%   type Output = [String]
+% 
+%   handleRWS :: Request a -> RWS r Output Input a
+%   handleRWS (Echo s) = tell (return s)
+%   handleRWS GetLine = do
+%     lines <- get
+%     if null lines
+%       then return Nothing
+%       else do
+% 	put (tail lines)
+% 	return (Just (head lines))
+%   
+%   rwsCat :: RWS r Output Input ()
+%   rwsCat = runPromptM handleRWS cat
+%   
+%   simulateCat :: Input -> Output
+%   simulateCat input = snd $ evalRWS rwsCat undefined input
+%  \end{lstlisting}
+% \end{frame}
 
 
 
@@ -252,6 +521,8 @@
  \begin{itemize}
   \item \url{https://wiki.haskell.org/Phantom_type}
   \item \url{https://wiki.haskell.org/Generalised_algebraic_datatype}
+  \item \url{http://stackoverflow.com/questions/3071136/what-does-the-forall-keyword-in-haskell-ghc-do}
+  \item \url{https://themonadreader.files.wordpress.com/2010/01/issue15.pdf}
  \end{itemize}
 \end{frame}
 
