@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#define ERROR(str) { fprintf(stderr, "%s: %s\n", str, strerror(errno)); exit(1); }
+
 int Socket(int family, int type, int protocol);
 void Bind(int fd, const struct sockaddr_in *sa, socklen_t salen);
 ssize_t Recvfrom(int fd, void *ptr, size_t nbytes, int flags, struct sockaddr_in *sa, socklen_t *salenptr);
