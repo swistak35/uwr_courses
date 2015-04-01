@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include "sockwrap.h"
 
-#define ERROR(str) { fprintf(stderr, "%s: %s\n", str, strerror(errno)); exit(1); }
-
 int Socket(int family, int type, int protocol)
 {
     int	n;
