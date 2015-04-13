@@ -1,7 +1,7 @@
 zero_list([]).
 zero_list([0|T]) :- zero_list(T).
 
-jars(Caps1, Target, Result) :-
+jars(Caps, Target, Result) :-
   length(Caps, Count),
   length(InitialState, Count),
   zero_list(InitialState),
