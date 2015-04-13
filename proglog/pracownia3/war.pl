@@ -1,15 +1,15 @@
 war(L1, L2, N) :-
 	war(L1, L2, 0, N, [[L1,L2]]).
 
-war([], L, N, N, Sts).
-war(L, [], N, N, Sts).
+war([], _L, N, N, _Sts).
+war(_L, [], N, N, _Sts).
 war(L1, L2, N, R, Sts) :-
 	duel(L1, L2, X, [], NL1, NL2),
 	\+ member([NL1, NL2], Sts),
 	N1 is N + X,
 	war(NL1, NL2, N1, R, [[NL1,NL2]|Sts]).
-war(L1, L2, N, inf, Sts) :-
-	duel(L1, L2, X, [], NL1, NL2),
+war(L1, L2, _N, inf, Sts) :-
+	duel(L1, L2, _X, [], NL1, NL2),
 	member([NL1, NL2], Sts).
 
 duel(L, [], 0, Acc, L1, []) :-

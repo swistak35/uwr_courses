@@ -14,19 +14,19 @@ findBetterSolution(Caps, Target, States, Limit, Result) :-
   !,
   findBetterSolution(Caps, Target, States, BetterResult, Result).
 findBetterSolution(Caps, Target, States, Limit, Limit) :-
-  \+ jars_solution(Caps, Target, States, 0, Result, Limit).
+  \+ jars_solution(Caps, Target, States, 0, _Result, Limit).
 
 jars_solution(_Caps, _Target, _States, Steps, _Result, Lim) :-
   Steps >= Lim,
   !,
   fail.
 
-jars_solution(_Caps, _Target, [CurrentState|PreviousStates], _Steps, _Result, Lim) :-
+jars_solution(_Caps, _Target, [CurrentState|PreviousStates], _Steps, _Result, _Lim) :-
   member(CurrentState, PreviousStates),
   !,
   fail.
 
-jars_solution(_Caps, Target, [CurrentState|_TailStates], Result, Result, Lim) :-
+jars_solution(_Caps, Target, [CurrentState|_TailStates], Result, Result, _Lim) :-
   member(Target, CurrentState),
   !. % Jesli juz znalezlismy, to nastepne na pewno beda dluzsze.
 
