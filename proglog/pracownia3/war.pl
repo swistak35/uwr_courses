@@ -1,19 +1,18 @@
 war(L1, L2, N) :-
-	war(L1, L2, 0, 0, N, L1, L2).
+	war(L1, L2, 0, N, L1, L2).
 
-war(_L1, _L2, _N, M, M, [], _K2).
-war(_L1, _L2, _N, M, M, _K1, []).
+war(_L1, _L2, M, M, [], _K2).
+war(_L1, _L2, M, M, _K1, []).
 
-war(L1, L2, _N, M, inf, L1, L2) :-
+war(L1, L2, M, inf, L1, L2) :-
 	M > 0,
 	!.
-war(L1, L2, N, M, R, K1, K2) :-
-	duel(L1, L2, X, [], NL1, NL2),
+war(L1, L2, M, R, K1, K2) :-
+	duel(L1, L2, _X, [], NL1, NL2),
 	duel(K1, K2, Y1, [], NK1, NK2),
 	duel(NK1, NK2, Y2, [], NNK1, NNK2),
-	N1 is N + X,
 	M1 is M + Y1 + Y2,
-	war(NL1, NL2, N1, M1, R, NNK1, NNK2).
+	war(NL1, NL2, M1, R, NNK1, NNK2).
 
 duel(L, [], 0, Acc, L1, []) :-
 	append(L, Acc, L1).
