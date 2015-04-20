@@ -5,73 +5,38 @@ jars(Caps, Target, Result) :-
   length(Caps, Count),
   length(InitialState, Count),
   zero_list(InitialState),
-  findall(SomeResult, jars_solution(Caps, Target, [InitialState], 0, SomeResult, 1000), Results),
-  min_list(Results, Result).
-  % !,
-  % findBetterSolution(Caps, Target, [InitialState], SomeResult, Result).
+  jars_solution(Caps, Target, [InitialState], [], 0, Result).
 
-% findBetterSolution(Caps, Target, States, Limit, Result) :-
-  % jars_solution(Caps, Target, States, 0, BetterResult, Limit),
-  % !,
-  % findBetterSolution(Caps, Target, States, BetterResult, Result).
-% findBetterSolution(Caps, Target, States, Limit, Limit).
-% findBetterSolution(Caps, Target, States, Limit, Limit) :-
-%   \+ jars_solution(Caps, Target, States, 0, _Result, Limit).
+jars_solution(Caps, Target, States, OldStates, Result, Result) :-
+  append(States, FStates),
+  member(Target, FStates).
 
-% jars_solution(_Caps, _Target, _States, Steps, _Result, Lim) :-
-%   Steps >= Lim,
-%   !,
-%   fail.
+jars_solution(Caps, Target, [], OldStates, Count, Result) :-
+  !,
+  fail.
 
-% jars_solution(_Caps, _Target, [CurrentState|PreviousStates], Steps, _Result, Lim) :-
-%   (Steps >= Lim; member(CurrentState, PreviousStates)),
-%   !,
-%   fail.
+jars_solution(Caps, Target, States, OldStates, Count, Result) :-
+  findallnewstates(Caps, States, AllNewStates),
+  append(AllNewStates, NewStates),
+  sort(NewStates, UniqNewStates),
+  succ(Count, NewCount),
+  append(OldStates, States, OldStates2),
+  sort(OldStates2, OldStates3),
+  remove_dups(UniqNewStates, OldStates3, UniqNewStates2),
+  jars_solution(Caps, Target, UniqNewStates2, OldStates3, NewCount, Result).
 
-jars_solution(Caps, Target, [CurrentState|TailStates], Result, Result, _Lim) :-
-  member(Target, CurrentState).
-  % add_new_solution(Caps, Target, TailStates, Result),
-  % !. % Jesli juz znalezlismy, to nastepne na pewno beda dluzsze.
+findallnewstates(_Caps, [], []).
+findallnewstates(Caps, [H|T], [NewStates|TNewStates]) :-
+  findall(State2, new_step(Caps, H, State2), NewStates),
+  findallnewstates(Caps, T, TNewStates).
 
-:- dynamic quick_solution / 4.
-
-jars_solution(Caps, Target, [CurrentState|TailStates], Steps, Result, _Lim) :-
-  quick_solution(Caps, Target, CurrentState, Diff),
-  Result is Steps + Diff.
-
-jars_solution(Caps, Target, [CurrentState|T], Steps, BestResult, Lim) :-
-  \+ member(Target, CurrentState),
-  new_step(Caps, CurrentState, NewState),
-  NSteps is Steps + 1,
-  findall(SomeResult, jars_solution(Caps, Target, [NewState, CurrentState|T], NSteps, SomeResult, Lim), Results),
-  min_list(Results, BestResult),
-  Diff is BestResult - Steps,
-  asserta((quick_solution(Caps, Target, CurrentState, Diff))).
-
-% add_new_solution(Caps, Target, [HState|TStates], Result) :-
-%   add_solution_for(Caps, Target, HState, Result),
-%   add_new_solution(Caps, Target, TStates, Result).
-
-% add_solution_for(Caps, Target, HState, Result) :-
-%   old_solution(Caps, Target, HState, OldResult),
-%   Result < OldResult,
-%   asserta((old_solution(Caps, Target, HState, Result) :- !.)).
-% add_solution_for(Caps, Target, HState, Result) :-
-%   old_solution(Caps, Target, HState, OldResult),
-%   Result >= OldResult.
-
-  
-
-% :- dynamic old_step / 3.
-
-% old_step(Caps, CurrentState, NewState) :- fail.
-
-% step(Caps, CurrentState, NewState) :-
-  % old_step(Caps, CurrentState, NewState).
-% step(Caps, CurrentState, NewState) :-
-%   new_step(Caps, CurrentState, NewState),
-  % asserta(old_step(Caps, CurrentState, NewState)).
-
+remove_dups([], _, []).
+remove_dups([H|T], OldStates, T1) :-
+  member(H, OldStates),
+  remove_dups(T, OldStates, T1).
+remove_dups([H|T], OldStates, [H|T1]) :-
+  \+ member(H, OldStates),
+  remove_dups(T, OldStates, T1).
 
 new_step(Caps, CurrentState, NewState) :-
   make_full(Caps, CurrentState, NewState).
