@@ -753,3 +753,5 @@ eqmsets(A,B) :-
 :- write(' Uruchamianie: evaluate(lista nazw rozwiazanych zadan)'),nl.
 :- write('  np: evaluate([jars, war, sat, game])'),nl,nl.
 :- write('  TODO: simp2'),nl.
+
+% :- evaluate([jars]).

@@ -5,16 +5,15 @@ jars(Caps, Target, Result) :-
   length(Caps, Count),
   length(InitialState, Count),
   zero_list(InitialState),
-  findall(SomeResult, jars_solution(Caps, Target, [InitialState], 0, SomeResult, 1000), Results),
-  min_list(Results, Result).
+  jars_solution(Caps, Target, [InitialState], 0, SomeResult, 1000),
   % !,
-  % findBetterSolution(Caps, Target, [InitialState], SomeResult, Result).
+  findBetterSolution(Caps, Target, [InitialState], SomeResult, Result).
 
-% findBetterSolution(Caps, Target, States, Limit, Result) :-
-  % jars_solution(Caps, Target, States, 0, BetterResult, Limit),
+findBetterSolution(Caps, Target, States, Limit, Result) :-
+  jars_solution(Caps, Target, States, 0, BetterResult, Limit),
   % !,
-  % findBetterSolution(Caps, Target, States, BetterResult, Result).
-% findBetterSolution(Caps, Target, States, Limit, Limit).
+  findBetterSolution(Caps, Target, States, BetterResult, Result).
+findBetterSolution(Caps, Target, States, Limit, Limit).
 % findBetterSolution(Caps, Target, States, Limit, Limit) :-
 %   \+ jars_solution(Caps, Target, States, 0, _Result, Limit).
 
@@ -23,30 +22,21 @@ jars(Caps, Target, Result) :-
 %   !,
 %   fail.
 
-% jars_solution(_Caps, _Target, [CurrentState|PreviousStates], Steps, _Result, Lim) :-
-%   (Steps >= Lim; member(CurrentState, PreviousStates)),
-%   !,
-%   fail.
+jars_solution(_Caps, _Target, [CurrentState|PreviousStates], Steps, _Result, Lim) :-
+  (Steps >= Lim; member(CurrentState, PreviousStates)),
+  !,
+  fail.
 
 jars_solution(Caps, Target, [CurrentState|TailStates], Result, Result, _Lim) :-
   member(Target, CurrentState).
   % add_new_solution(Caps, Target, TailStates, Result),
   % !. % Jesli juz znalezlismy, to nastepne na pewno beda dluzsze.
 
-:- dynamic quick_solution / 4.
-
-jars_solution(Caps, Target, [CurrentState|TailStates], Steps, Result, _Lim) :-
-  quick_solution(Caps, Target, CurrentState, Diff),
-  Result is Steps + Diff.
-
-jars_solution(Caps, Target, [CurrentState|T], Steps, BestResult, Lim) :-
+jars_solution(Caps, Target, [CurrentState|T], Steps, Result, Lim) :-
   \+ member(Target, CurrentState),
   new_step(Caps, CurrentState, NewState),
   NSteps is Steps + 1,
-  findall(SomeResult, jars_solution(Caps, Target, [NewState, CurrentState|T], NSteps, SomeResult, Lim), Results),
-  min_list(Results, BestResult),
-  Diff is BestResult - Steps,
-  asserta((quick_solution(Caps, Target, CurrentState, Diff))).
+  jars_solution(Caps, Target, [NewState, CurrentState|T], NSteps, Result, Lim).
 
 % add_new_solution(Caps, Target, [HState|TStates], Result) :-
 %   add_solution_for(Caps, Target, HState, Result),
@@ -61,6 +51,17 @@ jars_solution(Caps, Target, [CurrentState|T], Steps, BestResult, Lim) :-
 %   Result >= OldResult.
 
   
+
+
+% jars_solution(Caps, Target, [CurrentState|T], Steps, Result, Lim) :-
+%   make_full(Caps, CurrentState, NewState),
+%   NSteps is Steps + 1,
+%   jars_solution(Caps, Target, [NewState, CurrentState|T], NSteps, Result, Lim).
+
+% jars_solution(Caps, Target, [CurrentState|T], Steps, Result, Lim) :-
+%   make_empty(Caps, CurrentState, NewState),
+%   NSteps is Steps + 1,
+%   jars_solution(Caps, Target, [NewState, CurrentState|T], NSteps, Result, Lim).
 
 % :- dynamic old_step / 3.
 
@@ -118,3 +119,6 @@ move(Caps, CurrentState, NewState) :-
   move2(ValFrom, ValTo, CapTo, ValFrom2, ValTo2),
   set_value(JarFrom, CurrentState, ValFrom2, CurrentState2),
   set_value(JarTo, CurrentState2, ValTo2, NewState).
+
+
+
