@@ -113,4 +113,12 @@ display_rt(rt4)
 rt5 = update_table(rt4)
 display_rt(rt5)
 
-puts (Marshal.dump(rt4) == Marshal.dump(rt5))
+@links.push(["a", "d"])
+rt5["a"]["d"] = [1, "-"]
+rt5["d"]["a"] = [1, "-"]
+
+rt6 = update_table(rt5)
+display_rt(rt6)
+
+rt7 = update_table(rt6)
+display_rt(rt7)
