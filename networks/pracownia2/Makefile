@@ -4,8 +4,8 @@ CFLAGSLIBS=-std=gnu99 -g
 	
 %.c: %.h
 
-pobieraczka.out: pobieraczka.c sockwrap.c
-	$(CC) $(CFLAGS) $(CFLAGSLIBS) sockwrap.c pobieraczka.c -o $@
+client-udp.out: client-udp.c sockwrap.c
+	$(CC) $(CFLAGS) $(CFLAGSLIBS) sockwrap.c client-udp.c -o $@
 
 clean:
 	rm -f *.out
@@ -18,7 +18,4 @@ check:
 	xxd test2.bin > test2.bin.hex
 	diff test.bin.hex test2.bin.hex
 
-all: pobieraczka.out
-
-run: pobieraczka.out
-	./pobieraczka.out
+all: client-udp.out
