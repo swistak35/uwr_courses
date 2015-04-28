@@ -5,11 +5,34 @@
 #include "sockwrap.h"
 #include <stdbool.h>
 
-#define SERVER_HOST "aisd.ii.uni.wroc.pl"
+#define SERVER_IP "156.17.4.30"
 #define MAXMSG 1800
 #define PACKETS_EACH_TURN 20
 #define PACKETS_REDUNDANCY 2
 char buffer[MAXMSG+1];
+
+void reset_timeout(struct timeval * timeout) {
+  timeout->tv_sec = 1;
+  timeout->tv_usec = 0;
+}
+
+void prepare_connection_data(struct sockaddr_in * server_address, int server_port) {
+  bzero(server_address, sizeof(*server_address));
+  server_address->sin_family = AF_INET;
+  server_address->sin_port   = htons(server_port);
+  inet_pton(AF_INET, SERVER_IP, &server_address->sin_addr);
+}
+
+void prepare_message(char buffer[], int msg_offset, int msg_size) {
+  sprintf(buffer, "GET %d %d\n", msg_offset, msg_size);
+  printf("Wysylamy %s", buffer);
+}
+
+void send_packets(int sockfd, char buffer[], struct sockaddr_in * server_address, int count) {
+  for (int j = 0; j < count; j++) {
+    Sendto(sockfd, buffer, strlen(buffer), 0, server_address, sizeof(*server_address));
+  }
+}
 
 int main(int argc, char ** argv) {
   if (argc != 4) {
@@ -17,31 +40,30 @@ int main(int argc, char ** argv) {
     exit(1);
   }
 
-  int server_port = atoi(argv[1]);
+  int msg_chunk_size = 1000;
+
   int download_size = atoi(argv[3]);
-  int chunks = (download_size / 1000);
-  if (download_size % 1000 != 0) {
+  int chunks = (download_size / msg_chunk_size);
+  if (download_size % msg_chunk_size != 0) {
     chunks++;
   }
-  int sent[chunks];
+  int last_chunk_size = (download_size % msg_chunk_size == 0) ? msg_chunk_size : (download_size % msg_chunk_size);
+  int received[chunks];
   for (int i = 0; i < chunks; i++) {
-    sent[chunks] = 0;
+    received[chunks] = false;
   }
-  char data_tab[chunks][1000];
+  char data_tab[chunks][msg_chunk_size];
 
 
   int sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
 
   // Struktura opisująca IP i port serwera
+  int server_port = atoi(argv[1]);
   struct sockaddr_in server_address;
-  bzero (&server_address, sizeof(server_address));
-  server_address.sin_family = AF_INET;
-  server_address.sin_port = htons(server_port);
-  inet_pton(AF_INET, "156.17.4.30", &server_address.sin_addr);
+  prepare_connection_data(&server_address, server_port);
 
   // Wysyłanie jakiegos napisu do serwera
   char sending_buffer[MAXMSG];
-  char number_buffer[32];
 
   int packets_each_turn;
   if (PACKETS_EACH_TURN > chunks) {
@@ -51,53 +73,26 @@ int main(int argc, char ** argv) {
   }
   printf("Packets each turn: %d\n", packets_each_turn);
 
-  struct timeval timeout;
-  timeout.tv_sec = 1;
-  timeout.tv_usec = 0;
 
   char receiving_buffer[MAXMSG];
 
-  /* int it = 1; */
+  int chunks_remaining = chunks;
   int current_chunk = 0;
-  while (true) {
-    bool should_we_break = true;
+  while (chunks_remaining > 0) {
+    int packets_to_send = packets_each_turn;
+    packets_to_send %= chunks_remaining;
 
-    for (int j = 0; j < chunks; j++) {
-      if (sent[j] >= 0) {
-	should_we_break = false;
-	break;
+    while (packets_to_send > 0) {
+      if (!received[current_chunk]) {
+	int msg_offset = current_chunk * msg_chunk_size;
+	int msg_size = (current_chunk == chunks - 1) ? (download_size % 1000) : 1000;
+	prepare_message(sending_buffer, msg_offset, msg_size);
+
+	send_packets(sockfd, &sending_buffer, &server_address, PACKETS_REDUNDANCY);
+
+	packets_to_send--;
       }
-    }
-    printf("We should break: %d\n", should_we_break);
-    if (should_we_break) {
-      break;
-    }
 
-    int to_send = packets_each_turn;
-    while (to_send > 0) {
-      if (sent[current_chunk] >= 0) {
-	strcpy(sending_buffer, "GET ");
-	sprintf(number_buffer, "%d ", current_chunk * 1000);
-	strcat(sending_buffer, number_buffer);
-	if (current_chunk == chunks - 1) {
-	  int last_chunk = download_size % 1000;
-	  sprintf(number_buffer, "%d", last_chunk);
-	  strcat(sending_buffer, number_buffer);
-	} else {
-	  strcat(sending_buffer, "1000");
-	}
-
-	/* strcpy(sending_buffer, "GET 0 1000\n"); */
-	printf("Wysylamy '%s'\n", sending_buffer);
-
-	strcat(sending_buffer, "\n");
-
-	for (int j = 0; j < PACKETS_REDUNDANCY; j++) {
-	  Sendto(sockfd, sending_buffer, strlen(sending_buffer), 0, &server_address, sizeof(server_address));
-	}
-	sent[current_chunk]++;
-	to_send--;
-      }
       current_chunk++;
       current_chunk %= chunks;
     }
@@ -110,8 +105,8 @@ int main(int argc, char ** argv) {
 
     bool select_finished = false;
     int got_packets = 0;
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
+    struct timeval timeout;
+    reset_timeout(&timeout);
 
     while (!select_finished && (got_packets < 10)) {
       int ready = Select(sockfd+1, &descriptors, NULL, NULL, &timeout);
@@ -126,12 +121,16 @@ int main(int argc, char ** argv) {
 	int downloaded_chunk = data_offset / 1000;
 	printf("Dostalismy dane o %d (%d, %d)\n", downloaded_chunk, data_offset, data_length);
 
-	char * newline_pos = strchr(receiving_buffer, '\n');
-	newline_pos++;
+	if (!received[downloaded_chunk]) {
+	  char * newline_pos = strchr(receiving_buffer, '\n');
+	  newline_pos++;
 
-	memcpy(data_tab[downloaded_chunk], newline_pos, data_length);
+	  memcpy(data_tab[downloaded_chunk], newline_pos, data_length);
 
-	sent[downloaded_chunk] = -1;
+	  received[downloaded_chunk] = true;
+	  chunks_remaining--;
+	}
+
 	got_packets++;
       } else {
 	select_finished = true;
@@ -139,10 +138,11 @@ int main(int argc, char ** argv) {
     }
   }
 
+  // Saving to file
   FILE * target_file;
-  target_file = fopen("test.bin", "wb");
+  target_file = fopen(argv[2], "wb");
 
-  fwrite(data_tab, 1000, chunks - 1, target_file);
+  fwrite(data_tab, msg_chunk_size, chunks - 1, target_file);
 
   if (download_size % 1000 == 0) {
     fwrite(data_tab[chunks-1], 1000, 1, target_file);
