@@ -11,6 +11,11 @@ clean:
 	rm -f *.out
 	rm -f *.light
 
+check:
+	xxd test.bin > test.bin.hex
+	xxd test2.bin > test2.bin.hex
+	diff test.bin.hex test2.bin.hex
+
 all: pobieraczka.out
 
 run: pobieraczka.out

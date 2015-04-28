@@ -59,11 +59,20 @@ void reset_timeout(struct timeval * timeout) {
   timeout->tv_usec = MILLISECONDS_TIMEOUT * 1000;
 }
 
-void prepare_connection_data(struct sockaddr_in * server_address, int server_port) {
-  bzero(server_address, sizeof(*server_address));
-  server_address->sin_family = AF_INET;
-  server_address->sin_port   = htons(server_port);
-  inet_pton(AF_INET, SERVER_IP, &server_address->sin_addr);
+int connect_socket(struct sockaddr_in * srv_addr, int server_port) {
+  bzero(srv_addr, sizeof(*srv_addr));
+  srv_addr->sin_family = AF_INET;
+  srv_addr->sin_port   = htons(server_port);
+  inet_pton(AF_INET, SERVER_IP, &srv_addr->sin_addr);
+
+  int sockfd = Socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  Connect(sockfd, srv_addr, sizeof(*srv_addr));
+
+  /* bzero(cli_addr, sizeof(*cli_addr)); */
+  /* socklen_t slen = sizeof(*cli_addr); */
+  /* Getsockname(sockfd, cli_addr, &slen); */
+
+  return sockfd;
 }
 
 void prepare_message(char buffer[], int msg_offset, int msg_size) {
@@ -95,13 +104,11 @@ int main(int argc, char ** argv) {
   }
   char data_tab[chunks][MSG_CHUNK_SIZE];
 
-
-  int sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
-
   // Struktura opisująca IP i port serwera
   int server_port = atoi(argv[1]);
   struct sockaddr_in server_address;
-  prepare_connection_data(&server_address, server_port);
+  int sockfd = connect_socket(&server_address, server_port);
+
 
   // Bufory
   char sending_buffer[MAXMSG];
@@ -111,13 +118,13 @@ int main(int argc, char ** argv) {
   int current_chunk = 0;
   int got_packets_bound = 1;
   while (chunks_remaining > 0) {
-    printf("Remaining: %d\n", chunks_remaining);
+    printf("Remaining: %d/%d\n", chunks_remaining, chunks);
     int packets_to_send = upper_bound(PACKETS_EACH_TURN, chunks_remaining);
 
     while (packets_to_send > 0) {
       if (!received[current_chunk]) {
 	int msg_offset = current_chunk * MSG_CHUNK_SIZE;
-	int msg_size = (current_chunk == chunks - 1) ? (download_size % MSG_CHUNK_SIZE) : MSG_CHUNK_SIZE;
+	int msg_size = (current_chunk == chunks - 1) ? last_chunk_size : MSG_CHUNK_SIZE;
 	prepare_message(sending_buffer, msg_offset, msg_size);
 
 	send_packets(sockfd, sending_buffer, &server_address, PACKETS_REDUNDANCY);
@@ -151,6 +158,7 @@ int main(int argc, char ** argv) {
 
 	downloaded_chunk = data_offset / MSG_CHUNK_SIZE;
 	dprintf("Dostalismy dane o %d (%d, %d)\n", downloaded_chunk, data_offset, data_length);
+	dprintf("%s", receiving_buffer);
 
 	if (!received[downloaded_chunk]) {
 	  copy_message(receiving_buffer, data_tab, downloaded_chunk, data_length);

@@ -46,3 +46,15 @@ int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	ERROR ("select error");
     return n;
 }
+
+void Connect(int fd, const struct sockaddr_in *sa, socklen_t salen)
+{
+    if (connect(fd, (struct sockaddr*)sa, salen) < 0)
+	ERROR ("connect error");
+}
+
+void Getsockname(int fd, const struct sockaddr_in *sa, socklen_t * salen)
+{
+    if (getsockname(fd, (struct sockaddr*)sa, salen))
+	ERROR ("getsockname error");
+}
