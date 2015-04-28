@@ -11,6 +11,8 @@ clean:
 	rm -f *.out
 	rm -f *.light
 
+distclean: clean
+
 check:
 	xxd test.bin > test.bin.hex
 	xxd test2.bin > test2.bin.hex
