@@ -23,7 +23,7 @@ struct http_request {
   char http_version;
   char param_host[64];
   char param_connection;
-}
+};
 
 void InitBuffer() { buffer_len = buffer_cnt = 0; }
 
@@ -79,6 +79,7 @@ int ReadLine (int fd, char* buff, int len, int timeout)
 }
 
 void parse_http_first_line(struct http_request * req, char recv_buffer[]) {
+  printf("Parsing first line started...\n");
   char type[16];
   char path[64];
   char version[16];
@@ -90,18 +91,30 @@ void parse_http_first_line(struct http_request * req, char recv_buffer[]) {
     req->http_version = 1;
   }
   strcpy(req->path, path);
+  printf("Parsing first line finished...\n");
 }
 
-/* void parse_http_other_line(struct http_request * req, char recv_buffer[]) { */
-/* } */
+void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
+  printf("Parsing other line started...\n");
+  char param_name[64];
+  char param_value[64];
+  sscanf(recv_buffer, "%s: %s\n", param_name, param_value);
+  if (strcmp(param_name, "Host")) {
+    strcpy(req->param_host, param_value);
+  }
+  printf("Parsing other line finished...\n");
+}
 
-int main()
-{
+int main(int argc, char ** argv) {
+	if (argc != 2) {
+	  exit(1);
+	}
 	int sockfd = Socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in server_address;
 	bzero (&server_address, sizeof(server_address));
+	int server_port = atoi(argv[1]);
 	server_address.sin_family      = AF_INET;
-	server_address.sin_port        = htons(12345);
+	server_address.sin_port        = htons(server_port);
 	server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 	Bind (sockfd, &server_address, sizeof(server_address));
 	Listen (sockfd, 64);
@@ -116,7 +129,7 @@ int main()
 		printf ("New client %s:%d\n", ip_address, ntohs(client_address.sin_port));
 
 		InitBuffer();
-		int maxsize = 20;
+		int maxsize = 64;
 		char recv_buffer[maxsize+1];
 		int n;
 
@@ -130,22 +143,41 @@ int main()
 				break;
 			}
 			recv_buffer[n] = 0;
-			printf ("Chunk ->%s<- received\n", recv_buffer);
+			printf ("Chunk %d %lu ->%s<- received\n", n, sizeof(recv_buffer), recv_buffer);
+			printf("Chunnnk: '%d' '%d'\n", recv_buffer[0], recv_buffer[1]);
 
 			if (it == 0) {
 			  parse_http_first_line(&http_req, recv_buffer);
 			} else {
 			  parse_http_other_line(&http_req, recv_buffer);
 			}
+			it++;
 
+			if (strcmp(recv_buffer, "\r\n") == 0) {
+			  printf("wychodzimy!\n");
+			  break;
+			}
 			// Odsylamy to co zapisalismy do bufora do klienta.  Uwaga: powinnismy
 			// to robic podobnie jak w programie klienta, tj. wysylac dane do
 			// skutku, a nie wywolywac pojedyncza funkcje send()
-			Send (conn_sockfd, recv_buffer, n, 0);
 		}
+		char response[4096];
+		char content[2048];
+		strcpy(response, "HTTP/1.1 200 OK\nContent-Type: text/html\n\n");
+		/* char response[] = { "HTTP/1.1 200 OK\nContent-Type: text/html\n\ntrolololo" }; */
+		FILE * source_file;
+		/* char filepath[512]; */
+		/* strcpy(filepath, "strony_www/"); */
+		/* strcat(filepath, http_req.param_host); */
+		source_file = fopen("strony_www/dom1.abc.pl/index.html", "r");
+		fread(content, 2048, 1, source_file);
+		fclose(source_file);
+		strcat(response, content);
 
-		Close (conn_sockfd);
-		printf ("Disconnected\n");
+		Send(conn_sockfd, response, strlen(response), 0);
+
+		Close(conn_sockfd);
+		printf("Disconnected\n");
 	}
 }
 
