@@ -7,30 +7,320 @@
 #include <stdbool.h>
 #include "sockwrap.h"
 
-#define MIN(a,b) (a)<(b)?(a):(b)
-#define MAXLINE 100
+#define DEBUG 0
 
-// Ponizsze funkcje nadaja sie tylko do obslugi jednego gniazda naraz
-// W szczegolnosci bufor trzyma dane pochodzace z jednego gniazda
+#define dprintf(...) \
+    do { if (DEBUG) printf(__VA_ARGS__); } while (0)
+#define MAX_QUEUE 100
+
+#define MIN(a,b) (a)<(b)?(a):(b)
 
 char buffer[4096];
-int buffer_len;		// ile jest wszystkich danych w buforze
-int buffer_cnt;		// ile jest przeczytanych danych w buforze
+int buffer_len;
+int buffer_cnt;
 
+char http_status_codes[600][128] = { { 0 } };
+char http_versions[1][128] = { { 0 } };
+char http_methods[1][128] = { { 0 } };
+
+void load_data() {
+  strcpy(http_status_codes[200], "OK");
+  strcpy(http_status_codes[404], "Not Found");
+  strcpy(http_versions[0], "HTTP/1.1");
+  strcpy(http_methods[0], "GET");
+}
 
 struct http_request {
-  char type; // 0 - GET
-  char path[64];
+  char type;
   char http_version;
+  char path[64];
   char param_host[64];
   char param_connection;
+  char param_accept[64];
 };
 
-bool is_root_path_requested(struct http_request req) {
-  if (strcmp(req.path, "/") == 0) {
+struct http_response {
+  char http_version;
+  int http_status_code;
+  int file_size;
+  /* char filepath[128]; */
+  /* char param_content_type[128]; */
+  /* char param_content_length[128]; */
+};
+
+bool is_root_path_requested(struct http_request * req) {
+  if (strcmp(req->path, "/") == 0) {
     return true;
   } else {
     return false;
+  }
+}
+
+void set_status_code(struct http_response * res, int code) {
+  (void) res;
+  (void) code;
+}
+
+bool is_path_requested_unsafe(struct http_request * req) {
+  (void) req;
+  return false;
+}
+
+void build_filepath(char filepath[], char host[], char filename[]) {
+  sprintf(filepath, "strony_www/%s%s", host, filename);
+}
+
+bool prepare_http_response(struct http_request * req, struct http_response * res) {
+  bzero(res, sizeof(*res));
+
+  res->http_version = req->http_version;
+
+  if (is_path_requested_unsafe(req)) {
+    set_status_code(res, 403);
+  } else {
+    char filename[128];
+    char filepath[128];
+
+    if (is_root_path_requested(req)) {
+      strcpy(filename, "/index.html");
+      set_status_code(res, 301);
+    } else {
+      strcpy(filename, req->path);
+    }
+
+    build_filepath(filepath, req->param_host, filename);
+
+    FILE * source_file;
+    source_file = fopen(filepath, "rb");
+    if (source_file == NULL) {
+      set_status_code(res, 404);
+    } else {
+      fseek(source_file, 0, SEEK_END);
+      res->file_size = ftell(source_file);
+      fclose(source_file);
+    }
+  }
+
+  return true;
+
+    /* char response[1024*128]; */
+    /* char content[1024*127]; */
+    /* char filename[128]; */
+    /* printf("Requested filetype: `%s`\n", http_req.param_accept); */
+    /* FILE * source_file; */
+    /* char filepath[512]; */
+    /* strcpy(filepath, "strony_www/"); */
+    /* strcat(filepath, http_req.param_host); */
+    /* /1* strcat(filepath, "/"); *1/ */
+    /* strcat(filepath, filename); */
+    /* printf("Filename: %s\n", filename); */
+    /* printf("Filepath: %s\n", filepath); */
+    /* source_file = fopen(filepath, "r"); */
+
+    /* int headers_size; */
+    /* int file_size; */
+    /* if (source_file == NULL) { */
+    /*   strcat(response, "404 Not Found\n"); */
+    /* } else { */
+    /*   strcat(response, "200 OK\n"); */
+    /*   fread(content, 1024*127, 1, source_file); */
+    /*   file_size = ftell(source_file); */
+    /*   printf("File size: %d\n", file_size); */
+    /*   fclose(source_file); */
+    /* } */
+
+    /* if (strcmp(http_req.param_accept, "image/png") == 0) { */
+    /* } else { */
+    /*   char tmp[128]; */
+//      if (strcmp(http_req.param_accept, "*/*") == 0) {
+	/* sprintf(tmp, "Content-Type: %s\n", "text/html"); */
+    /*   } else { */
+	/* sprintf(tmp, "Content-Type: %s\n", http_req.param_accept); */
+    /*   } */
+    /*   strcat(response, tmp); */
+    /* } */
+    /* strcat(response, "\n"); */
+    /* headers_size = strlen(response); */
+    /* printf("Headers size: %d\n", headers_size); */
+
+    /* /1* strcat(response, content); *1/ */
+    /* memcpy(response + headers_size, content, file_size); */
+
+    /* Send(conn_sockfd, response, headers_size + file_size, 0); */
+}
+
+void InitBuffer();
+int ReadBufferedByte(int fd, char* c, struct timeval* tv);
+int ReadLine(int fd, char* buff, int len, int timeout);
+
+void parse_http_first_line(struct http_request * req, char recv_buffer[]) {
+  dprintf("Parsing first line started...\n");
+
+  char type[16];
+  char path[64];
+  char version[16];
+  sscanf(recv_buffer, "%s %s %s\n", type, path, version);
+
+  // Parse HTTP method
+  if (strcmp(type, "GET") == 0) {
+    req->type = 1;
+  }
+
+  // Parse HTTP version
+  if (strcmp(version, "HTTP/1.1") == 0) {
+    req->http_version = 1;
+  }
+
+  // Parse path
+  strcpy(req->path, path);
+
+  dprintf("Parsing first line finished...\n");
+}
+
+void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
+  dprintf("Parsing other line started...\n");
+
+  char param_name[64];
+  char param_value[64];
+  sscanf(recv_buffer, "%s %s\n", param_name, param_value);
+
+  if (strcmp(param_name, "Host:") == 0) {
+    strcpy(req->param_host, param_value);
+
+    char * colon_position = strchr(req->param_host, ':');
+    if (colon_position != NULL) {
+      printf("Znaleziono dwurkopka.\n");
+      *colon_position = '\0';
+    }
+    // jesli port inny, to mozna walnac bledem
+  }
+
+  if (strcmp(param_name, "Accept:") == 0) {
+    char * next_token = strtok(param_value, ",;");
+    strcpy(req->param_accept, next_token);
+  }
+
+  dprintf("Parsing other line finished...\n");
+}
+
+int bind_server(struct sockaddr_in * server_address, int server_port) {
+  int sockfd = Socket(AF_INET, SOCK_STREAM, 0);
+  bzero(server_address, sizeof(*server_address));
+  server_address->sin_family      = AF_INET;
+  server_address->sin_port        = htons(server_port);
+  server_address->sin_addr.s_addr = htonl(INADDR_ANY);
+  Bind(sockfd, server_address, sizeof(*server_address));
+  Listen(sockfd, MAX_QUEUE);
+  return sockfd;
+}
+
+int main(int argc, char ** argv) {
+  if (argc != 2) {
+    exit(EXIT_FAILURE);
+  }
+  load_data();
+
+  int server_port = atoi(argv[1]);
+  struct sockaddr_in server_address;
+  int sockfd = bind_server(&server_address, server_port);
+
+  while (1) {
+    struct sockaddr_in client_address;
+    socklen_t len = sizeof(client_address);
+    int conn_sockfd = Accept (sockfd, &client_address, &len);
+    char ip_address[20];
+    inet_ntop (AF_INET, &client_address.sin_addr, ip_address, sizeof(ip_address));
+    printf ("New client %s:%d\n", ip_address, ntohs(client_address.sin_port));
+
+    InitBuffer();
+    int maxsize = 64;
+    char recv_buffer[maxsize+1];
+    int n;
+
+    // Czekamy max. 7 sekund na kolejny wiersz i zapisujemy pierwsze
+    // maxsize bajtow z tego wiersza do bufora recv_buffer.
+    int it = 0;
+    struct http_request http_req;
+    while ( (n = ReadLine (conn_sockfd, recv_buffer, maxsize, 7)) ) {
+      if (n < 0) {
+	printf ("DEBUG: Readline error: %s\n", n == -1 ? strerror(errno) : "timeout");
+	break;
+      }
+      recv_buffer[n] = 0;
+      printf ("Chunk %d %lu ->%s<- received\n", n, sizeof(recv_buffer), recv_buffer);
+
+      if (it == 0) {
+	parse_http_first_line(&http_req, recv_buffer);
+      } else {
+	parse_http_other_line(&http_req, recv_buffer);
+      }
+      it++;
+
+      if (strcmp(recv_buffer, "\r\n") == 0) {
+	printf("wychodzimy!\n");
+	break;
+      }
+      // Odsylamy to co zapisalismy do bufora do klienta.  Uwaga: powinnismy
+      // to robic podobnie jak w programie klienta, tj. wysylac dane do
+      // skutku, a nie wywolywac pojedyncza funkcje send()
+    }
+    struct http_response http_res;
+    prepare_http_response(&http_req, &http_res);
+
+    char response[1024*128];
+    char content[1024*127];
+    char filename[128];
+    printf("Requested filetype: `%s`\n", http_req.param_accept);
+    strcpy(response, "HTTP/1.1 ");
+    if (is_root_path_requested(&http_req)) {
+      strcpy(filename, "/index.html");
+      // ustawic kod na 301
+    } else {
+      strcpy(filename, http_req.path);
+    }
+    FILE * source_file;
+    char filepath[512];
+    strcpy(filepath, "strony_www/");
+    strcat(filepath, http_req.param_host);
+    /* strcat(filepath, "/"); */
+    strcat(filepath, filename);
+    printf("Filename: %s\n", filename);
+    printf("Filepath: %s\n", filepath);
+    source_file = fopen(filepath, "r");
+
+    int headers_size;
+    int file_size;
+    if (source_file == NULL) {
+      strcat(response, "404 Not Found\n");
+    } else {
+      strcat(response, "200 OK\n");
+      fread(content, 1024*127, 1, source_file);
+      file_size = ftell(source_file);
+      printf("File size: %d\n", file_size);
+      fclose(source_file);
+    }
+
+    if (strcmp(http_req.param_accept, "image/png") == 0) {
+    } else {
+      char tmp[128];
+      if (strcmp(http_req.param_accept, "*/*") == 0) {
+	sprintf(tmp, "Content-Type: %s\n", "text/html");
+      } else {
+	sprintf(tmp, "Content-Type: %s\n", http_req.param_accept);
+      }
+      strcat(response, tmp);
+    }
+    strcat(response, "\n");
+    headers_size = strlen(response);
+    printf("Headers size: %d\n", headers_size);
+
+    /* strcat(response, content); */
+    memcpy(response + headers_size, content, file_size);
+
+    Send(conn_sockfd, response, headers_size + file_size, 0);
+
+    Close(conn_sockfd);
+    printf("Disconnected\n");
   }
 }
 
@@ -86,133 +376,3 @@ int ReadLine (int fd, char* buff, int len, int timeout)
 	}
 	return n;
 }
-
-void parse_http_first_line(struct http_request * req, char recv_buffer[]) {
-  printf("Parsing first line started...\n");
-  char type[16];
-  char path[64];
-  char version[16];
-  sscanf(recv_buffer, "%s %s %s\n", type, path, version);
-  if (strcmp(type, "GET") == 0) {
-    req->type = 1;
-  }
-  if (strcmp(version, "HTTP/1.1") == 0) {
-    req->http_version = 1;
-  }
-  strcpy(req->path, path);
-  printf("Parsing first line finished...\n");
-}
-
-void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
-  printf("Parsing other line started...\n");
-  char param_name[64];
-  char param_value[64];
-  sscanf(recv_buffer, "%s %s\n", param_name, param_value);
-  printf("Analiza '%s': '%s'\n", param_name, param_value);
-  if (strcmp(param_name, "Host:") == 0) {
-    strcpy(req->param_host, param_value);
-
-    char * colon_position = strchr(req->param_host, ':');
-    if (colon_position != NULL) {
-      printf("Znaleziono dwurkopka.\n");
-      *colon_position = '\0';
-    }
-  }
-  printf("Parsing other line finished...\n");
-}
-
-int main(int argc, char ** argv) {
-	if (argc != 2) {
-	  exit(1);
-	}
-	int sockfd = Socket(AF_INET, SOCK_STREAM, 0);
-	struct sockaddr_in server_address;
-	bzero (&server_address, sizeof(server_address));
-	int server_port = atoi(argv[1]);
-	server_address.sin_family      = AF_INET;
-	server_address.sin_port        = htons(server_port);
-	server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-	Bind (sockfd, &server_address, sizeof(server_address));
-	Listen (sockfd, 64);
-
-	while (1) {
-		// accept() jak poprzednio, ale wypisujemy informacje na temat klienta
-		struct sockaddr_in client_address;
-		socklen_t len = sizeof(client_address);
-		int conn_sockfd = Accept (sockfd, &client_address, &len);
-		char ip_address[20];
-		inet_ntop (AF_INET, &client_address.sin_addr, ip_address, sizeof(ip_address));
-		printf ("New client %s:%d\n", ip_address, ntohs(client_address.sin_port));
-
-		InitBuffer();
-		int maxsize = 64;
-		char recv_buffer[maxsize+1];
-		int n;
-
-		// Czekamy max. 7 sekund na kolejny wiersz i zapisujemy pierwsze
-		// maxsize bajtow z tego wiersza do bufora recv_buffer.
-		int it = 0;
-		struct http_request http_req;
-		while ( (n = ReadLine (conn_sockfd, recv_buffer, maxsize, 7)) ) {
-			if (n < 0) {
-				printf ("DEBUG: Readline error: %s\n", n == -1 ? strerror(errno) : "timeout");
-				break;
-			}
-			recv_buffer[n] = 0;
-			printf ("Chunk %d %lu ->%s<- received\n", n, sizeof(recv_buffer), recv_buffer);
-			printf("Chunnnk: '%d' '%d'\n", recv_buffer[0], recv_buffer[1]);
-
-			if (it == 0) {
-			  parse_http_first_line(&http_req, recv_buffer);
-			} else {
-			  parse_http_other_line(&http_req, recv_buffer);
-			}
-			it++;
-
-			if (strcmp(recv_buffer, "\r\n") == 0) {
-			  printf("wychodzimy!\n");
-			  break;
-			}
-			// Odsylamy to co zapisalismy do bufora do klienta.  Uwaga: powinnismy
-			// to robic podobnie jak w programie klienta, tj. wysylac dane do
-			// skutku, a nie wywolywac pojedyncza funkcje send()
-		}
-		char response[8192];
-		char content[4096];
-		char filename[128];
-		strcpy(response, "HTTP/1.1 ");
-		if (is_root_path_requested(http_req)) {
-		  strcpy(filename, "/index.html");
-		  // ustawic kod na 301
-		} else {
-		  strcpy(filename, http_req.path);
-		}
-		FILE * source_file;
-		char filepath[512];
-		strcpy(filepath, "strony_www/");
-		strcat(filepath, http_req.param_host);
-		/* strcat(filepath, "/"); */
-		strcat(filepath, filename);
-		printf("Filename: %s\n", filename);
-		printf("Filepath: %s\n", filepath);
-		source_file = fopen(filepath, "r");
-
-		if (source_file == NULL) {
-		  strcat(response, "404 Not Found\n");
-		} else {
-		  strcat(response, "200 OK\n");
-		  fread(content, 4096, 1, source_file);
-		  fclose(source_file);
-		}
-		strcat(response, "Content-Type: text/html\n");
-		strcat(response, "\n");
-
-		strcat(response, content);
-
-		Send(conn_sockfd, response, strlen(response), 0);
-
-		Close(conn_sockfd);
-		printf("Disconnected\n");
-	}
-}
-
