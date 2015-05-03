@@ -99,6 +99,8 @@ def display_rt(rt)
   end
 end
 
+
+fdsa fdsa fd+{
 display_rt(routing_table)
 
 rt2 = update_table(routing_table)
