@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
+#include <stdbool.h>
 #include "sockwrap.h"
 
 #define MIN(a,b) (a)<(b)?(a):(b)
@@ -24,6 +25,14 @@ struct http_request {
   char param_host[64];
   char param_connection;
 };
+
+bool is_root_path_requested(struct http_request req) {
+  if (strcmp(req.path, "/") == 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 void InitBuffer() { buffer_len = buffer_cnt = 0; }
 
@@ -98,9 +107,16 @@ void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
   printf("Parsing other line started...\n");
   char param_name[64];
   char param_value[64];
-  sscanf(recv_buffer, "%s: %s\n", param_name, param_value);
-  if (strcmp(param_name, "Host")) {
+  sscanf(recv_buffer, "%s %s\n", param_name, param_value);
+  printf("Analiza '%s': '%s'\n", param_name, param_value);
+  if (strcmp(param_name, "Host:") == 0) {
     strcpy(req->param_host, param_value);
+
+    char * colon_position = strchr(req->param_host, ':');
+    if (colon_position != NULL) {
+      printf("Znaleziono dwurkopka.\n");
+      *colon_position = '\0';
+    }
   }
   printf("Parsing other line finished...\n");
 }
@@ -161,17 +177,36 @@ int main(int argc, char ** argv) {
 			// to robic podobnie jak w programie klienta, tj. wysylac dane do
 			// skutku, a nie wywolywac pojedyncza funkcje send()
 		}
-		char response[4096];
-		char content[2048];
-		strcpy(response, "HTTP/1.1 200 OK\nContent-Type: text/html\n\n");
-		/* char response[] = { "HTTP/1.1 200 OK\nContent-Type: text/html\n\ntrolololo" }; */
+		char response[8192];
+		char content[4096];
+		char filename[128];
+		strcpy(response, "HTTP/1.1 ");
+		if (is_root_path_requested(http_req)) {
+		  strcpy(filename, "/index.html");
+		  // ustawic kod na 301
+		} else {
+		  strcpy(filename, http_req.path);
+		}
 		FILE * source_file;
-		/* char filepath[512]; */
-		/* strcpy(filepath, "strony_www/"); */
-		/* strcat(filepath, http_req.param_host); */
-		source_file = fopen("strony_www/dom1.abc.pl/index.html", "r");
-		fread(content, 2048, 1, source_file);
-		fclose(source_file);
+		char filepath[512];
+		strcpy(filepath, "strony_www/");
+		strcat(filepath, http_req.param_host);
+		/* strcat(filepath, "/"); */
+		strcat(filepath, filename);
+		printf("Filename: %s\n", filename);
+		printf("Filepath: %s\n", filepath);
+		source_file = fopen(filepath, "r");
+
+		if (source_file == NULL) {
+		  strcat(response, "404 Not Found\n");
+		} else {
+		  strcat(response, "200 OK\n");
+		  fread(content, 4096, 1, source_file);
+		  fclose(source_file);
+		}
+		strcat(response, "Content-Type: text/html\n");
+		strcat(response, "\n");
+
 		strcat(response, content);
 
 		Send(conn_sockfd, response, strlen(response), 0);
