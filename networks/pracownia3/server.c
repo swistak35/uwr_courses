@@ -170,10 +170,12 @@ int choose_status_code(struct http_request * req, struct http_response * res) {
   if (res->source_file == NULL) {
     return 404;
   }
+  fclose(res->source_file);
 
   if (is_path_requested_unsafe(res->filepath, req->host)) {
     return 403;
   }
+
 
   struct stat file_stat;
   stat(res->filepath, &file_stat);
@@ -188,52 +190,46 @@ int choose_status_code(struct http_request * req, struct http_response * res) {
   }
 }
 
+void set_error_filepath(char filepath[], int status_code) {
+  sprintf(filepath, "status_codes/%d.html", status_code);
+}
+
 bool prepare_http_response(struct http_request * req, struct http_response * res) {
   bzero(res, sizeof(*res));
 
-  /* char filepath[STRING_LENGTH]; */
   sprintf(res->filepath, "strony_www/%s%s", req->host, req->path);
-  /* res->source_file = fopen(res->filepath, "rb"); */
-  /* strcpy(res->filepath, filepath); */
-  /* build_filepath(filepath, req->param_host, filename); */
 
   res->status_code = choose_status_code(req, res);
   res->http_version = req->http_version;
 
   if (res->status_code == 501) {
-    return true;
+    set_error_filepath(res->filepath, res->status_code);
   } else if (res->status_code == 403) {
-    return true;
+    set_error_filepath(res->filepath, res->status_code);
   } else if (res->status_code == 404) {
-    return true;
+    set_error_filepath(res->filepath, res->status_code);
   } else if (res->status_code == 301) {
     strcpy(res->param_location, "http://");
     strcat(res->param_location, req->param_host);
     strcat(res->param_location, req->path);
-    strcat(res->param_location, "/index.html");
+    int len = strlen(res->param_location);
+    printf("Char: %c\n", res->param_location[len-1]);
+    if (res->param_location[len-1] != '/') {
+      strcat(res->param_location, "/");
+    }
+    strcat(res->param_location, "index.html");
   } else if (res->status_code == 200) {
-    fseek(res->source_file, 0, SEEK_END);
-    res->file_size = ftell(res->source_file);
-    rewind(res->source_file);
-    fclose(res->source_file);
-
-    /* char tmp[STRING_LENGTH]; */
-    /* char file_cmd[STRING_LENGTH]; */
-    /* sprintf(file_cmd, "file -b --mime-type %s", res->filepath); */
-    /* FILE * file_cmd_pipe = popen(file_cmd, "r"); */
-    /* fread(tmp, STRING_LENGTH, 1, file_cmd_pipe); */
-    /* pclose(file_cmd_pipe); */
-    /* printf("Ustalono type: `%s`", tmp); */
-    /* for (int j = 0; j < STRING_LENGTH; j++) { */
-    /*   if (tmp[j] == '\n') { */
-	/* tmp[j] = '\0'; */
-	/* break; */
-    /*   } */
-    /* } */
-    load_mime_type(res->filepath, res->param_content_type);
-    printf("Ustalono type: `%s`", res->param_content_type);
     /* strcpy(res->param_content_type, tmp); */
   }
+
+  res->source_file = fopen(res->filepath, "r");
+  fseek(res->source_file, 0, SEEK_END);
+  res->file_size = ftell(res->source_file);
+  /* rewind(res->source_file); */
+  fclose(res->source_file);
+
+  load_mime_type(res->filepath, res->param_content_type);
+  printf("Ustalono type: `%s`", res->param_content_type);
 
   /* if (res->status_code == 501) { */
   /*   return true; */
