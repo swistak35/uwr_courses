@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <sys/stat.h>
 #include "sockwrap.h"
 
 #define DEBUG 0
@@ -14,19 +15,16 @@
 #define MAX_QUEUE 100
 #define HTTP_VERSIONS_AMOUNT 1
 #define HTTP_METHODS_AMOUNT 1
-#define HTTP_TYPES_AMOUNT 4
+#define HTTP_TYPES_AMOUNT 8
 #define STRING_LENGTH 128
 
 #define MIN(a,b) (a)<(b)?(a):(b)
 
 // pilnowac polaczenia z ta sekunda i "Connection: "
-// dodac wiecej obslugiwanych formatow
 // w domyslnym przypadku typ pliku to powinno byc application/octet-stream
 // wysylac htmle do bledow
-// poprawic dzialanie 301
 // napisac testy
-// public-key.txt powinien sie jako jakis tekst wyswietlac
-// png sie nie wyswietlaja
+// zabezpieczenie na 403
 
 char buffer[4096];
 int buffer_len;
@@ -35,7 +33,7 @@ int buffer_cnt;
 char http_status_codes[600][STRING_LENGTH] = { { 0 } };
 char http_versions[HTTP_VERSIONS_AMOUNT][STRING_LENGTH] = { { 0 } };
 char http_methods[HTTP_METHODS_AMOUNT][STRING_LENGTH] = { { 0 } };
-char http_content_types[HTTP_TYPES_AMOUNT][STRING_LENGTH] = { { 0 } };
+char http_content_types[HTTP_TYPES_AMOUNT][2][STRING_LENGTH] = { { { 0 } } };
 
 void load_data() {
   strcpy(http_status_codes[200], "OK");
@@ -48,16 +46,30 @@ void load_data() {
 
   strcpy(http_methods[0], "GET");
 
-  strcpy(http_content_types[0], "text/html");
-  strcpy(http_content_types[1], "text/xml");
-  strcpy(http_content_types[2], "image/png");
-  strcpy(http_content_types[3], "text/css");
+  strcpy(http_content_types[0][0], "");
+  strcpy(http_content_types[0][1], "application/octet-stream");
+  strcpy(http_content_types[1][0], ".css");
+  strcpy(http_content_types[1][1], "text/css");
+  strcpy(http_content_types[2][0], ".png");
+  strcpy(http_content_types[2][1], "image/png");
+  strcpy(http_content_types[3][0], ".jpg");
+  strcpy(http_content_types[3][1], "image/jpg");
+  strcpy(http_content_types[4][0], ".jpeg");
+  strcpy(http_content_types[4][1], "image/jpeg");
+  strcpy(http_content_types[5][0], ".pdf");
+  strcpy(http_content_types[5][1], "application/pdf");
+  // sprawdzic jak wyglada jpg, jpeg i pdf
+  strcpy(http_content_types[6][0], ".txt");
+  strcpy(http_content_types[6][1], "text/plain");
+  strcpy(http_content_types[7][0], ".html");
+  strcpy(http_content_types[7][1], "text/html");
 }
 
 struct http_request {
   char type;
   char http_version;
   char path[STRING_LENGTH];
+  char host[STRING_LENGTH];
   char param_host[STRING_LENGTH];
   char param_connection;
   char param_accept[STRING_LENGTH];
@@ -69,7 +81,30 @@ struct http_response {
   int file_size;
   char filepath[STRING_LENGTH];
   char param_content_type[STRING_LENGTH];
+  char param_location[STRING_LENGTH];
+  FILE * source_file;
 };
+
+void load_mime_type(char filepath[], char content_type[]) {
+  char extension[STRING_LENGTH];
+  char * last_dot = strrchr(filepath, '.');
+
+  if (last_dot == NULL) {
+    strcpy(content_type, http_content_types[0][1]);
+    return;
+  }
+
+  strcpy(extension, last_dot);
+
+  for (int i = 1; i < HTTP_TYPES_AMOUNT; i++) {
+    if (strcmp(extension, http_content_types[i][0]) == 0) {
+      strcpy(content_type, http_content_types[i][1]);
+      return;
+    }
+  }
+
+  strcpy(content_type, http_content_types[0][1]);
+}
 
 bool is_root_path_requested(struct http_request * req) {
   if (strcmp(req->path, "/") == 0) {
@@ -97,74 +132,139 @@ int get_http_ver_index(int index) {
   }
 }
 
-bool is_content_type_accepted(char str[]) {
-  for (int i = 0; i < HTTP_TYPES_AMOUNT; i++) {
-    if (strcmp(http_content_types[i], str) == 0) {
-      return true;
-    }
+/* bool is_content_type_accepted(char str[]) { */
+/*   for (int i = 0; i < HTTP_TYPES_AMOUNT; i++) { */
+/*     if (strcmp(http_content_types[i], str) == 0) { */
+/*       return true; */
+/*     } */
+/*   } */
+/*   return false; */
+/* } */
+
+int choose_status_code(struct http_request * req, struct http_response * res) {
+  if (req->type == 0) {
+    return 501;
   }
-  return false;
+
+  if (req->http_version == 0) {
+    return 501;
+  }
+
+  res->source_file = fopen(res->filepath, "rb");
+
+  if (res->source_file == NULL) {
+    return 404;
+  }
+
+  if (false) {
+    return 403;
+  }
+
+  struct stat file_stat;
+  stat(res->filepath, &file_stat);
+
+  if (S_ISDIR(file_stat.st_mode)) {
+    return 301;
+  } else if (S_ISREG(file_stat.st_mode)) {
+    return 200;
+  } else {
+    // ???
+    return 501;
+  }
 }
 
 bool prepare_http_response(struct http_request * req, struct http_response * res) {
   bzero(res, sizeof(*res));
 
-  if (req->type == 0) {
-    res->status_code = 501;
-  }
+  /* char filepath[STRING_LENGTH]; */
+  sprintf(res->filepath, "strony_www/%s%s", req->host, req->path);
+  /* res->source_file = fopen(res->filepath, "rb"); */
+  /* strcpy(res->filepath, filepath); */
+  /* build_filepath(filepath, req->param_host, filename); */
 
+  res->status_code = choose_status_code(req, res);
   res->http_version = req->http_version;
-  if (req->http_version == 0) {
-    res->status_code = 501;
-  }
 
   if (res->status_code == 501) {
     return true;
+  } else if (res->status_code == 403) {
+    return true;
+  } else if (res->status_code == 404) {
+    return true;
+  } else if (res->status_code == 301) {
+    strcpy(res->param_location, "http://");
+    strcat(res->param_location, req->param_host);
+    strcat(res->param_location, req->path);
+    strcat(res->param_location, "/index.html");
+  } else if (res->status_code == 200) {
+    fseek(res->source_file, 0, SEEK_END);
+    res->file_size = ftell(res->source_file);
+    rewind(res->source_file);
+    fclose(res->source_file);
+
+    /* char tmp[STRING_LENGTH]; */
+    /* char file_cmd[STRING_LENGTH]; */
+    /* sprintf(file_cmd, "file -b --mime-type %s", res->filepath); */
+    /* FILE * file_cmd_pipe = popen(file_cmd, "r"); */
+    /* fread(tmp, STRING_LENGTH, 1, file_cmd_pipe); */
+    /* pclose(file_cmd_pipe); */
+    /* printf("Ustalono type: `%s`", tmp); */
+    /* for (int j = 0; j < STRING_LENGTH; j++) { */
+    /*   if (tmp[j] == '\n') { */
+	/* tmp[j] = '\0'; */
+	/* break; */
+    /*   } */
+    /* } */
+    load_mime_type(res->filepath, res->param_content_type);
+    printf("Ustalono type: `%s`", res->param_content_type);
+    /* strcpy(res->param_content_type, tmp); */
   }
 
-  char filename[STRING_LENGTH];
-  char filepath[STRING_LENGTH];
+  /* if (res->status_code == 501) { */
+  /*   return true; */
+  /* } */
 
-  if (is_root_path_requested(req)) {
-    strcpy(filename, "/index.html");
-    res->status_code = 301;
-  } else {
-    strcpy(filename, req->path);
-  }
+  /* char filename[STRING_LENGTH]; */
 
-  build_filepath(filepath, req->param_host, filename);
+  /* if (is_root_path_requested(req)) { */
+  /*   strcpy(filename, "/index.html"); */
+  /*   res->status_code = 301; */
+  /* } else { */
+  /*   strcpy(filename, req->path); */
+  /* } */
 
-  if (is_path_requested_unsafe(filepath)) {
-    res->status_code = 403;
-  } else {
-    FILE * source_file;
-    source_file = fopen(filepath, "rb");
 
-    if (source_file == NULL) {
-      res->status_code = 404;
-    } else {
-      fseek(source_file, 0, SEEK_END);
-      res->file_size = ftell(source_file);
-      fclose(source_file);
-      dprintf("File size: %d\n", res->file_size);
+  /* if (is_path_requested_unsafe(filepath)) { */
+  /*   res->status_code = 403; */
+  /* } else { */
+  /*   FILE * source_file; */
+  /*   source_file = fopen(filepath, "rb"); */
 
-      strcpy(res->filepath, filepath);
+  /*   if (source_file == NULL) { */
+  /*     res->status_code = 404; */
+  /*   } else { */
+  /*     fseek(source_file, 0, SEEK_END); */
+  /*     res->file_size = ftell(source_file); */
+  /*     fclose(source_file); */
+  /*     dprintf("File size: %d\n", res->file_size); */
 
-      if (res->status_code == 0) {
-	res->status_code = 200;
-      }
-    }
-  }
+  /*     strcpy(res->filepath, filepath); */
 
-  if (strcmp(req->param_accept, "*/*") == 0) {
-    strcpy(res->param_content_type, "text/html");
-  } else {
-    if (is_content_type_accepted(req->param_accept)) {
-      strcpy(res->param_content_type, req->param_accept);
-    } else {
-      res->status_code = 501;
-    }
-  }
+  /*     if (res->status_code == 0) { */
+	/* res->status_code = 200; */
+  /*     } */
+  /*   } */
+  /* } */
+
+  // if (strcmp(req->param_accept, "*/*") == 0) {
+  /*   strcpy(res->param_content_type, "text/html"); */
+  /* } else { */
+  /*   if (is_content_type_accepted(req->param_accept)) { */
+  /*     strcpy(res->param_content_type, req->param_accept); */
+  /*   } else { */
+  /*     res->status_code = 501; */
+  /*   } */
+  /* } */
 
   return true;
 }
@@ -178,14 +278,24 @@ int build_response_packet(struct http_response * res, char ** packet_ptr) {
       res->status_code,
       http_status_codes[res->status_code]);
 
-  sprintf(tmp, "Content-Type: %s\n", res->param_content_type);
-  strcat(http_headers, tmp);
+  printf("jajo1 %s\n", res->filepath);
+
+  if (strcmp(res->param_content_type, "")) {
+    sprintf(tmp, "Content-Type: %s\n", res->param_content_type);
+    strcat(http_headers, tmp);
+  }
 
   if (res->file_size > 0) {
     sprintf(tmp, "Content-Length: %d\n", res->file_size);
     strcat(http_headers, tmp);
   }
 
+  if (strcmp(res->param_location, "")) {
+    sprintf(tmp, "Location: %s\n", res->param_location);
+    strcat(http_headers, tmp);
+  }
+
+  printf("jajo2\n");
   strcat(http_headers, "\n");
   int headers_size = strlen(http_headers);
 
@@ -193,10 +303,16 @@ int build_response_packet(struct http_response * res, char ** packet_ptr) {
 
   memcpy(*packet_ptr, http_headers, headers_size);
 
-  FILE * source_file;
-  source_file = fopen(res->filepath, "r");
-  fread((*packet_ptr) + headers_size, res->file_size, 1, source_file);
-  fclose(source_file);
+  printf("jajo3\n");
+  if (res->file_size > 0) {
+    FILE * source_file;
+    source_file = fopen(res->filepath, "r");
+    printf("jajo4\n");
+    fread((*packet_ptr) + headers_size, res->file_size, 1, source_file);
+    printf("jajo5 %p\n", source_file);
+    fclose(source_file);
+    printf("jajo6\n");
+  }
 
   printf("Wynik: %s\n", http_headers);
 
@@ -245,8 +361,9 @@ void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
 
   if (strcmp(param_name, "Host:") == 0) {
     strcpy(req->param_host, param_value);
+    strcpy(req->host, param_value);
 
-    char * colon_position = strchr(req->param_host, ':');
+    char * colon_position = strchr(req->host, ':');
     if (colon_position != NULL) {
       *colon_position = '\0';
     }
@@ -327,8 +444,11 @@ int main(int argc, char ** argv) {
     struct http_response http_res;
     char * packet;
     int packet_size;
+    printf("dupa_prepare\n");
     prepare_http_response(&http_req, &http_res);
+    printf("dupa_build\n");
     packet_size = build_response_packet(&http_res, &packet);
+    printf("dupa_send\n");
     Send(conn_sockfd, packet, packet_size, 0);
     free(packet);
 
