@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include "sockwrap.h"
 
@@ -114,9 +115,32 @@ bool is_root_path_requested(struct http_request * req) {
   }
 }
 
-bool is_path_requested_unsafe(char filepath[]) {
-  (void) filepath;
-  return false;
+bool is_path_requested_unsafe(char filepath[], char host[]) {
+  char real_filepath[STRING_LENGTH];
+  char cwd[STRING_LENGTH];
+  char domain[STRING_LENGTH];
+  realpath(filepath, real_filepath);
+  getcwd(cwd, STRING_LENGTH);
+  strcat(cwd, "/strony_www/");
+  printf("realpath: `%s`\n", real_filepath);
+  printf("cwd: `%s`\n", cwd);
+
+  int i = 0;
+  while (i < STRING_LENGTH) {
+    if (cwd[i] != real_filepath[i]) {
+      break;
+    }
+    i++;
+  }
+  strcpy(domain, real_filepath + i);
+  char * slash_ptr = strchr(domain, '/');
+  if (slash_ptr == NULL) {
+    return false;
+  }
+  *slash_ptr = '\0';
+  printf("Domain: `%s`\n", domain);
+
+  return (strcmp(domain, host) != 0);
 }
 
 void build_filepath(char filepath[], char host[], char filename[]) {
@@ -131,15 +155,6 @@ int get_http_ver_index(int index) {
     return (index - 1);
   }
 }
-
-/* bool is_content_type_accepted(char str[]) { */
-/*   for (int i = 0; i < HTTP_TYPES_AMOUNT; i++) { */
-/*     if (strcmp(http_content_types[i], str) == 0) { */
-/*       return true; */
-/*     } */
-/*   } */
-/*   return false; */
-/* } */
 
 int choose_status_code(struct http_request * req, struct http_response * res) {
   if (req->type == 0) {
@@ -156,7 +171,7 @@ int choose_status_code(struct http_request * req, struct http_response * res) {
     return 404;
   }
 
-  if (false) {
+  if (is_path_requested_unsafe(res->filepath, req->host)) {
     return 403;
   }
 
