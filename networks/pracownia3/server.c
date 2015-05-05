@@ -20,8 +20,6 @@
 #define STRING_LENGTH 128
 
 // pilnowac polaczenia z ta sekunda i "Connection: "
-// napisac testy
-// argument katalog
 // powtorzyc senda jak sie nie udalo
 
 char buffer[4096];
@@ -43,6 +41,7 @@ struct http_request {
   char param_host[STRING_LENGTH];
   char param_connection;
   char param_accept[STRING_LENGTH];
+  int param_content_length;
 };
 
 struct http_response {
@@ -105,6 +104,7 @@ int main(int argc, char ** argv) {
     bool connection_alive = true;
     while (connection_alive) {
       struct http_request http_req;
+      bzero(&http_req, sizeof(http_req));
 
       if (load_request(conn_sockfd, &http_req)) {
 	// Prepare and send response
@@ -326,6 +326,9 @@ void parse_http_first_line(struct http_request * req, char recv_buffer[]) {
   char path[64];
   char version[16];
   sscanf(recv_buffer, "%s %s %s\n", type, path, version);
+  printf("Type: `%s`\n", type);
+  printf("Path: `%s`\n", path);
+  printf("Version: `%s`\n", version);
 
   // Parse HTTP method
   req->type = find_matching_string(http_methods, type, HTTP_METHODS_AMOUNT);
@@ -350,6 +353,11 @@ void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
     if (colon_position != NULL) {
       *colon_position = '\0';
     }
+  }
+
+  if (strcmp(param_name, "Content-Length:") == 0) {
+    req->param_content_length = atoi(param_value);
+    dprintf("Content-Length: `%d`\n", req->param_content_length);
   }
 }
 
@@ -454,7 +462,7 @@ int find_matching_string(char db[][STRING_LENGTH], char str[], int count) {
 }
 
 bool load_request(int conn_sockfd, struct http_request * http_req) {
-  int maxsize = 64;
+  int maxsize = STRING_LENGTH;
   char recv_buffer[maxsize+1];
   int n;
 
@@ -469,6 +477,8 @@ bool load_request(int conn_sockfd, struct http_request * http_req) {
     }
     recv_buffer[n] = 0;
 
+    printf("<-- %s", recv_buffer);
+
     if (it == 0) {
       parse_http_first_line(http_req, recv_buffer);
     } else {
@@ -477,10 +487,14 @@ bool load_request(int conn_sockfd, struct http_request * http_req) {
     it++;
 
     if (strcmp(recv_buffer, "\r\n") == 0) {
+      if (http_req->param_content_length > 0) {
+	char c;
+	for (int i = 0; i < http_req->param_content_length; i++) {
+	  ReadBufferedByte(conn_sockfd, &c, &tv);
+	}
+      }
       return true;
     }
-
-    printf("<-- %s", recv_buffer);
   }
   printf("\n");
   return false;
