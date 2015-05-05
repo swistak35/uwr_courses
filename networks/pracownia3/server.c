@@ -12,40 +12,63 @@
 #define dprintf(...) \
     do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 #define MAX_QUEUE 100
+#define HTTP_VERSIONS_AMOUNT 1
+#define HTTP_METHODS_AMOUNT 1
+#define HTTP_TYPES_AMOUNT 4
+#define STRING_LENGTH 128
 
 #define MIN(a,b) (a)<(b)?(a):(b)
+
+// pilnowac polaczenia z ta sekunda i "Connection: "
+// dodac wiecej obslugiwanych formatow
+// w domyslnym przypadku typ pliku to powinno byc application/octet-stream
+// wysylac htmle do bledow
+// poprawic dzialanie 301
+// napisac testy
+// public-key.txt powinien sie jako jakis tekst wyswietlac
+// png sie nie wyswietlaja
 
 char buffer[4096];
 int buffer_len;
 int buffer_cnt;
 
-char http_status_codes[600][128] = { { 0 } };
-char http_versions[1][128] = { { 0 } };
-char http_methods[1][128] = { { 0 } };
+char http_status_codes[600][STRING_LENGTH] = { { 0 } };
+char http_versions[HTTP_VERSIONS_AMOUNT][STRING_LENGTH] = { { 0 } };
+char http_methods[HTTP_METHODS_AMOUNT][STRING_LENGTH] = { { 0 } };
+char http_content_types[HTTP_TYPES_AMOUNT][STRING_LENGTH] = { { 0 } };
 
 void load_data() {
   strcpy(http_status_codes[200], "OK");
+  strcpy(http_status_codes[301], "Moved Permanently");
+  strcpy(http_status_codes[403], "Forbidden");
   strcpy(http_status_codes[404], "Not Found");
+  strcpy(http_status_codes[501], "Not Implemented");
+
   strcpy(http_versions[0], "HTTP/1.1");
+
   strcpy(http_methods[0], "GET");
+
+  strcpy(http_content_types[0], "text/html");
+  strcpy(http_content_types[1], "text/xml");
+  strcpy(http_content_types[2], "image/png");
+  strcpy(http_content_types[3], "text/css");
 }
 
 struct http_request {
   char type;
   char http_version;
-  char path[64];
-  char param_host[64];
+  char path[STRING_LENGTH];
+  char param_host[STRING_LENGTH];
   char param_connection;
-  char param_accept[64];
+  char param_accept[STRING_LENGTH];
 };
 
 struct http_response {
   char http_version;
-  int http_status_code;
+  int status_code;
   int file_size;
-  /* char filepath[128]; */
-  /* char param_content_type[128]; */
-  /* char param_content_length[128]; */
+  char filepath[STRING_LENGTH];
+  char param_content_type[STRING_LENGTH];
 };
 
 bool is_root_path_requested(struct http_request * req) {
@@ -56,97 +79,137 @@ bool is_root_path_requested(struct http_request * req) {
   }
 }
 
-void set_status_code(struct http_response * res, int code) {
-  (void) res;
-  (void) code;
-}
-
-bool is_path_requested_unsafe(struct http_request * req) {
-  (void) req;
+bool is_path_requested_unsafe(char filepath[]) {
+  (void) filepath;
   return false;
 }
 
 void build_filepath(char filepath[], char host[], char filename[]) {
   sprintf(filepath, "strony_www/%s%s", host, filename);
+  dprintf("Filepath: `%s`", filepath);
+}
+
+int get_http_ver_index(int index) {
+  if (index == 0) {
+    return 0;
+  } else {
+    return (index - 1);
+  }
+}
+
+bool is_content_type_accepted(char str[]) {
+  for (int i = 0; i < HTTP_TYPES_AMOUNT; i++) {
+    if (strcmp(http_content_types[i], str) == 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool prepare_http_response(struct http_request * req, struct http_response * res) {
   bzero(res, sizeof(*res));
 
+  if (req->type == 0) {
+    res->status_code = 501;
+  }
+
   res->http_version = req->http_version;
+  if (req->http_version == 0) {
+    res->status_code = 501;
+  }
 
-  if (is_path_requested_unsafe(req)) {
-    set_status_code(res, 403);
+  if (res->status_code == 501) {
+    return true;
+  }
+
+  char filename[STRING_LENGTH];
+  char filepath[STRING_LENGTH];
+
+  if (is_root_path_requested(req)) {
+    strcpy(filename, "/index.html");
+    res->status_code = 301;
   } else {
-    char filename[128];
-    char filepath[128];
+    strcpy(filename, req->path);
+  }
 
-    if (is_root_path_requested(req)) {
-      strcpy(filename, "/index.html");
-      set_status_code(res, 301);
-    } else {
-      strcpy(filename, req->path);
-    }
+  build_filepath(filepath, req->param_host, filename);
 
-    build_filepath(filepath, req->param_host, filename);
-
+  if (is_path_requested_unsafe(filepath)) {
+    res->status_code = 403;
+  } else {
     FILE * source_file;
     source_file = fopen(filepath, "rb");
+
     if (source_file == NULL) {
-      set_status_code(res, 404);
+      res->status_code = 404;
     } else {
       fseek(source_file, 0, SEEK_END);
       res->file_size = ftell(source_file);
       fclose(source_file);
+      dprintf("File size: %d\n", res->file_size);
+
+      strcpy(res->filepath, filepath);
+
+      if (res->status_code == 0) {
+	res->status_code = 200;
+      }
+    }
+  }
+
+  if (strcmp(req->param_accept, "*/*") == 0) {
+    strcpy(res->param_content_type, "text/html");
+  } else {
+    if (is_content_type_accepted(req->param_accept)) {
+      strcpy(res->param_content_type, req->param_accept);
+    } else {
+      res->status_code = 501;
     }
   }
 
   return true;
+}
 
-    /* char response[1024*128]; */
-    /* char content[1024*127]; */
-    /* char filename[128]; */
-    /* printf("Requested filetype: `%s`\n", http_req.param_accept); */
-    /* FILE * source_file; */
-    /* char filepath[512]; */
-    /* strcpy(filepath, "strony_www/"); */
-    /* strcat(filepath, http_req.param_host); */
-    /* /1* strcat(filepath, "/"); *1/ */
-    /* strcat(filepath, filename); */
-    /* printf("Filename: %s\n", filename); */
-    /* printf("Filepath: %s\n", filepath); */
-    /* source_file = fopen(filepath, "r"); */
+int build_response_packet(struct http_response * res, char ** packet_ptr) {
+  char http_headers[1024];
+  char tmp[STRING_LENGTH];
 
-    /* int headers_size; */
-    /* int file_size; */
-    /* if (source_file == NULL) { */
-    /*   strcat(response, "404 Not Found\n"); */
-    /* } else { */
-    /*   strcat(response, "200 OK\n"); */
-    /*   fread(content, 1024*127, 1, source_file); */
-    /*   file_size = ftell(source_file); */
-    /*   printf("File size: %d\n", file_size); */
-    /*   fclose(source_file); */
-    /* } */
+  sprintf(http_headers, "%s %d %s\n",
+      http_versions[get_http_ver_index(res->http_version)],
+      res->status_code,
+      http_status_codes[res->status_code]);
 
-    /* if (strcmp(http_req.param_accept, "image/png") == 0) { */
-    /* } else { */
-    /*   char tmp[128]; */
-//      if (strcmp(http_req.param_accept, "*/*") == 0) {
-	/* sprintf(tmp, "Content-Type: %s\n", "text/html"); */
-    /*   } else { */
-	/* sprintf(tmp, "Content-Type: %s\n", http_req.param_accept); */
-    /*   } */
-    /*   strcat(response, tmp); */
-    /* } */
-    /* strcat(response, "\n"); */
-    /* headers_size = strlen(response); */
-    /* printf("Headers size: %d\n", headers_size); */
+  sprintf(tmp, "Content-Type: %s\n", res->param_content_type);
+  strcat(http_headers, tmp);
 
-    /* /1* strcat(response, content); *1/ */
-    /* memcpy(response + headers_size, content, file_size); */
+  if (res->file_size > 0) {
+    sprintf(tmp, "Content-Length: %d\n", res->file_size);
+    strcat(http_headers, tmp);
+  }
 
-    /* Send(conn_sockfd, response, headers_size + file_size, 0); */
+  strcat(http_headers, "\n");
+  int headers_size = strlen(http_headers);
+
+  *packet_ptr = malloc(headers_size + res->file_size);
+
+  memcpy(*packet_ptr, http_headers, headers_size);
+
+  FILE * source_file;
+  source_file = fopen(res->filepath, "r");
+  fread((*packet_ptr) + headers_size, res->file_size, 1, source_file);
+  fclose(source_file);
+
+  printf("Wynik: %s\n", http_headers);
+
+  return (headers_size + res->file_size);
+}
+
+int find_matching_string(char db[][STRING_LENGTH], char str[], int count) {
+  for (int i = 0; i < count; i++) {
+    if (strcmp(db[i], str) == 0) {
+      return (i+1);
+    }
+  }
+  return 0;
 }
 
 void InitBuffer();
@@ -162,14 +225,10 @@ void parse_http_first_line(struct http_request * req, char recv_buffer[]) {
   sscanf(recv_buffer, "%s %s %s\n", type, path, version);
 
   // Parse HTTP method
-  if (strcmp(type, "GET") == 0) {
-    req->type = 1;
-  }
+  req->type = find_matching_string(http_methods, type, HTTP_METHODS_AMOUNT);
 
   // Parse HTTP version
-  if (strcmp(version, "HTTP/1.1") == 0) {
-    req->http_version = 1;
-  }
+  req->http_version = find_matching_string(http_versions, version, HTTP_VERSIONS_AMOUNT);
 
   // Parse path
   strcpy(req->path, path);
@@ -180,8 +239,8 @@ void parse_http_first_line(struct http_request * req, char recv_buffer[]) {
 void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
   dprintf("Parsing other line started...\n");
 
-  char param_name[64];
-  char param_value[64];
+  char param_name[STRING_LENGTH];
+  char param_value[STRING_LENGTH];
   sscanf(recv_buffer, "%s %s\n", param_name, param_value);
 
   if (strcmp(param_name, "Host:") == 0) {
@@ -189,7 +248,6 @@ void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
 
     char * colon_position = strchr(req->param_host, ':');
     if (colon_position != NULL) {
-      printf("Znaleziono dwurkopka.\n");
       *colon_position = '\0';
     }
     // jesli port inny, to mozna walnac bledem
@@ -247,7 +305,8 @@ int main(int argc, char ** argv) {
 	break;
       }
       recv_buffer[n] = 0;
-      printf ("Chunk %d %lu ->%s<- received\n", n, sizeof(recv_buffer), recv_buffer);
+      /* printf ("Chunk %d %lu ->%s<- received\n", n, sizeof(recv_buffer), recv_buffer); */
+      printf("%s", recv_buffer);
 
       if (it == 0) {
 	parse_http_first_line(&http_req, recv_buffer);
@@ -264,60 +323,66 @@ int main(int argc, char ** argv) {
       // to robic podobnie jak w programie klienta, tj. wysylac dane do
       // skutku, a nie wywolywac pojedyncza funkcje send()
     }
+
     struct http_response http_res;
+    char * packet;
+    int packet_size;
     prepare_http_response(&http_req, &http_res);
+    packet_size = build_response_packet(&http_res, &packet);
+    Send(conn_sockfd, packet, packet_size, 0);
+    free(packet);
 
-    char response[1024*128];
-    char content[1024*127];
-    char filename[128];
-    printf("Requested filetype: `%s`\n", http_req.param_accept);
-    strcpy(response, "HTTP/1.1 ");
-    if (is_root_path_requested(&http_req)) {
-      strcpy(filename, "/index.html");
-      // ustawic kod na 301
-    } else {
-      strcpy(filename, http_req.path);
-    }
-    FILE * source_file;
-    char filepath[512];
-    strcpy(filepath, "strony_www/");
-    strcat(filepath, http_req.param_host);
-    /* strcat(filepath, "/"); */
-    strcat(filepath, filename);
-    printf("Filename: %s\n", filename);
-    printf("Filepath: %s\n", filepath);
-    source_file = fopen(filepath, "r");
+    /* char response[1024*128]; */
+    /* char content[1024*127]; */
+    /* char filename[128]; */
+    /* printf("Requested filetype: `%s`\n", http_req.param_accept); */
+    /* strcpy(response, "HTTP/1.1 "); */
+    /* if (is_root_path_requested(&http_req)) { */
+    /*   strcpy(filename, "/index.html"); */
+    /*   // ustawic kod na 301 */
+    /* } else { */
+    /*   strcpy(filename, http_req.path); */
+    /* } */
+    /* FILE * source_file; */
+    /* char filepath[512]; */
+    /* strcpy(filepath, "strony_www/"); */
+    /* strcat(filepath, http_req.param_host); */
+    /* /1* strcat(filepath, "/"); *1/ */
+    /* strcat(filepath, filename); */
+    /* printf("Filename: %s\n", filename); */
+    /* printf("Filepath: %s\n", filepath); */
+    /* source_file = fopen(filepath, "r"); */
 
-    int headers_size;
-    int file_size;
-    if (source_file == NULL) {
-      strcat(response, "404 Not Found\n");
-    } else {
-      strcat(response, "200 OK\n");
-      fread(content, 1024*127, 1, source_file);
-      file_size = ftell(source_file);
-      printf("File size: %d\n", file_size);
-      fclose(source_file);
-    }
+    /* int headers_size; */
+    /* int file_size; */
+    /* if (source_file == NULL) { */
+    /*   strcat(response, "404 Not Found\n"); */
+    /* } else { */
+    /*   strcat(response, "200 OK\n"); */
+    /*   fread(content, 1024*127, 1, source_file); */
+    /*   file_size = ftell(source_file); */
+    /*   printf("File size: %d\n", file_size); */
+    /*   fclose(source_file); */
+    /* } */
 
-    if (strcmp(http_req.param_accept, "image/png") == 0) {
-    } else {
-      char tmp[128];
-      if (strcmp(http_req.param_accept, "*/*") == 0) {
-	sprintf(tmp, "Content-Type: %s\n", "text/html");
-      } else {
-	sprintf(tmp, "Content-Type: %s\n", http_req.param_accept);
-      }
-      strcat(response, tmp);
-    }
-    strcat(response, "\n");
-    headers_size = strlen(response);
-    printf("Headers size: %d\n", headers_size);
+    /* if (strcmp(http_req.param_accept, "image/png") == 0) { */
+    /* } else { */
+    /*   char tmp[128]; */
+    //  if (strcmp(http_req.param_accept, "*/*") == 0) {
+	/* sprintf(tmp, "Content-Type: %s\n", "text/html"); */
+    /*   } else { */
+	/* sprintf(tmp, "Content-Type: %s\n", http_req.param_accept); */
+    /*   } */
+    /*   strcat(response, tmp); */
+    /* } */
+    /* strcat(response, "\n"); */
+    /* headers_size = strlen(response); */
+    /* printf("Headers size: %d\n", headers_size); */
 
-    /* strcat(response, content); */
-    memcpy(response + headers_size, content, file_size);
+    /* /1* strcat(response, content); *1/ */
+    /* memcpy(response + headers_size, content, file_size); */
 
-    Send(conn_sockfd, response, headers_size + file_size, 0);
+    /* Send(conn_sockfd, response, headers_size + file_size, 0); */
 
     Close(conn_sockfd);
     printf("Disconnected\n");
