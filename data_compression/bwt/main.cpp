@@ -1,16 +1,60 @@
 #include <iostream>
+#include <cstring>
+#include <cstdio>
 #include "LexiBWT.h"
 #include "LexiDeBWT.h"
 
-int main() {
-  char jakistekst[] = "babacabc";
-  LexiBWT * bwt = new LexiBWT(8);
+#define TESTING_MODE false
 
-  char cel[9];
-  cel[8] = 0;
-  std::cout << jakistekst << std::endl;
-  int orig_string = bwt->transform(jakistekst, cel);
-  std::cout << cel << std::endl;
-  std::cout << "Index of orig string: " << orig_string << std::endl;
+using namespace std;
+
+int main() {
+
+  if (TESTING_MODE) {
+    // Init source
+    char source[] = "babacabc";
+    int source_len = strlen(source);
+    std::cout << "Source: " << source << std::endl;
+
+    // Coding
+    char target[source_len + 1] = { 0 };
+    LexiBWT * bwt = new LexiBWT(source_len);
+    int orig_idx = bwt->transform(source, target);
+    std::cout << "Target: " << target << std::endl;
+    std::cout << "Index of orig string: " << orig_idx << std::endl;
+
+    // Decoding
+    char source2[source_len + 1] = { 0 };
+    LexiDeBWT * debwt = new LexiDeBWT(source_len);
+    debwt->transform(orig_idx, target, source2);
+    std::cout << "Source2: " << source2 << std::endl;
+  } else {
+    FILE * dane = fopen("wiersz.txt", "r");
+    fseek(dane, 0, SEEK_END);
+    int dane_size = ftell(dane);
+    rewind(dane);
+    char * source = (char *) malloc(dane_size + 1);
+    source[dane_size] = 0;
+    fread(source, dane_size, 1, dane);
+    /* if (source[dane_size - 1] == 0) { */
+    /*   std::cout << "Istotnie jest 0!" << std::endl; */
+    /* } else { */
+    /*   std::cout << "Nie ma 0!" << std::endl; */
+    /* } */
+    fclose(dane);
+    char * target = (char *) malloc(dane_size + 1);
+    target[dane_size] = 0;
+    LexiBWT * bwt = new LexiBWT(dane_size);
+    int orig_idx = bwt->transform(source, target);
+    std::cout << "Target: " << target << std::endl;
+    std::cout << "Index of orig string: " << orig_idx << std::endl;
+
+    // Decoding
+    char source2[dane_size + 1] = { 0 };
+    LexiDeBWT * debwt = new LexiDeBWT(dane_size);
+    debwt->transform(orig_idx, target, source2);
+    std::cout << "Source2: " << source2 << std::endl;
+  }
+
   return 0;
 }

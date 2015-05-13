@@ -69,6 +69,11 @@ void LexiBWT::sort() {
 
     it--;
   }
+
+  this->target[this->ranks[0]] = this->source[this->length-1];
+  for (int i = 1; i < this->length; i++) {
+    this->target[this->ranks[i]] = this->source[i-1];
+  }
 }
 
 
