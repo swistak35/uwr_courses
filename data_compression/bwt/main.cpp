@@ -3,10 +3,11 @@
 
 
 int main() {
-  char jakistekst[] = "babaca";
-  BurrowsWheelerTransformation * bwt = new BurrowsWheelerTransformation(6);
+  char jakistekst[] = "babacabc";
+  BurrowsWheelerTransformation * bwt = new BurrowsWheelerTransformation(8);
 
-  char cel[6];
+  char cel[9];
+  cel[8] = 0;
   std::cout << jakistekst << std::endl;
   bwt->transform(jakistekst, cel);
   /* std::cout << cel << std::endl; */

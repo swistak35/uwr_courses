@@ -13,6 +13,7 @@ int BurrowsWheelerTransformation::transform(char * source, char * target) {
   this->source_end = source + (this->length);
   this->source = source;
   this->target = target;
+  this->hvec.assign(256, std::vector<int>(0));
 
   initial_sort();
   return 0;
@@ -20,8 +21,6 @@ int BurrowsWheelerTransformation::transform(char * source, char * target) {
 
 void BurrowsWheelerTransformation::initial_sort() {
   // Init vectors
-  std::vector<std::vector<int>> hvec(256, std::vector<int>(0));
-  std::vector<int> tmp_ranks;
   for (int i = 0; i < this->length; i++) {
     this->ranks.push_back(0);
     this->positions.push_back(i);
@@ -29,21 +28,21 @@ void BurrowsWheelerTransformation::initial_sort() {
 
   // Initial sort
   for (int i = 0; i < this->length; i++) {
-    hvec[this->source[i]].push_back(i);
+    this->hvec[this->source[i]].push_back(i);
   }
 
   for (int i = 0; i < 256; i++) {
     /* std::cout << "Znak `" << i << "`: "; */
-    for (int v : hvec[i]) {
+    for (int v : this->hvec[i]) {
       /* std::cout << v << " "; */
-      tmp_ranks.push_back(v);
+      this->tmp_ranks.push_back(v);
     }
     /* std::cout << std::endl; */
   }
 
   for (int i = 0; i < this->length; i++) {
-    this->ranks[tmp_ranks[i]] = i;
-    this->positions[i] = tmp_ranks[i];
+    this->ranks[this->tmp_ranks[i]] = i;
+    this->positions[i] = this->tmp_ranks[i];
   }
 
   for (int i = 0; i < this->length; i++) {
@@ -53,102 +52,94 @@ void BurrowsWheelerTransformation::initial_sort() {
   cout << "\n";
   cout << this->target << endl;
 
-  /* int j = 0; */
-  for (auto &h : hvec) {
-    /* cout << j << " " << &h << endl; */
-    /* j++; */
+  for (auto &h : this->hvec) {
     h.clear();
-    /* if (h.size() != 0) { */
-      /* cout << h.size() << endl; */
+  }
+  this->tmp_ranks.clear();
+
+  /* for (int i = 0; i < this->length; i++) { */
+  /*   display_string(this->positions[i]); */
+  /* } */
+  int k = 0;
+  int last_k = log2(this->length) - 1;
+  cout << "Ostatnie k: " << last_k << endl;
+
+  while (k <= last_k) {
+    int offset = pow(2, k); // 2 ^ k
+
+    // first iteration
+
+    for (int i = 0; i < this->length; i++) {
+      char c = this->source[get_char_idx(this->positions[i] + offset)];
+      this->hvec[c].push_back(this->positions[i]);
+    }
+
+    for (int i = 0; i < 256; i++) {
+      /* std::cout << "Znak `" << i << "`: "; */
+      for (int v : this->hvec[i]) {
+        /* std::cout << v << " "; */
+        this->tmp_ranks.push_back(v);
+      }
+      /* std::cout << std::endl; */
+    }
+
+    for (int i = 0; i < this->length; i++) {
+      this->ranks[this->tmp_ranks[i]] = i;
+      this->positions[i] = this->tmp_ranks[i];
+    }
+
+    for (int i = 0; i < this->length; i++) {
+      std::cout << " " << this->ranks[i];
+    }
+    cout << "\n";
+    cout << this->target << endl;
+
+    /* for (int i = 0; i < this->length; i++) { */
+    /*   display_string(this->positions[i]); */
     /* } */
-  }
-  tmp_ranks.clear();
 
-  /* for (int i = 0; i < 256; i++) { */
-  /*   for (int v : hvec[i]) { */
-  /*     cout << "COS SIEDZI" << v << endl; */
-  /*   } */
-  /* } */
-
-  /* for (int i = 0; i < this->length; i++) { */
-  /*   display_string(this->positions[i]); */
-  /* } */
-  /* int k = 0; */
-
-  int offset = 1; // 2 ^ k
-
-  // first iteration
-
-  for (int i = 0; i < this->length; i++) {
-    char c = this->source[get_char_idx(this->positions[i] + offset)];
-    hvec[c].push_back(this->positions[i]);
-  }
-
-  for (int i = 0; i < 256; i++) {
-    /* std::cout << "Znak `" << i << "`: "; */
-    for (int v : hvec[i]) {
-      /* std::cout << v << " "; */
-      tmp_ranks.push_back(v);
+    for (auto &h : this->hvec) {
+      h.clear();
     }
-    /* std::cout << std::endl; */
-  }
+    this->tmp_ranks.clear();
 
-  for (int i = 0; i < this->length; i++) {
-    this->ranks[tmp_ranks[i]] = i;
-    this->positions[i] = tmp_ranks[i];
-  }
+    // second iteration
 
-  for (int i = 0; i < this->length; i++) {
-    std::cout << " " << this->ranks[i];
-  /*   std::cout << i << ": " << this->ranks[i] << std::endl; */
-  }
-  cout << "\n";
-  cout << this->target << endl;
-
-  /* for (int i = 0; i < this->length; i++) { */
-  /*   display_string(this->positions[i]); */
-  /* } */
-
-  for (auto &h : hvec) {
-    h.clear();
-  }
-  tmp_ranks.clear();
-
-  // second iteration
-
-  for (int i = 0; i < this->length; i++) {
-    char c = this->source[get_char_idx(this->positions[i])];
-    hvec[c].push_back(this->positions[i]);
-  }
-
-  for (int i = 0; i < 256; i++) {
-    /* std::cout << "Znak `" << i << "`: "; */
-    for (int v : hvec[i]) {
-      /* std::cout << v << " "; */
-      tmp_ranks.push_back(v);
+    for (int i = 0; i < this->length; i++) {
+      char c = this->source[get_char_idx(this->positions[i])];
+      this->hvec[c].push_back(this->positions[i]);
     }
-    /* std::cout << std::endl; */
-  }
 
-  for (int i = 0; i < this->length; i++) {
-    this->ranks[tmp_ranks[i]] = i;
-    this->positions[i] = tmp_ranks[i];
-  }
+    for (int i = 0; i < 256; i++) {
+      /* std::cout << "Znak `" << i << "`: "; */
+      for (int v : hvec[i]) {
+        /* std::cout << v << " "; */
+        this->tmp_ranks.push_back(v);
+      }
+      /* std::cout << std::endl; */
+    }
 
-  for (int i = 0; i < this->length; i++) {
-    std::cout << " " << this->ranks[i];
-    this->target[this->ranks[i]] = this->source[i];
-  }
-  cout << "\n";
-  cout << this->target << endl;
-  /* std::cout << "------" << endl; */
+    for (int i = 0; i < this->length; i++) {
+      this->ranks[this->tmp_ranks[i]] = i;
+      this->positions[i] = this->tmp_ranks[i];
+    }
 
-  /* for (int i = 0; i < this->length; i++) { */
-  /*   display_string(this->positions[i]); */
-  /* } */
+    for (int i = 0; i < this->length; i++) {
+      std::cout << " " << this->ranks[i];
+      this->target[this->ranks[i]] = this->source[i];
+    }
+    cout << "\n";
+    cout << this->target << endl;
+    /* std::cout << "------" << endl; */
+
+    /* for (int i = 0; i < this->length; i++) { */
+    /*   display_string(this->positions[i]); */
+    /* } */
+    k++;
+  }
 }
 
-void BurrowsWheelerTransformation::next_sort() {
+void BurrowsWheelerTransformation::sort_iteration_step() {
 }
 
 int BurrowsWheelerTransformation::get_char_idx(int idx) {
