@@ -86,6 +86,10 @@ void BurrowsWheelerTransformation::next_sort() {
   }
   std::cout << "------" << endl;
 
+  for (int i = 0; i < this->length; i++) {
+    display_string(this->positions[i]);
+  }
+
   // second iteration
   std::vector<std::vector<int>> hvec2(256, std::vector<int>(0));
 
@@ -114,11 +118,15 @@ void BurrowsWheelerTransformation::next_sort() {
     std::cout << i << ": " << this->ranks[i] << std::endl;
     this->target[this->ranks[i]] = this->source[i];
   }
+
+  for (int i = 0; i < this->length; i++) {
+    display_string(this->positions[i]);
+  }
 }
 
 int BurrowsWheelerTransformation::get_char_idx(int idx) {
   if (idx >= this->length) {
-    return (idx - this->length + 1);
+    return (idx - this->length);
   } else {
     return idx;
   }
