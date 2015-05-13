@@ -16,10 +16,12 @@ class BurrowsWheelerTransformation {
     std::vector<int> positions; // ktory string jest na i-tym miejscu
     void initial_sort();
     void next_sort();
+    void display_string(int idx);
     int get_char_idx(int idx);
     int length;
     char * source;
     char * target;
+    char * source_end;
 };
 
 #endif
