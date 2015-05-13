@@ -3,8 +3,9 @@
 #include <cstdio>
 #include "LexiBWT.h"
 #include "LexiDeBWT.h"
+#include "MoveToFront.h"
 
-#define TESTING_MODE false
+#define TESTING_MODE true
 
 using namespace std;
 
@@ -28,6 +29,16 @@ int main() {
     LexiDeBWT * debwt = new LexiDeBWT(source_len);
     debwt->transform(orig_idx, target, source2);
     std::cout << "Source2: " << source2 << std::endl;
+
+    // MoveToFront
+    int mtf_tbl[source_len];
+    MoveToFront * mtf = new MoveToFront(source_len);
+    mtf->transform(target, mtf_tbl);
+    cout << "MTF:";
+    for (int i = 0; i < source_len; i++) {
+      cout << " " << mtf_tbl[i];
+    }
+    cout << endl;
   } else {
     FILE * dane = fopen("wiersz.txt", "r");
     fseek(dane, 0, SEEK_END);
