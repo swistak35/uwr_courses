@@ -4,6 +4,7 @@
 #include "LexiBWT.h"
 #include "LexiDeBWT.h"
 #include "MoveToFront.h"
+#include "DemoveToFront.h"
 
 #define TESTING_MODE true
 
@@ -39,6 +40,12 @@ int main() {
       cout << " " << mtf_tbl[i];
     }
     cout << endl;
+
+    // DemoveToFront
+    char source3[source_len + 1] = { 0 };
+    DemoveToFront * demtf = new DemoveToFront(source_len);
+    demtf->transform(mtf_tbl, source3);
+    cout << "Source3: " << source3 << endl;
   } else {
     FILE * dane = fopen("wiersz.txt", "r");
     fseek(dane, 0, SEEK_END);
