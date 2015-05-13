@@ -1,5 +1,7 @@
 #include "BurrowsWheelerTransformation.h"
 
+using namespace std;
+
 BurrowsWheelerTransformation::BurrowsWheelerTransformation(int length) {
   this->length = length;
 }
@@ -12,38 +14,38 @@ int BurrowsWheelerTransformation::transform(char * source, char * target) {
   this->source = source;
   this->target = target;
 
-  initial_sort();
-
-  /* int i = 1; */
-  /* while (power(2,i) < this->length) { */
-  /* } */
-}
-
-void BurrowsWheelerTransformation::initial_sort() {
-  std::vector<std::vector<int>> hvec(256, std::vector<int>(0));
-
-  std::vector<int> tmp_ranks;
-
   for (int i = 0; i < this->length; i++) {
-    hvec[this->source[i]].push_back(i);
-    this->ranks.push_back(0);
+    this->ranks.push_back(i);
+    this->positions.push_back(i);
   }
+  
+  int offset = this->length - 1;
+  while (offset >= 0) {
+    vector<vector<int>> hvec(256, vector<int>(0));
 
-  for (int i = 0; i < 256; i++) {
-    /* std::cout << "Znak `" << i << "`: "; */
-    for (int v : hvec[i]) {
-      /* std::cout << v << " "; */
-      tmp_ranks.push_back(v);
+    for (int i = 0; i < this->length; i++) {
+      char * begin_of_this_string = this->source - this->positions[i];
+      if (begin_of_this_string < this->source) {
+        begin_of_this_string += this->length;
+      }
+
+      char * offseth_char_of_this_string = begin_of_this_string + offset;
+      if (offseth_char_of_this_string > source_end) {
+        offseth_char_of_this_string -= this->length;
+      }
+      // na razie wrzucamy tylko nr stringa
+      hvec[*offseth_char_of_this_string].push_back = this->positions[i];
     }
-    /* std::cout << std::endl; */
-  }
 
-  for (int i = 0; i < this->length; i++) {
-      this->ranks[tmp_ranks[i]] = i;
-  }
+    vector<int> new_order(this->length);
 
-  for (int i = 0; i < this->length; i++) {
-    /* std::cout << i << ": " << this->ranks[i] << std::endl; */
-    this->target[this->ranks[i]] = this->source[i];
+    for (auto hvec1 : hvec) {
+      for (int string_number : hvec1) {
+        new_order.push_back(string_number);
+      }
+    }
+
+
+    offset--;
   }
 }
