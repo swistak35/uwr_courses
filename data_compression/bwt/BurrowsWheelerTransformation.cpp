@@ -57,89 +57,65 @@ void BurrowsWheelerTransformation::initial_sort() {
   }
   this->tmp_ranks.clear();
 
-  /* for (int i = 0; i < this->length; i++) { */
-  /*   display_string(this->positions[i]); */
-  /* } */
+  for (int i = 0; i < this->length; i++) {
+    display_string(this->positions[i]);
+  }
   int k = 0;
   int last_k = log2(this->length) - 1;
   cout << "Ostatnie k: " << last_k << endl;
 
   while (k <= last_k) {
     int offset = pow(2, k); // 2 ^ k
+    cout << "Offset: " << offset << endl;
 
-    // first iteration
+    sort_iteration_step(offset);
+    sort_iteration_step(0);
 
-    for (int i = 0; i < this->length; i++) {
-      char c = this->source[get_char_idx(this->positions[i] + offset)];
-      this->hvec[c].push_back(this->positions[i]);
-    }
-
-    for (int i = 0; i < 256; i++) {
-      /* std::cout << "Znak `" << i << "`: "; */
-      for (int v : this->hvec[i]) {
-        /* std::cout << v << " "; */
-        this->tmp_ranks.push_back(v);
-      }
-      /* std::cout << std::endl; */
-    }
-
-    for (int i = 0; i < this->length; i++) {
-      this->ranks[this->tmp_ranks[i]] = i;
-      this->positions[i] = this->tmp_ranks[i];
-    }
-
-    for (int i = 0; i < this->length; i++) {
-      std::cout << " " << this->ranks[i];
-    }
-    cout << "\n";
-    cout << this->target << endl;
-
-    /* for (int i = 0; i < this->length; i++) { */
-    /*   display_string(this->positions[i]); */
-    /* } */
-
-    for (auto &h : this->hvec) {
-      h.clear();
-    }
-    this->tmp_ranks.clear();
-
-    // second iteration
-
-    for (int i = 0; i < this->length; i++) {
-      char c = this->source[get_char_idx(this->positions[i])];
-      this->hvec[c].push_back(this->positions[i]);
-    }
-
-    for (int i = 0; i < 256; i++) {
-      /* std::cout << "Znak `" << i << "`: "; */
-      for (int v : hvec[i]) {
-        /* std::cout << v << " "; */
-        this->tmp_ranks.push_back(v);
-      }
-      /* std::cout << std::endl; */
-    }
-
-    for (int i = 0; i < this->length; i++) {
-      this->ranks[this->tmp_ranks[i]] = i;
-      this->positions[i] = this->tmp_ranks[i];
-    }
-
-    for (int i = 0; i < this->length; i++) {
-      std::cout << " " << this->ranks[i];
-      this->target[this->ranks[i]] = this->source[i];
-    }
-    cout << "\n";
-    cout << this->target << endl;
     /* std::cout << "------" << endl; */
 
-    /* for (int i = 0; i < this->length; i++) { */
-    /*   display_string(this->positions[i]); */
-    /* } */
+    for (int i = 0; i < this->length; i++) {
+      display_string(this->positions[i]);
+    }
     k++;
   }
 }
 
-void BurrowsWheelerTransformation::sort_iteration_step() {
+void BurrowsWheelerTransformation::sort_iteration_step(int offset) {
+  // first iteration
+
+  for (int i = 0; i < this->length; i++) {
+    char c = this->source[get_char_idx(this->positions[i] + offset)];
+    this->hvec[c].push_back(this->positions[i]);
+  }
+
+  for (int i = 0; i < 256; i++) {
+    /* std::cout << "Znak `" << i << "`: "; */
+    for (int v : this->hvec[i]) {
+      /* std::cout << v << " "; */
+      this->tmp_ranks.push_back(v);
+    }
+    /* std::cout << std::endl; */
+  }
+
+  for (int i = 0; i < this->length; i++) {
+    this->ranks[this->tmp_ranks[i]] = i;
+    this->positions[i] = this->tmp_ranks[i];
+  }
+
+  for (int i = 0; i < this->length; i++) {
+    std::cout << " " << this->ranks[i];
+  }
+  cout << "\n";
+  cout << this->target << endl;
+
+  /* for (int i = 0; i < this->length; i++) { */
+  /*   display_string(this->positions[i]); */
+  /* } */
+
+  for (auto &h : this->hvec) {
+    h.clear();
+  }
+  this->tmp_ranks.clear();
 }
 
 int BurrowsWheelerTransformation::get_char_idx(int idx) {

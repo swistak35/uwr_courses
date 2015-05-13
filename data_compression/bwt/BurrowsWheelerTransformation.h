@@ -17,7 +17,7 @@ class BurrowsWheelerTransformation {
     std::vector<int> positions; // ktory string jest na i-tym miejscu
     std::vector<std::vector<int>> hvec;
     void initial_sort();
-    void sort_iteration_step();
+    void sort_iteration_step(int offset);
     void display_string(int idx);
     int get_char_idx(int idx);
     int length;
