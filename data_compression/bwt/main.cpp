@@ -3,12 +3,14 @@
 
 
 int main() {
-  char jakistekst[] = "cos sie stalo";
-  BurrowsWheelerTransformation * bwt = new BurrowsWheelerTransformation(13);
+  char jakistekst[] = "babaca";
+  BurrowsWheelerTransformation * bwt = new BurrowsWheelerTransformation(6);
 
-  char cel[13];
+  char cel[6];
   bwt->transform(jakistekst, cel);
   std::cout << jakistekst << std::endl;
+  std::cout << cel << std::endl;
+  bwt->next_sort();
   std::cout << cel << std::endl;
   return 0;
 }
