@@ -44,13 +44,13 @@ void BurrowsWheelerTransformation::initial_sort() {
   }
 
   for (int i = 0; i < this->length; i++) {
-    std::cout << i << ": " << this->ranks[i] << std::endl;
+    /* std::cout << i << ": " << this->ranks[i] << std::endl; */
     this->target[this->ranks[i]] = this->source[i];
   }
 
-  for (int i = 0; i < this->length; i++) {
-    display_string(this->positions[i]);
-  }
+  /* for (int i = 0; i < this->length; i++) { */
+  /*   display_string(this->positions[i]); */
+  /* } */
 }
 
 void BurrowsWheelerTransformation::next_sort() {
@@ -81,14 +81,14 @@ void BurrowsWheelerTransformation::next_sort() {
     this->positions[i] = tmp_ranks1[i];
   }
 
-  for (int i = 0; i < this->length; i++) {
-    std::cout << i << ": " << this->ranks[i] << std::endl;
-  }
-  std::cout << "------" << endl;
+  /* for (int i = 0; i < this->length; i++) { */
+  /*   std::cout << i << ": " << this->ranks[i] << std::endl; */
+  /* } */
+  /* std::cout << "------" << endl; */
 
-  for (int i = 0; i < this->length; i++) {
-    display_string(this->positions[i]);
-  }
+  /* for (int i = 0; i < this->length; i++) { */
+  /*   display_string(this->positions[i]); */
+  /* } */
 
   // second iteration
   std::vector<std::vector<int>> hvec2(256, std::vector<int>(0));
@@ -115,13 +115,13 @@ void BurrowsWheelerTransformation::next_sort() {
   }
 
   for (int i = 0; i < this->length; i++) {
-    std::cout << i << ": " << this->ranks[i] << std::endl;
+    /* std::cout << i << ": " << this->ranks[i] << std::endl; */
     this->target[this->ranks[i]] = this->source[i];
   }
 
-  for (int i = 0; i < this->length; i++) {
-    display_string(this->positions[i]);
-  }
+  /* for (int i = 0; i < this->length; i++) { */
+  /*   display_string(this->positions[i]); */
+  /* } */
 }
 
 int BurrowsWheelerTransformation::get_char_idx(int idx) {
