@@ -97,7 +97,8 @@ HCoder *huff_init(unsigned int size, unsigned int root) {
   memset(huff->table + 1, 0, root * sizeof(HTable));
   memset(huff, 0, sizeof(HCoder));
 
-  if( huff->size = size ) {
+  huff->size = size;
+  if( huff->size ) {
     huff->map = (unsigned int *) calloc(size, sizeof(unsigned int));
   }
 
@@ -112,7 +113,8 @@ unsigned huff_split (HCoder *huff, unsigned symbol) {
 
   //  is the tree already full???
 
-  if( pair = huff->esc ) {
+  pair = huff->esc;
+  if( pair ) {
     huff->esc--;
   } else {
     return 0;
@@ -154,8 +156,7 @@ unsigned huff_split (HCoder *huff, unsigned symbol) {
 //  swap leaf to group leader position
 //  return symbol's new node
 
-unsigned huff_leader (HCoder *huff, unsigned node)
-{
+unsigned huff_leader(HCoder *huff, unsigned int node) {
 unsigned weight = huff->table[node].weight;
 unsigned leader = node, prev, symbol;
 
@@ -274,8 +275,10 @@ unsigned node = huff->esc, weight, prev;
     //  slide down and out any unused ones
 
     if( huff->table[node].weight & 1 ) {
-      if( weight = huff->table[huff->table[node].down].weight & ~1 )
+      weight = huff->table[huff->table[node].down].weight & ~1;
+      if( weight ) {
         weight += huff->table[huff->table[node].down - 1].weight | 1;
+      }
 
     //  remove zero weight leaves by incrementing HuffEsc
     //  and removing them from the symbol map.  take care
@@ -316,9 +319,11 @@ unsigned empty = 0, max;
     //  as many bits as are required for
     //  the maximum possible count
 
-    if( max = huff->size - (huff->root - huff->esc) / 2 - 1 )
+    max = huff->size - (huff->root - huff->esc) / 2 - 1;
+    if( max ) {
       do arc_put1 (empty & 1), empty >>= 1;
       while( max >>= 1 );
+    }
 }
 
 //  encode the next symbol
@@ -344,8 +349,11 @@ unsigned up, idx, node;
     //  working up the tree from
     //  the node to the root
 
-    while( up = huff->table[idx].up )
-        emit <<= 1, emit |= idx & 1, idx = up;
+    up = huff->table[idx].up;
+    while( up ) {
+      emit <<= 1, emit |= idx & 1, idx = up;
+      up = huff->table[idx].up;
+    }
 
     //  send the code, root selector bit first
 
@@ -374,9 +382,11 @@ unsigned empty = 0, bit = 1, max, symbol;
     //  only the number of bits necessary to
     //  transmit the maximum possible symbol value
 
-    if( max = huff->size - (huff->root - huff->esc) / 2 - 1 )
+    max = huff->size - (huff->root - huff->esc) / 2 - 1;
+    if( max ) {
       do empty |= arc_get1 () ? bit : 0, bit <<= 1;
       while( max >>= 1 );
+    }
 
     //  the count is of unmapped symbols
     //  in the table before the new one
@@ -406,11 +416,15 @@ unsigned symbol, down;
     //  bit means go left, a zero
     //  means go right.
 
-    while( down = huff->table[node].down )
-      if( arc_get1 () )
+    down = huff->table[node].down;
+    while( down ) {
+      if( arc_get1 () ) {
         node = down - 1;  // the left child preceeds the right child
-      else
+      } else {
         node = down;
+      }
+      down = huff->table[node].down;
+    }
 
     //  sent to the escape node???
     //  refuse to add to a full tree
@@ -477,8 +491,11 @@ HCoder *huff;
       putc (size >> 8, Out);
       putc (size, Out);
 
-      while( symbol = *argv[2]++ )
+      symbol = *argv[2]++;
+      while( symbol ) {
+        symbol = *argv[2]++;
         huff_encode(huff, symbol);
+      }
 
       while( ArcBit )  // flush last few bits
         arc_put1 (0);
