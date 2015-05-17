@@ -1,8 +1,4 @@
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
-#include <fcntl.h>
-#include <stdio.h>
+#include "vitter.h"
 
 #define HUFFSTANDALONE 1
 #define __cdecl
@@ -60,51 +56,15 @@ unsigned arc_get1();
 
 //  huff_scale(by_bits) -- scale weights and rebalance tree
 
-typedef struct {
-    unsigned int up,      // next node up the tree
-        down,         // pair of down nodes
-        symbol,       // node symbol value
-        weight;       // node weight
-} HTable;
-
-typedef struct {
-    unsigned int esc,     // the current tree height
-        root,         // the root of the tree
-        size,         // the alphabet size
-        * map;         // mapping for symbols to nodes
-    HTable table[1];  // the coding table starts here
-} HCoder;
 
 //  initialize an adaptive coder
 //  for alphabet size, and count
 //  of nodes to be used
 
-class Huffman {
-  public:
-    Huffman(FILE * huffman_source, FILE * huffman_target);
-    ~Huffman();
-    void huff_init(unsigned int size, unsigned int root);
-    unsigned int huff_split(HCoder * huff, unsigned int symbol);
-    void huff_increment(HCoder * huff, unsigned int node);
-    void huff_scale(unsigned int bits);
-    void huff_sendid (HCoder *huff, unsigned symbol);
-    void huff_encode(unsigned int symbol);
-    unsigned huff_readid (HCoder *huff);
-    unsigned huff_decode();
-    void arc_put1 (unsigned bit);
-    unsigned int arc_get1();
-    void compress();
-    void decompress();
-    HCoder * hcoder;
-    unsigned char ArcBit;
-    int ArcChar;
-    FILE * Out;
-    FILE * In;
-};
 
-Huffman::Huffman(FILE * huffman_source, FILE * huffman_target) {
-  this->In = huffman_source;
-  this->Out = huffman_target;
+Huffman::Huffman() {
+  /* this->In = huffman_source; */
+  /* this->Out = huffman_target; */
   ArcBit = 0;
   ArcChar = 0;
 }
@@ -508,73 +468,80 @@ unsigned Huffman::huff_decode ()
 /* } */
 
 void Huffman::arc_put1 (unsigned bit) {
-    ArcChar <<= 1;
-
-    if(bit) {
-      ArcChar |= 1;
-    }
-
-    ArcBit++;
-    if(ArcBit < 8) {
-      return;
-    }
-
-    putc(ArcChar, Out);
-    ArcChar = 0;
-    ArcBit = 0;
-}
-
-void Huffman::compress() {
-  unsigned int size = 256;
-unsigned mask = ~0;
-int symbol;
-  huff_init (256, size);
-  putc (size >> 8, Out);
-  putc (size, Out);
-
-  fseek(In, 0, 2);
-  size = ftell(In);
-  fseek (In, 0, 0);
-
-  putc (size >> 16, Out);
-  putc (size >> 8, Out);
-  putc (size, Out);
-
-  while( size )
-    if( symbol = getc(In), huff_encode(symbol), size-- & mask )
-      continue;
-    else
-      huff_scale(1);
-
-  while( ArcBit )  // flush last few bits
-      arc_put1 (0);
-}
-
-void Huffman::decompress() {
-  int size = 256;
-unsigned mask = ~0;
-int symbol;
-  size = getc(In) << 8;
-  size |= getc(In);
-
-  huff_init (256, size);
-
-  size = getc(In) << 16;
-  size |= getc(In) << 8;
-  size |= getc(In);
-
-  while( size )
-    if( symbol = huff_decode(), putc (symbol, Out), size-- & mask )
-      continue;
-    else
-      huff_scale(1);
 }
 
 unsigned int Huffman::arc_get1() {
-    if(!ArcBit) {
-      ArcChar = getc(In);
-      ArcBit = 8;
-    }
-
-    return ArcChar >> --ArcBit & 1;
+  return 0;
 }
+
+/* void Huffman::arc_put1 (unsigned bit) { */
+/*     ArcChar <<= 1; */
+
+/*     if(bit) { */
+/*       ArcChar |= 1; */
+/*     } */
+
+/*     ArcBit++; */
+/*     if(ArcBit < 8) { */
+/*       return; */
+/*     } */
+
+/*     putc(ArcChar, Out); */
+/*     ArcChar = 0; */
+/*     ArcBit = 0; */
+/* } */
+
+/* unsigned int Huffman::arc_get1() { */
+/*     if(!ArcBit) { */
+/*       ArcChar = getc(In); */
+/*       ArcBit = 8; */
+/*     } */
+
+/*     return ArcChar >> --ArcBit & 1; */
+/* } */
+
+/* void Huffman::compress() { */
+/*   unsigned int size = 256; */
+/* unsigned mask = ~0; */
+/* int symbol; */
+/*   huff_init (256, size); */
+/*   putc (size >> 8, Out); */
+/*   putc (size, Out); */
+
+/*   fseek(In, 0, 2); */
+/*   size = ftell(In); */
+/*   fseek (In, 0, 0); */
+
+/*   putc (size >> 16, Out); */
+/*   putc (size >> 8, Out); */
+/*   putc (size, Out); */
+
+/*   while( size ) */
+/*     if( symbol = getc(In), huff_encode(symbol), size-- & mask ) */
+/*       continue; */
+/*     else */
+/*       huff_scale(1); */
+
+/*   while( ArcBit )  // flush last few bits */
+/*       arc_put1 (0); */
+/* } */
+
+/* void Huffman::decompress() { */
+/*   int size = 256; */
+/* unsigned mask = ~0; */
+/* int symbol; */
+/*   size = getc(In) << 8; */
+/*   size |= getc(In); */
+
+/*   huff_init (256, size); */
+
+/*   size = getc(In) << 16; */
+/*   size |= getc(In) << 8; */
+/*   size |= getc(In); */
+
+/*   while( size ) */
+/*     if( symbol = huff_decode(), putc (symbol, Out), size-- & mask ) */
+/*       continue; */
+/*     else */
+/*       huff_scale(1); */
+/* } */

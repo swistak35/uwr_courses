@@ -4,8 +4,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-#define __cdecl
-
 typedef struct {
     unsigned int up,      // next node up the tree
         down,         // pair of down nodes
@@ -23,7 +21,7 @@ typedef struct {
 
 class Huffman {
   public:
-    Huffman(FILE * huffman_source, FILE * huffman_target);
+    Huffman();
     ~Huffman();
     void huff_init(unsigned int size, unsigned int root);
     unsigned int huff_split(HCoder * huff, unsigned int symbol);
@@ -35,11 +33,9 @@ class Huffman {
     unsigned huff_decode();
     void arc_put1 (unsigned bit);
     unsigned int arc_get1();
-    void compress();
-    void decompress();
     HCoder * hcoder;
     unsigned char ArcBit;
     int ArcChar;
-    FILE * Out;
-    FILE * In;
+    /* FILE * Out; */
+    /* FILE * In; */
 };
