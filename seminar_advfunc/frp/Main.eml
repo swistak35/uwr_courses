@@ -2,6 +2,7 @@ import Graphics.Element exposing (..)
 import Graphics.Collage exposing (..)
 import Color exposing (..)
 import Time
+import Signal exposing (..)
 import Window
 import Mouse
 import Random exposing (..)
@@ -22,13 +23,13 @@ pairToPosition (x1, y1) = { x = x1, y = y1 }
 type Input = MouseClick () | MousePosition Position | Timer Float
 
 mouseClickInput : Signal Input
-mouseClickInput = Signal.map MouseClick Mouse.clicks
+mouseClickInput = MouseClick <~ Mouse.clicks
 
 mousePositionInput : Signal Input
-mousePositionInput = Signal.map (MousePosition << pairToPosition) Mouse.position
+mousePositionInput = MousePosition << pairToPosition <~ Mouse.position
 
 timerInput : Signal Input
-timerInput = Signal.map Timer (Time.fps 30)
+timerInput = Timer <~ (Time.fps 30)
 
 
 
@@ -79,30 +80,34 @@ enemySpeed : Int
 enemySpeed = 5
 
 addBullet : GameState -> GameState
-addBullet gs = { gs | bullets <- { position = gs.mPosition } :: gs.bullets }
+addBullet gs = let newBullet = { position = gs.mPosition }
+                in { gs | bullets <- newBullet :: gs.bullets }
 
 moveBullet : Bullet -> Bullet
-moveBullet b = { position = { x = b.position.x, y = b.position.y - bulletSpeed } }
+moveBullet b = let newPosition = { x = b.position.x, y = b.position.y - bulletSpeed }
+                in { b | position <- newPosition }
 
 moveBullets : GameState -> GameState
 moveBullets gs = {gs | bullets <- List.map moveBullet gs.bullets }
 
---getRandomValue : GameState -> (Int, Seed)
---getRandomValue gs = generate (int 50 750) gs.seed
-
---randomPosition : GameState -> (GameState, Position)
---randomPosition gs = ({ gs | seed <- snd <| getRandomValue gs }, { x = fst (getRandomValue gs), y = 100 })
-
+randomPosition : GameState -> (GameState, Position)
+randomPosition gs = let (valueX, newSeed) = generate (int 50 750) gs.seed
+                        position          = { x = valueX, y = 50 }
+                        gs                = { gs | seed <- newSeed }
+                     in (gs, position)
 
 addEnemy : GameState -> GameState
-addEnemy gs = { gs | createdEnemies <- gs.createdEnemies + 1
-                   , enemies <- { position = { x = 300, y = 100 } } :: gs.enemies }
+addEnemy gs = let (gs', newPosition) = randomPosition gs
+                  newEnemy = { position = newPosition }
+               in { gs' | createdEnemies <- gs.createdEnemies + 1
+                        , enemies <- newEnemy :: gs.enemies }
 
 moveEnemy : Enemy -> Enemy
-moveEnemy { position } = { position = { x = position.x - enemySpeed, y = position.y } }
+moveEnemy e = let newPosition = { x = e.position.x - enemySpeed, y = e.position.y }
+               in { e | position <- newPosition }
 
 moveEnemies : GameState -> GameState
-moveEnemies gameState = { gameState | enemies <- List.map moveEnemy gameState.enemies }
+moveEnemies gs = { gs | enemies <- List.map moveEnemy gs.enemies }
 
 collision : Enemy -> Bullet -> Bool
 collision e b = (abs (b.position.y - e.position.y)) < 30
@@ -177,10 +182,10 @@ basicShipForm : Form
 basicShipForm = rotate (degrees -30) (filled red (ngon 3 30))
 
 mkBulletForm : Bullet -> Form
-mkBulletForm { position } = move' position basicBulletForm
+mkBulletForm b = move' b.position basicBulletForm
 
 mkEnemyForm : Enemy -> Form
-mkEnemyForm { position } = move' position basicEnemyForm
+mkEnemyForm e = move' e.position basicEnemyForm
 
 shipForm : GameState -> Form
 shipForm gameState = move' gameState.mPosition basicShipForm
@@ -192,7 +197,10 @@ enemiesForms : GameState -> List Form
 enemiesForms gameState = List.map mkEnemyForm gameState.enemies
 
 itemsToShow : GameState -> List Form
-itemsToShow gameState = (shipForm gameState) :: ((bulletsForms gameState) ++ (enemiesForms gameState))
+itemsToShow gs = let ship    = shipForm gs
+                     bullets = bulletsForms gs
+                     enemies = enemiesForms gs
+                 in ship :: bullets ++ enemies
 
 display : (Int,Int) -> GameState -> Element
 display (w,h) gameState = flow down [
