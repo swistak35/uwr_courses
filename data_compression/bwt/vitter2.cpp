@@ -60,17 +60,17 @@ unsigned arc_get1();
 //  huff_scale(by_bits) -- scale weights and rebalance tree
 
 typedef struct {
-    unsigned up,      // next node up the tree
+    unsigned int up,      // next node up the tree
         down,         // pair of down nodes
         symbol,       // node symbol value
         weight;       // node weight
 } HTable;
 
 typedef struct {
-    unsigned esc,     // the current tree height
+    unsigned int esc,     // the current tree height
         root,         // the root of the tree
         size,         // the alphabet size
-        *map;         // mapping for symbols to nodes
+        * map;         // mapping for symbols to nodes
     HTable table[1];  // the coding table starts here
 } HCoder;
 
@@ -78,27 +78,28 @@ typedef struct {
 //  for alphabet size, and count
 //  of nodes to be used
 
-HCoder *huff_init (unsigned size, unsigned root)
-{
-HCoder *huff;
+HCoder *huff_init(unsigned int size, unsigned int root) {
+  HCoder *huff;
 
   //  default: all alphabet symbols are used
-
-  if( !root || root > size )
-      root = size;
+  if( !root || root > size ) {
+    root = size;
+  }
 
   //  create the initial escape node
   //  at the tree root
 
-  if( root <<= 1 )
+  if( root <<= 1 ) {
     root--;
+  }
 
-  huff = (HCoder *) malloc (root * sizeof(HTable) + sizeof(HCoder));
-  memset (huff->table + 1, 0, root * sizeof(HTable));
-  memset (huff, 0, sizeof(HCoder));
+  huff = (HCoder *) malloc(root * sizeof(HTable) + sizeof(HCoder));
+  memset(huff->table + 1, 0, root * sizeof(HTable));
+  memset(huff, 0, sizeof(HCoder));
 
-  if( huff->size = size )
-      huff->map = (unsigned int *) calloc (size, sizeof(unsigned));
+  if( huff->size = size ) {
+    huff->map = (unsigned int *) calloc(size, sizeof(unsigned int));
+  }
 
   huff->esc = huff->root = root;
   return huff;
