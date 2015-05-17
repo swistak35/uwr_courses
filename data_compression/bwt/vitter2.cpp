@@ -107,45 +107,48 @@ HCoder *huff_init(unsigned int size, unsigned int root) {
 
 // split escape node to incorporate new symbol
 
-unsigned huff_split (HCoder *huff, unsigned symbol)
-{
-unsigned pair, node;
+unsigned huff_split (HCoder *huff, unsigned symbol) {
+  unsigned pair, node;
 
-    //  is the tree already full???
+  //  is the tree already full???
 
-    if( pair = huff->esc )
-        huff->esc--;
-    else
-        return 0;
+  if( pair = huff->esc ) {
+    huff->esc--;
+  } else {
+    return 0;
+  }
 
-    //  if this is the last symbol, it moves into
-    //  the escape node's old position, and
-    //  huff->esc is set to zero.
+  //  if this is the last symbol, it moves into
+  //  the escape node's old position, and
+  //  huff->esc is set to zero.
 
-    //  otherwise, the escape node is promoted to
-    //  parent a new escape node and the new symbol.
+  //  otherwise, the escape node is promoted to
+  //  parent a new escape node and the new symbol.
 
-    if( node = huff->esc ) {
-        huff->table[pair].down = node;
-        huff->table[pair].weight = 1;
-        huff->table[node].up = pair;
-        huff->esc--;
-    } else
-        pair = 0, node = 1;
+  node = huff->esc;
+  if( node ) {
+    huff->table[pair].down = node;
+    huff->table[pair].weight = 1;
+    huff->table[node].up = pair;
+    huff->esc--;
+  } else {
+    pair = 0;
+    node = 1;
+  }
 
-    //  initialize the new symbol node
+  //  initialize the new symbol node
 
-    huff->table[node].symbol = symbol;
-    huff->table[node].weight = 0;
-    huff->table[node].down = 0;
-    huff->map[symbol] = node;
+  huff->table[node].symbol = symbol;
+  huff->table[node].weight = 0;
+  huff->table[node].down = 0;
+  huff->map[symbol] = node;
 
-    //  initialize a new escape node.
+  //  initialize a new escape node.
 
-    huff->table[huff->esc].weight = 0;
-    huff->table[huff->esc].down = 0;
-    huff->table[huff->esc].up = pair;
-    return node;
+  huff->table[huff->esc].weight = 0;
+  huff->table[huff->esc].down = 0;
+  huff->table[huff->esc].up = pair;
+  return node;
 }
 
 //  swap leaf to group leader position
