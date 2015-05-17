@@ -87,14 +87,14 @@ int main() {
     FILE * hsource1 = fopen("wiersz.txt", "rb");
     FILE * htarget1 = fopen("bin_wiersz", "wb");
     Huffman * huffman1 = new Huffman(hsource1, htarget1);
-    huffman1.compress();
+    huffman1->compress();
     fclose(hsource1);
     fclose(htarget1);
 
     FILE * hsource2 = fopen("bin_wiersz", "rb");
     FILE * htarget2 = fopen("wiersz3.txt", "wb");
     Huffman * huffman2 = new Huffman(hsource2, htarget2);
-    huffman2.decompress();
+    huffman2->decompress();
     fclose(hsource2);
     fclose(htarget2);
 
