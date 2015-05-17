@@ -9,14 +9,6 @@
 
 #define TESTING_MODE false
 
-void arc_put1 (unsigned bit);
-unsigned arc_get1 ();
-unsigned char ArcBit = 0;
-int ArcChar = 0;
-
-FILE * huffman_target;
-FILE * huffman_source;
-
 using namespace std;
 
 int main() {
@@ -92,22 +84,20 @@ int main() {
     }
     cout << endl;
 
-    huffman_target = fopen("huffman_target_file", "wb");
+    FILE * hsource1 = fopen("wiersz.txt", "rb");
+    FILE * htarget1 = fopen("bin_wiersz", "wb");
+    Huffman * huffman1 = new Huffman(hsource1, htarget1);
+    huffman1.compress();
+    fclose(hsource1);
+    fclose(htarget1);
 
-    HCoder * huff = huff_init(256, 256);
-    for (int i = 0; i < source_len; i++) {
-      huff_encode(huff, mtf_tbl[i]);
-    }
+    FILE * hsource2 = fopen("bin_wiersz", "rb");
+    FILE * htarget2 = fopen("wiersz3.txt", "wb");
+    Huffman * huffman2 = new Huffman(hsource2, htarget2);
+    huffman2.decompress();
+    fclose(hsource2);
+    fclose(htarget2);
 
-    fclose(huffman_target);
-
-    huffman_source = fopen("huffman_target_file", "wb");
-    ArcBit = ArcChar = 0;
-    HCoder * huff2 = huff_init(256, 256);
-    for (int i = 0; i < source_len; i++) {
-      mtf_tbl[i] = huff_decode(huff);
-    }
-    fclose(huffman_source);
     
 
     // DemoveToFront
@@ -118,26 +108,4 @@ int main() {
   }
 
   return 0;
-}
-
-void arc_put1 (unsigned bit)
-{
-    ArcChar <<= 1;
-
-    if( bit )
-        ArcChar |= 1;
-
-    if( ++ArcBit < 8 )
-        return;
-
-    putc (ArcChar, huffman_target);
-    ArcChar = ArcBit = 0;
-}
-
-unsigned arc_get1 ()
-{
-    if( !ArcBit )
-        ArcChar = getc (huffman_source), ArcBit = 8;
-
-    return ArcChar >> --ArcBit & 1;
 }

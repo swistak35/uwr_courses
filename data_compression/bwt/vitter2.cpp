@@ -484,28 +484,28 @@ unsigned Huffman::huff_decode ()
 }
 
 
-int main (int argc, char **argv) {
-  int mode;
+/* int main (int argc, char **argv) { */
+/*   int mode; */
 
-    if( argc > 1 ) {
-      mode = argv[1][0], argv[1]++;
-    }
+/*     if( argc > 1 ) { */
+/*       mode = argv[1][0], argv[1]++; */
+/*     } */
     
-    FILE * In = fopen(argv[2], "r");
-    FILE * Out = fopen(argv[3], "w");
+/*     FILE * In = fopen(argv[2], "r"); */
+/*     FILE * Out = fopen(argv[3], "w"); */
 
-    Huffman * huffman = new Huffman(In, Out);
+/*     Huffman * huffman = new Huffman(In, Out); */
 
-    if( mode == 'd' ) {
-      huffman->decompress();
-    } else if (mode == 'c') {
-      huffman->compress();
-    } else {
-      printf("BLAD!!!\n");
-    }
+/*     if( mode == 'd' ) { */
+/*       huffman->decompress(); */
+/*     } else if (mode == 'c') { */
+/*       huffman->compress(); */
+/*     } else { */
+/*       printf("BLAD!!!\n"); */
+/*     } */
 
-    return 0;
-}
+/*     return 0; */
+/* } */
 
 void Huffman::arc_put1 (unsigned bit) {
     ArcChar <<= 1;
