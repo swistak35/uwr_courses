@@ -2,6 +2,7 @@
 #include <memory.h>
 #include <string.h>
 #include <fcntl.h>
+#include <stdio.h>
 
 #define HUFFSTANDALONE 1
 #define __cdecl
@@ -78,8 +79,41 @@ typedef struct {
 //  for alphabet size, and count
 //  of nodes to be used
 
-HCoder *huff_init(unsigned int size, unsigned int root) {
-  HCoder *huff;
+class Huffman {
+  public:
+    Huffman(FILE * huffman_source, FILE * huffman_target);
+    ~Huffman();
+    void huff_init(unsigned int size, unsigned int root);
+    unsigned int huff_split(HCoder * huff, unsigned int symbol);
+    void huff_increment(HCoder * huff, unsigned int node);
+    void huff_scale(unsigned int bits);
+    void huff_sendid (HCoder *huff, unsigned symbol);
+    void huff_encode(unsigned int symbol);
+    unsigned huff_readid (HCoder *huff);
+    unsigned huff_decode();
+    void arc_put1 (unsigned bit);
+    unsigned int arc_get1();
+    void compress();
+    void decompress();
+    HCoder * hcoder;
+    unsigned char ArcBit;
+    int ArcChar;
+    FILE * Out;
+    FILE * In;
+};
+
+Huffman::Huffman(FILE * huffman_source, FILE * huffman_target) {
+  this->In = huffman_source;
+  this->Out = huffman_target;
+  ArcBit = 0;
+  ArcChar = 0;
+}
+
+Huffman::~Huffman() {
+}
+
+void Huffman::huff_init(unsigned int size, unsigned int root) {
+  HCoder * huff;
 
   //  default: all alphabet symbols are used
   if( !root || root > size ) {
@@ -103,12 +137,12 @@ HCoder *huff_init(unsigned int size, unsigned int root) {
   }
 
   huff->esc = huff->root = root;
-  return huff;
+  this->hcoder = huff;
 }
 
 // split escape node to incorporate new symbol
 
-unsigned huff_split (HCoder *huff, unsigned symbol) {
+unsigned int Huffman::huff_split(HCoder *huff, unsigned symbol) {
   unsigned pair, node;
 
   //  is the tree already full???
@@ -225,9 +259,8 @@ unsigned int huff_slide (HCoder * huff, unsigned int node) {
 
 //  increment symbol weight and re balance the tree.
 
-void huff_increment (HCoder *huff, unsigned node)
-{
-unsigned up;
+void Huffman::huff_increment(HCoder * huff, unsigned int node) {
+  unsigned up;
 
   //  obviate swapping a parent with its child:
   //    increment the leaf and proceed
@@ -235,10 +268,11 @@ unsigned up;
 
   //  otherwise, promote leaf to group leader position in the tree
 
-  if( huff->table[node].up == node + 1 )
+  if( huff->table[node].up == node + 1 ) {
     huff->table[node].weight += 2, node++;
-  else
-    node = huff_leader (huff, node);
+  } else {
+    node = huff_leader(huff, node);
+  }
 
   //  increase the weight of each node and slide
   //  over any smaller weights ahead of it
@@ -251,13 +285,15 @@ unsigned up;
   //  positions.
 
   while( huff->table[node].weight += 2, up = huff->table[node].up ) {
-    while( huff->table[node].weight > huff->table[node + 1].weight )
-        node = huff_slide (huff, node);
+    while( huff->table[node].weight > huff->table[node + 1].weight ) {
+      node = huff_slide (huff, node);
+    }
 
-    if( huff->table[node].weight & 1 )
-        node = up;
-    else
-        node = huff->table[node].up;
+    if( huff->table[node].weight & 1 ) {
+      node = up;
+    } else {
+      node = huff->table[node].up;
+    }
   }
 }
 
@@ -266,9 +302,9 @@ unsigned up;
 //  zero weight nodes are removed from the tree
 //  by sliding them out the left of the rank list
 
-void huff_scale (HCoder *huff, unsigned bits)
-{
-unsigned node = huff->esc, weight, prev;
+void Huffman::huff_scale(unsigned int bits) {
+  HCoder * huff = this->hcoder;
+  unsigned int node = huff->esc, weight, prev;
 
   //  work up the tree from the escape node
   //  scaling weights by the value of bits
@@ -307,9 +343,8 @@ unsigned node = huff->esc, weight, prev;
 
 //  send the bits for an escaped symbol
 
-void huff_sendid (HCoder *huff, unsigned symbol)
-{
-unsigned empty = 0, max;
+void Huffman::huff_sendid (HCoder *huff, unsigned symbol) {
+  unsigned empty = 0, max;
 
     //  count the number of empty symbols
     //  before the symbol in the table
@@ -331,10 +366,10 @@ unsigned empty = 0, max;
 
 //  encode the next symbol
 
-void huff_encode (HCoder *huff, unsigned symbol)
-{
-unsigned emit = 1, bit;
-unsigned up, idx, node;
+void Huffman::huff_encode(unsigned int symbol) {
+  HCoder * huff = this->hcoder;
+  unsigned emit = 1, bit;
+  unsigned up, idx, node;
 
     if( symbol < huff->size )
         node = huff->map[symbol];
@@ -377,7 +412,7 @@ unsigned up, idx, node;
 //  read the identification bits
 //  for an escaped symbol
 
-unsigned huff_readid (HCoder *huff)
+unsigned Huffman::huff_readid (HCoder *huff)
 {
 unsigned empty = 0, bit = 1, max, symbol;
 
@@ -408,10 +443,11 @@ unsigned empty = 0, bit = 1, max, symbol;
 
 //  decode the next symbol
 
-unsigned huff_decode (HCoder *huff)
+unsigned Huffman::huff_decode ()
 {
-unsigned node = huff->root;
-unsigned symbol, down;
+  HCoder * huff = this->hcoder;
+  unsigned node = huff->root;
+  unsigned symbol, down;
 
     //  work down the tree from the root
     //  until reaching either a leaf
@@ -447,147 +483,31 @@ unsigned symbol, down;
     return symbol;
 }
 
-#ifdef HUFFSTANDALONE
 
-#include <stdio.h>
+int main (int argc, char **argv) {
+  int mode;
 
-FILE *In = stdin, *Out = stdout;
-unsigned char ArcBit = 0;
-int ArcChar = 0;
-
-int main (int argc, char **argv)
-{
-int mode, size, symbol;
-unsigned mask = ~0;
-HCoder *huff;
-
-    if( argc > 1 )
-        mode = argv[1][0], argv[1]++;
-    else {
-        printf ("Usage: %s [cdtls]nn infile outfile\nnn -- alphabet size\ninfile -- source file\noutfile -- output file", argv[0]);
-        return 1;
+    if( argc > 1 ) {
+      mode = argv[1][0], argv[1]++;
     }
+    
+    FILE * In = fopen(argv[2], "r");
+    FILE * Out = fopen(argv[3], "w");
 
-    if( argv[1][0] == 's' )
-      argv[1]++, mask = 8191;
-
-    if( argc > 3 )
-      if( !(Out = fopen (argv[3], "w")) )
-        return 1;
-
-#ifndef unix
-    _setmode (_fileno (Out), _O_BINARY);
-#endif
-
-    //  literal text
-
-    if( mode == 'l' ) {
-      if( !(size = atoi (argv[1])) )
-        size = 256;
-
-      huff = huff_init (256, size);
-      putc (size >> 8, Out);
-      putc (size, Out);
-
-      size = strlen (argv[2]);
-      putc (size >> 16, Out);
-      putc (size >> 8, Out);
-      putc (size, Out);
-
-      symbol = *argv[2]++;
-      while( symbol ) {
-        symbol = *argv[2]++;
-        huff_encode(huff, symbol);
-      }
-
-      while( ArcBit )  // flush last few bits
-        arc_put1 (0);
-
-      return 0;
-    }
-
-    //  alphabet fill
-
-    if( mode == 't' ) {
-      if( !(size = atoi (argv[1])) )
-        size = 256;
-
-      huff = huff_init (256, size);
-      putc (size >> 8, Out);
-      putc (size, Out);
-
-      putc (size >> 16, Out);
-      putc (size >> 8, Out);
-      putc (size, Out);
-
-      for( symbol = 0; symbol < size; symbol++ )
-        huff_encode(huff, symbol);
-
-      while( ArcBit )  // flush last few bits
-        arc_put1 (0);
-
-      return 0;
-    }
-
-    if( argc > 2 )
-      if( !(In = fopen (argv[2], "r")) )
-        return 1;
-
-#ifndef unix
-    _setmode (_fileno (In), _O_BINARY);
-#endif
-
-    //  decompression
+    Huffman * huffman = new Huffman(In, Out);
 
     if( mode == 'd' ) {
-      size = getc(In) << 8;
-      size |= getc(In);
-
-      huff = huff_init (256, size);
-
-      size = getc(In) << 16;
-      size |= getc(In) << 8;
-      size |= getc(In);
-
-      while( size )
-        if( symbol = huff_decode(huff), putc (symbol, Out), size-- & mask )
-            continue;
-        else
-            huff_scale(huff, 1);
-
-      return 0;
+      huffman->decompress();
+    } else if (mode == 'c') {
+      huffman->compress();
+    } else {
+      printf("BLAD!!!\n");
     }
-
-    // compression
-
-    if( !(size = atoi (argv[1])) )
-        size = 256;
-
-    huff = huff_init (256, size);
-    putc (size >> 8, Out);
-    putc (size, Out);
-
-    fseek(In, 0, 2);
-    size = ftell(In);
-    fseek (In, 0, 0);
-
-    putc (size >> 16, Out);
-    putc (size >> 8, Out);
-    putc (size, Out);
-
-    while( size )
-      if( symbol = getc(In), huff_encode(huff, symbol), size-- & mask )
-        continue;
-      else
-        huff_scale(huff, 1);
-
-    while( ArcBit )  // flush last few bits
-        arc_put1 (0);
 
     return 0;
 }
 
-void arc_put1 (unsigned bit) {
+void Huffman::arc_put1 (unsigned bit) {
     ArcChar <<= 1;
 
     if(bit) {
@@ -604,7 +524,53 @@ void arc_put1 (unsigned bit) {
     ArcBit = 0;
 }
 
-unsigned int arc_get1() {
+void Huffman::compress() {
+  unsigned int size = 256;
+unsigned mask = ~0;
+int symbol;
+  huff_init (256, size);
+  putc (size >> 8, Out);
+  putc (size, Out);
+
+  fseek(In, 0, 2);
+  size = ftell(In);
+  fseek (In, 0, 0);
+
+  putc (size >> 16, Out);
+  putc (size >> 8, Out);
+  putc (size, Out);
+
+  while( size )
+    if( symbol = getc(In), huff_encode(symbol), size-- & mask )
+      continue;
+    else
+      huff_scale(1);
+
+  while( ArcBit )  // flush last few bits
+      arc_put1 (0);
+}
+
+void Huffman::decompress() {
+  int size = 256;
+unsigned mask = ~0;
+int symbol;
+  size = getc(In) << 8;
+  size |= getc(In);
+
+  huff_init (256, size);
+
+  size = getc(In) << 16;
+  size |= getc(In) << 8;
+  size |= getc(In);
+
+  while( size )
+    if( symbol = huff_decode(), putc (symbol, Out), size-- & mask )
+      continue;
+    else
+      huff_scale(1);
+}
+
+unsigned int Huffman::arc_get1() {
     if(!ArcBit) {
       ArcChar = getc(In);
       ArcBit = 8;
@@ -612,4 +578,3 @@ unsigned int arc_get1() {
 
     return ArcChar >> --ArcBit & 1;
 }
-#endif
