@@ -156,26 +156,28 @@ unsigned huff_split (HCoder *huff, unsigned symbol) {
 //  swap leaf to group leader position
 //  return symbol's new node
 
-unsigned huff_leader(HCoder *huff, unsigned int node) {
-unsigned weight = huff->table[node].weight;
-unsigned leader = node, prev, symbol;
+unsigned int huff_leader(HCoder * huff, unsigned int node) {
+  unsigned int weight = huff->table[node].weight;
+  unsigned int leader = node, prev, symbol;
 
-    while( weight == huff->table[leader + 1].weight )
-        leader++;
+  while ( weight == huff->table[leader + 1].weight ) {
+    leader++;
+  }
 
-    if( leader == node )
-        return node;
+  if ( leader == node ) {
+    return node;
+  }
 
-    // swap the leaf nodes
+  // swap the leaf nodes
 
-    symbol = huff->table[node].symbol;
-    prev = huff->table[leader].symbol;
+  symbol = huff->table[node].symbol;
+  prev = huff->table[leader].symbol;
 
-    huff->table[leader].symbol = symbol;
-    huff->table[node].symbol = prev;
-    huff->map[symbol] = leader;
-    huff->map[prev] = node;
-    return leader;
+  huff->table[leader].symbol = symbol;
+  huff->table[node].symbol = prev;
+  huff->map[symbol] = leader;
+  huff->map[prev] = node;
+  return leader;
 }
 
 //  slide internal node up over all leaves of equal weight;
@@ -183,41 +185,42 @@ unsigned leader = node, prev, symbol;
 
 //  return node's new position
 
-unsigned huff_slide (HCoder *huff, unsigned node)
-{
-unsigned next = node;
-HTable swap[1];
+unsigned int huff_slide (HCoder * huff, unsigned int node) {
+  unsigned next = node;
+  HTable swap[1];
 
-    *swap = huff->table[next++];
+  *swap = huff->table[next++];
 
-    // if we're sliding an internal node, find the
-    // highest possible leaf to exchange with
+  // if we're sliding an internal node, find the
+  // highest possible leaf to exchange with
 
-    if( swap->weight & 1 )
-      while( swap->weight > huff->table[next + 1].weight )
-          next++;
-
-    //  swap the two nodes
-
-    huff->table[node] = huff->table[next];
-    huff->table[next] = *swap;
-
-    huff->table[next].up = huff->table[node].up;
-    huff->table[node].up = swap->up;
-
-    //  repair the symbol map and tree structure
-
-    if( swap->weight & 1 ) {
-        huff->table[swap->down].up = next;
-        huff->table[swap->down - 1].up = next;
-        huff->map[huff->table[node].symbol] = node;
-    } else {
-        huff->table[huff->table[node].down - 1].up = node;
-        huff->table[huff->table[node].down].up = node;
-        huff->map[swap->symbol] = next;
+  if ( swap->weight & 1 ) {
+    while( swap->weight > huff->table[next + 1].weight ) {
+      next++;
     }
+  }
 
-    return next;
+  //  swap the two nodes
+
+  huff->table[node] = huff->table[next];
+  huff->table[next] = *swap;
+
+  huff->table[next].up = huff->table[node].up;
+  huff->table[node].up = swap->up;
+
+  //  repair the symbol map and tree structure
+
+  if( swap->weight & 1 ) {
+    huff->table[swap->down].up = next;
+    huff->table[swap->down - 1].up = next;
+    huff->map[huff->table[node].symbol] = node;
+  } else {
+    huff->table[huff->table[node].down - 1].up = node;
+    huff->table[huff->table[node].down].up = node;
+    huff->map[swap->symbol] = next;
+  }
+
+  return next;
 }
 
 //  increment symbol weight and re balance the tree.
