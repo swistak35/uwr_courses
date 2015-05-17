@@ -1,0 +1,163 @@
+import Graphics.Element exposing (..)
+import Graphics.Collage exposing (..)
+import Color exposing (..)
+import Time
+import Window
+import Mouse
+
+spaceship = rotate (degrees -30) (filled red (ngon 3 30))
+--enemies = [ filled blue (ngon 5 30), move (50, 50) (filled blue (ngon 5 30)) ]
+
+--main = collage 400 400 ([spaceship] ++ enemies)
+
+--import Graphics.Element exposing (..)
+
+
+{-- Part 1: Model the user input ----------------------------------------------
+What information do you need to represent all relevant user input?
+Task: Redefine `UserInput` to include all of the information you need.
+      Redefine `userInput` to be a signal that correctly models the user
+      input as described by `UserInput`.
+------------------------------------------------------------------------------}
+
+type Input = MouseClick () | MousePosition (Int, Int) | Timer Float
+
+mouseClickInput : Signal Input
+mouseClickInput = Signal.map MouseClick Mouse.clicks
+
+mousePositionInput : Signal Input
+mousePositionInput = Signal.map MousePosition Mouse.position
+
+delta : Signal Input
+delta = Signal.map Timer (Time.fps 30)
+
+
+
+{-- Part 2: Model the game ----------------------------------------------------
+What information do you need to represent the entire game?
+Tasks: Redefine `GameState` to represent your particular game.
+       Redefine `defaultGame` to represent your initial game state.
+For example, if you want to represent many objects that just have a position,
+your GameState might just be a list of coordinates and your default game might
+be an empty list (no objects at the start):
+    type GameState = { objects : [(Float,Float)] }
+    defaultGame = { objects = [] }
+------------------------------------------------------------------------------}
+
+type alias Bullet = { position : (Int, Int) }
+
+type alias Enemy = { position : (Int, Int) }
+
+type alias GameState = { mPosition : (Int, Int)
+                      , clicks : Int, bullets : List Bullet, enemies : List Enemy, elapsedTime : Float
+                      , createdEnemies : Int }
+
+defaultGame : GameState
+defaultGame =
+    { mPosition = (0, 0), clicks = 0, bullets = [], enemies = [], elapsedTime = 0.0, createdEnemies = 0 }
+
+
+
+{-- Part 3: Update the game ---------------------------------------------------
+How does the game step from one state to another based on user input?
+Task: redefine `stepGame` to use the UserInput and GameState
+      you defined in parts 1 and 2. Maybe use some helper functions
+      to break up the work, stepping smaller parts of the game.
+------------------------------------------------------------------------------}
+
+addNewBullet : GameState -> List Bullet
+addNewBullet gameState = { position = gameState.mPosition } :: gameState.bullets
+
+bulletShouldNotBeRemoved : Bullet -> Bool
+bulletShouldNotBeRemoved { position } = (snd position) > 0
+
+bulletsRemoved : List Bullet -> List Bullet
+bulletsRemoved bullets = List.filter bulletShouldNotBeRemoved bullets
+
+moveBullet : Bullet -> Bullet
+moveBullet { position } = { position = (fst position, (snd position) - 10) }
+
+updateBullets : GameState -> List Bullet
+updateBullets gameState = List.map moveBullet (bulletsRemoved gameState.bullets)
+
+addEnemy : GameState -> GameState
+addEnemy gameState = { gameState | createdEnemies <- gameState.createdEnemies + 1
+                                  , enemies <- { position = (750, 100) } :: gameState.enemies }
+
+moveEnemy : Enemy -> Enemy
+moveEnemy { position } = { position = ((fst position) - 5, snd position) }
+
+moveEnemies : GameState -> GameState
+moveEnemies gameState = { gameState | enemies <- List.map moveEnemy gameState.enemies }
+
+updateEnemies : GameState -> GameState
+updateEnemies gameState = if (round gameState.elapsedTime) > gameState.createdEnemies * 3000
+  then moveEnemies (addEnemy gameState)
+  else moveEnemies gameState
+
+updateTime : Float -> Float -> Float
+updateTime t prev = t + prev
+
+stepGame : Input -> GameState -> GameState
+stepGame userInput gameState = case userInput of
+  MousePosition mousePosition -> { gameState | mPosition <- mousePosition }
+  MouseClick () -> { gameState | clicks <- gameState.clicks + 1,bullets <- addNewBullet gameState }
+  Timer t -> updateEnemies { gameState | bullets <- updateBullets gameState, elapsedTime <- updateTime t gameState.elapsedTime }
+  otherwise -> gameState
+
+
+
+{-- Part 4: Display the game --------------------------------------------------
+How should the GameState be displayed to the user?
+Task: redefine `display` to use the GameState you defined in part 2.
+------------------------------------------------------------------------------}
+
+calculatePosition : (Int, Int) -> (Float, Float)
+calculatePosition (x,y) = ( toFloat (x - 400), toFloat (400 - y) )
+
+mkBullet : Bullet -> Form
+mkBullet { position } = move (calculatePosition position) (filled blue (rect 5 20))
+
+mkEnemy : Enemy -> Form
+mkEnemy { position } = move (calculatePosition position) (filled blue (ngon 5 20))
+
+showSpaceship : GameState -> List Form
+showSpaceship gameState = [ move (calculatePosition gameState.mPosition) spaceship ]
+
+showBullets : GameState -> List Form
+showBullets gameState = (List.map mkBullet gameState.bullets)
+
+showEnemies : GameState -> List Form
+showEnemies gameState = (List.map mkEnemy gameState.enemies)
+
+itemsToShow : GameState -> List Form
+itemsToShow gameState = (showSpaceship gameState) ++ (showBullets gameState) ++ (showEnemies gameState)
+
+display : (Int,Int) -> GameState -> Element
+display (w,h) gameState = flow down [
+  collage 800 800 (itemsToShow gameState),
+  show gameState.mPosition,
+  show gameState.clicks,
+  show gameState.elapsedTime ]
+
+
+
+{-- That's all folks! ---------------------------------------------------------
+The following code puts it all together and shows it on screen.
+------------------------------------------------------------------------------}
+
+
+input : Signal Input
+--input = Signal.sampleOn delta (Signal.map3 Input delta Mouse.position userInput)
+--input = Signal.map2 Input (Signal.constant 0) userInput
+input = Signal.mergeMany [ mouseClickInput, mousePositionInput, delta ]
+
+
+gameState : Signal GameState
+gameState =
+    Signal.foldp stepGame defaultGame input
+
+
+main : Signal Element
+main =
+    Signal.map2 display Window.dimensions gameState
