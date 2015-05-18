@@ -5,7 +5,7 @@
 #include "LexiDeBWT.h"
 #include "MoveToFront.h"
 #include "DemoveToFront.h"
-#include "vitter.h"
+#include "Huffman.h"
 
 #define TESTING_MODE false
 
@@ -90,10 +90,8 @@ int main() {
     /* huffman1->In = hsource1; */
     huffman1->data_in = source;
     huffman1->Out = htarget1;
-    printf("Compress init\n");
     huffman1->compress_init(source_len);
     for (int i = 0; i < source_len; i++) {
-      printf("Zapisuje %c\n", source[i]);
       huffman1->compress(source[i]);
     }
     huffman1->compress_finish();
