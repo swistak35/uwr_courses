@@ -2,26 +2,25 @@
 
 using namespace std;
 
-MoveToFront::MoveToFront(int length) {
-  this->length = length;
+MoveToFront::MoveToFront() {
+  this->reset();
 }
 
 MoveToFront::~MoveToFront() {
 }
 
-void MoveToFront::transform(char * source, int * target) {
-  this->source = source;
-  this->target = target;
+void MoveToFront::reset() {
+  this->table.clear();
 
   for (int i = 0; i < 256; i++) {
     this->table.push_back(i);
   }
+}
 
-  {
-    /* char * current_char = this->source; */
-    for (int i = 0; i < this->length; i++) {
-      this->target[i] = get_char(this->source[i]);
-    }
+void MoveToFront::run(char * source, int count) {
+  for (int i = 0; i < count; i++) {
+    *this->target = get_char(source[i]);
+    this->target++;
   }
 }
 

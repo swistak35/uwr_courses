@@ -32,8 +32,9 @@ int main() {
 
   // MoveToFront
   int mtf_tbl[source_len];
-  MoveToFront * mtf = new MoveToFront(source_len);
-  mtf->transform(target, mtf_tbl);
+  MoveToFront * mtf = new MoveToFront();
+  mtf->target = mtf_tbl;
+  mtf->run(target, source_len);
 
   cout << "MTF1:";
   for (int i = 0; i < source_len; i++) {

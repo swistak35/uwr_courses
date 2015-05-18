@@ -11,14 +11,14 @@
 
 class MoveToFront {
   public:
-    MoveToFront(int length);
+    MoveToFront();
     ~MoveToFront();
-    void transform(char * source, int * target);
-    int get_char(char c);
-
-    int length;
-    char * source;
+    void run(char * source, int count);
+    void reset();
     int * target;
+  private:
+    int get_char(char c);
+    int batchSize;
     std::list<char> table;
 };
 
