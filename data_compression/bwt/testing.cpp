@@ -43,7 +43,7 @@ int main() {
   cout << endl;
 
   // Huffman
-  FILE * htarget = fopen("bin_wiersz", "wb");
+  FILE * htarget = fopen("wiersz.bin", "wb");
   Huffman * huffman1 = new Huffman(1, 0);
   huffman1->data_in = mtf_tbl;
   huffman1->Out = htarget;
@@ -53,14 +53,14 @@ int main() {
   fclose(htarget);
 
   // Dehuffman
-  int mtf_tbl2[source_len];
-  FILE * hsource = fopen("bin_wiersz", "rb");
+  FILE * hsource = fopen("wiersz.bin", "rb");
   Huffman * huffman2 = new Huffman(0, 1);
   huffman2->In = hsource;
+  int source_len2 = huffman2->decompress_init();
+  cout << "Source len2: " << source_len2 << endl;
+  int mtf_tbl2[source_len2];
   huffman2->data_out = mtf_tbl2;
-  huffman2->decompress_init();
   huffman2->decompress();
-  /* huffman2->decompress_finish(); */
   fclose(hsource);
   cout << "MTF2:";
   for (int i = 0; i < source_len; i++) {
@@ -69,14 +69,15 @@ int main() {
   cout << endl;
 
   // DemoveToFront
-  char target2[source_len + 1] = { 0 };
-  DemoveToFront * demtf = new DemoveToFront(source_len);
-  demtf->transform(mtf_tbl2, target2);
+  char target2[source_len2 + 1] = { 0 };
+  DemoveToFront * demtf = new DemoveToFront();
+  demtf->source = mtf_tbl2;
+  demtf->run(target2, source_len2);
   cout << "BWT2: " << target2 << endl;
 
   // Decoding
-  char source2[source_len + 1] = { 0 };
-  LexiDeBWT * debwt = new LexiDeBWT(source_len);
+  char source2[source_len2 + 1] = { 0 };
+  LexiDeBWT * debwt = new LexiDeBWT(source_len2);
   debwt->transform(orig_idx, target2, source2);
   cout << "Source2: " << source2 << endl;
 

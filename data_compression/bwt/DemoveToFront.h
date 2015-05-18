@@ -11,14 +11,14 @@
 
 class DemoveToFront {
   public:
-    DemoveToFront(int length);
+    DemoveToFront();
     ~DemoveToFront();
-    void transform(int * source, char * target);
-    char get_char(int pos);
-
-    int length;
+    void run(char * target, int count);
+    void reset();
     int * source;
-    char * target;
+
+  private:
+    char get_char(int pos);
     std::list<char> table;
 };
 

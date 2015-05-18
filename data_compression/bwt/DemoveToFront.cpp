@@ -2,25 +2,24 @@
 
 using namespace std;
 
-DemoveToFront::DemoveToFront(int length) {
-  this->length = length;
+DemoveToFront::DemoveToFront() {
+  this->reset();
 }
 
 DemoveToFront::~DemoveToFront() {
 }
 
-void DemoveToFront::transform(int * source, char * target) {
-  this->source = source;
-  this->target = target;
-
+void DemoveToFront::reset() {
+  this->table.clear();
   for (int i = 0; i < 256; i++) {
     this->table.push_back(i);
   }
+}
 
-  {
-    for (int i = 0; i < this->length; i++) {
-      this->target[i] = get_char(this->source[i]);
-    }
+void DemoveToFront::run(char * target, int count) {
+  for (int i = 0; i < count; i++) {
+    target[i] = get_char(*this->source);
+    this->source++;
   }
 }
 
@@ -30,15 +29,6 @@ char DemoveToFront::get_char(int pos) {
   for (int i = 0; i < pos; i++) {
     it++;
   }
-
-  /* while (it != this->table.end()) { */
-    /* if (pos == req_pos) */
-    /* if (*it == c) { */
-    /*   break; */
-    /* } */
-    /* pos++; */
-    /* it++; */
-  /* } */
 
   char c = *it;
   this->table.erase(it);
