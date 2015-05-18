@@ -14,6 +14,7 @@ class MoveToFront {
     MoveToFront();
     ~MoveToFront();
     void run(char * source, int count);
+    void run(int source);
     void reset();
     int * target;
   private:

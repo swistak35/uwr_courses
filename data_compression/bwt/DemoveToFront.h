@@ -14,6 +14,7 @@ class DemoveToFront {
     DemoveToFront();
     ~DemoveToFront();
     void run(char * target, int count);
+    void run(int * target);
     void reset();
     int * source;
 

@@ -31,9 +31,10 @@ int main() {
   cout << "Index of orig string: " << orig_idx << endl;
 
   // MoveToFront
-  int mtf_tbl[source_len];
+  int mtf_tbl[source_len + 4];
   MoveToFront * mtf = new MoveToFront();
   mtf->target = mtf_tbl;
+  mtf->run(orig_idx);
   mtf->run(target, source_len);
 
   cout << "MTF1:";
@@ -47,7 +48,7 @@ int main() {
   Huffman * huffman1 = new Huffman(1, 0);
   huffman1->data_in = mtf_tbl;
   huffman1->Out = htarget;
-  huffman1->compress_init(source_len);
+  huffman1->compress_init(source_len + 4);
   huffman1->compress();
   huffman1->compress_finish();
   fclose(htarget);
@@ -69,16 +70,19 @@ int main() {
   cout << endl;
 
   // DemoveToFront
-  char target2[source_len2 + 1] = { 0 };
+  char target2[source_len2 + 1 - 4] = { 0 };
   DemoveToFront * demtf = new DemoveToFront();
   demtf->source = mtf_tbl2;
-  demtf->run(target2, source_len2);
+  int orig_idx2;
+  demtf->run(&orig_idx2);
+  cout << "Orig idx2: " << orig_idx2 << endl;
+  demtf->run(target2, source_len2 - 4);
   cout << "BWT2: " << target2 << endl;
 
   // Decoding
-  char source2[source_len2 + 1] = { 0 };
-  LexiDeBWT * debwt = new LexiDeBWT(source_len2);
-  debwt->transform(orig_idx, target2, source2);
+  char source2[source_len2 + 1 - 4] = { 0 };
+  LexiDeBWT * debwt = new LexiDeBWT(source_len2 - 4);
+  debwt->transform(orig_idx2, target2, source2);
   cout << "Source2: " << source2 << endl;
 
   return 0;
