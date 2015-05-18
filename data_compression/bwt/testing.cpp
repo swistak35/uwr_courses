@@ -9,9 +9,16 @@
 
 using namespace std;
 
+/* const char input_filename[] = "pantadeusz.txt"; */
+/* const char output_bin_filename[] = "pantadeusz.bin"; */
+/* const char output_orig_filename[] = "pantadeusz2.txt"; */
+const char input_filename[] = "wiersz.txt";
+const char compressed_filename[] = "wiersz.bin";
+const char decompressed_filename[] = "wiersz2.txt";
+
 int main() {
   // open source file
-  FILE * source_file = fopen("wiersz.txt", "rb");
+  FILE * source_file = fopen(input_filename, "rb");
 
   // calculate source file size
   fseek(source_file, 0, SEEK_END);
@@ -44,7 +51,7 @@ int main() {
   cout << endl;
 
   // Huffman
-  FILE * htarget = fopen("wiersz.bin", "wb");
+  FILE * htarget = fopen(compressed_filename, "wb");
   Huffman * huffman1 = new Huffman(1, 0);
   huffman1->data_in = mtf_tbl;
   huffman1->Out = htarget;
@@ -54,7 +61,7 @@ int main() {
   fclose(htarget);
 
   // Dehuffman
-  FILE * hsource = fopen("wiersz.bin", "rb");
+  FILE * hsource = fopen(compressed_filename, "rb");
   Huffman * huffman2 = new Huffman(0, 1);
   huffman2->In = hsource;
   int source_len2 = huffman2->decompress_init();
@@ -84,6 +91,10 @@ int main() {
   LexiDeBWT * debwt = new LexiDeBWT(source_len2 - 4);
   debwt->transform(orig_idx2, target2, source2);
   cout << "Source2: " << source2 << endl;
+
+  FILE * decompressed_file = fopen(decompressed_filename, "wb");
+  fwrite(source2, source_len2 - 4, 1, decompressed_file);
+  fclose(decompressed_file);
 
   return 0;
 }
