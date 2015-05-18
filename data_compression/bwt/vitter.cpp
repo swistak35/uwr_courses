@@ -62,9 +62,9 @@ unsigned arc_get1();
 //  of nodes to be used
 
 
-Huffman::Huffman() {
-  /* this->In = huffman_source; */
-  /* this->Out = huffman_target; */
+Huffman::Huffman(int source_type, int target_type) {
+  this->source_type = source_type;
+  this->target_type = target_type;
   ArcBit = 0;
   ArcChar = 0;
 }
@@ -467,38 +467,121 @@ unsigned Huffman::huff_decode ()
 /*     return 0; */
 /* } */
 
-void Huffman::arc_put1 (unsigned bit) {
-}
-
-unsigned int Huffman::arc_get1() {
-  return 0;
-}
-
 /* void Huffman::arc_put1 (unsigned bit) { */
-/*     ArcChar <<= 1; */
-
-/*     if(bit) { */
-/*       ArcChar |= 1; */
-/*     } */
-
-/*     ArcBit++; */
-/*     if(ArcBit < 8) { */
-/*       return; */
-/*     } */
-
-/*     putc(ArcChar, Out); */
-/*     ArcChar = 0; */
-/*     ArcBit = 0; */
 /* } */
 
 /* unsigned int Huffman::arc_get1() { */
-/*     if(!ArcBit) { */
-/*       ArcChar = getc(In); */
-/*       ArcBit = 8; */
-/*     } */
-
-/*     return ArcChar >> --ArcBit & 1; */
+/*   return 0; */
 /* } */
+
+void Huffman::arc_put1 (unsigned bit) {
+  ArcChar <<= 1;
+
+  if (bit) {
+    ArcChar |= 1;
+  }
+
+  ArcBit++;
+  if (ArcBit < 8) {
+    return;
+  }
+
+  put_next_char(ArcChar);
+  ArcChar = 0;
+  ArcBit = 0;
+}
+
+unsigned int Huffman::arc_get1() {
+  if (!ArcBit) {
+    ArcChar = get_next_char();
+    ArcBit = 8;
+  }
+
+  return ArcChar >> --ArcBit & 1;
+}
+
+void Huffman::compress_init(int size) {
+  this->length = size;
+  unsigned mask = ~0;
+  int symbol;
+  huff_init(256, 256);
+  put_next_char(256 >> 8);
+  put_next_char(256);
+
+  put_next_char(size >> 16);
+  put_next_char(size >> 8);
+  put_next_char(size);
+}
+
+void Huffman::compress(char c) {
+  int symbol;
+  unsigned mask = ~0;
+
+  while ( this->length ) {
+    symbol = get_next_char();
+    huff_encode(symbol);
+    if ( this->length & mask ) {
+      this->length--;
+      continue;
+    } else {
+      huff_scale(1);
+    }
+  }
+}
+
+void Huffman::compress_finish() {
+  while (ArcBit) { // flush last few bits
+    arc_put1(0);
+  }
+}
+
+int Huffman::decompress_init() {
+  int size = 256;
+  size = get_next_char() << 8;
+  size |= get_next_char();
+
+  huff_init(256, 256);
+
+  size = get_next_char() << 16;
+  size |= get_next_char() << 8;
+  size |= get_next_char();
+  this->length = size;
+  return size;
+}
+
+int Huffman::decompress() {
+  int symbol;
+  unsigned mask = ~0;
+  while( this->length ) {
+    if( symbol = huff_decode(), put_next_char(symbol), this->length-- & mask ) {
+      continue;
+    } else {
+      huff_scale(1);
+    }
+  }
+  return 0;
+}
+
+int Huffman::get_next_char() {
+  if (this->source_type == 0) {
+    return getc(In);
+  } else if (this->source_type == 1) {
+    char c = *this->data_in;
+    this->data_in++;
+    return c;
+  } else {
+    return 0;
+  }
+}
+
+void Huffman::put_next_char(int c) {
+  if (this->target_type == 0) {
+    putc(c, Out);
+  } else if (this->target_type == 1) {
+    *this->data_out = char(c);
+    this->data_out++;
+  }
+}
 
 /* void Huffman::compress() { */
 /*   unsigned int size = 256; */
