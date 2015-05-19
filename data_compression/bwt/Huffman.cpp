@@ -1,5 +1,7 @@
 #include "Huffman.h"
 
+using namespace std;
+
 #define __cdecl
 
 void arc_put1(unsigned bit);
@@ -274,6 +276,7 @@ void Huffman::huff_encode(unsigned int symbol) {
   unsigned emit = 1, bit;
   unsigned up, idx, node;
 
+    cout << "Dupa0.1: " << symbol <<  endl;
     if( symbol < huff->size )
         node = huff->map[symbol];
     else
@@ -282,15 +285,19 @@ void Huffman::huff_encode(unsigned int symbol) {
     //  for a new symbol, direct the receiver to the escape node
     //  but refuse input if table is already full.
 
+    cout << "Dupa0.2: " << node <<  endl;
     if( !(idx = node) )
       if( !(idx = huff->esc) )
         return;
+
+    cout << "Dupa0.5: " << idx << endl;
 
     //  accumulate the code bits by
     //  working up the tree from
     //  the node to the root
 
     up = huff->table[idx].up;
+    cout << "Dupa0.6" << endl;
     while( up ) {
       emit <<= 1, emit |= idx & 1, idx = up;
       up = huff->table[idx].up;
@@ -298,9 +305,11 @@ void Huffman::huff_encode(unsigned int symbol) {
 
     //  send the code, root selector bit first
 
+    cout << "Dupa1" << endl;
     while( bit = emit & 1, emit >>= 1 )
         arc_put1 (bit);
 
+    cout << "Dupa2" << endl;
     //  send identification and incorporate
     //  new symbols into the tree
 
@@ -423,15 +432,19 @@ void Huffman::compress_init(int size) {
   put_next_char(size);
 }
 
-void Huffman::compress() {
+void Huffman::compress(int max) {
+  int i = 0;
   int symbol;
   unsigned mask = ~0;
 
-  while ( this->length ) {
+  while ( this->length && i < max ) {
     symbol = get_next_char();
+    cout << "Encoding " << symbol << endl;
     huff_encode(symbol);
+    cout << "Encoded." << endl;
     if ( this->length & mask ) {
       this->length--;
+      i++;
       continue;
     } else {
       huff_scale(1);
@@ -459,13 +472,16 @@ int Huffman::decompress_init() {
   return size;
 }
 
-int Huffman::decompress() {
+int Huffman::decompress(int max) {
+  int i = 0;
   int symbol;
   unsigned mask = ~0;
-  while( this->length ) {
+  while( this->length && i < max ) {
     if( symbol = huff_decode(), put_next_char(symbol), this->length-- & mask ) {
+      i++;
       continue;
     } else {
+      i++;
       huff_scale(1);
     }
   }
@@ -476,7 +492,7 @@ int Huffman::get_next_char() {
   if (this->source_type == 0) {
     return getc(In);
   } else if (this->source_type == 1) {
-    char c = *this->data_in;
+    unsigned char c = *this->data_in;
     this->data_in++;
     return c;
   } else {
@@ -488,7 +504,7 @@ void Huffman::put_next_char(int c) {
   if (this->target_type == 0) {
     putc(c, Out);
   } else if (this->target_type == 1) {
-    *this->data_out = char(c);
+    *this->data_out = (unsigned char) c;
     this->data_out++;
   }
 }

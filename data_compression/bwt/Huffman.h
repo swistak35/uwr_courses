@@ -7,6 +7,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <iostream>
 
 typedef struct {
     unsigned int up,      // next node up the tree
@@ -47,10 +48,10 @@ class Huffman {
     int get_next_char();
     void put_next_char(int c);
     void compress_init(int size);
-    void compress();
+    void compress(int max);
     void compress_finish();
     int decompress_init();
-    int decompress();
+    int decompress(int max);
     int length;
     FILE * Out;
     FILE * In;
