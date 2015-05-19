@@ -40,6 +40,9 @@ class Huffman {
     unsigned huff_readid(HCoder *huff);
     unsigned huff_decode();
 
+    void display_map(int x, HCoder * hcoder);
+    void display_map(int x);
+    void display_hcoder(HCoder * hcoder);
     void arc_put1(unsigned bit);
     unsigned int arc_get1();
     HCoder * hcoder;

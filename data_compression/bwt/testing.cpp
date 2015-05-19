@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define CHUNK_SIZE 256
+#define CHUNK_SIZE 512
 
 const char input_filename[] = "pantadeusz.txt";
 const char compressed_filename[] = "pantadeusz.bin";
@@ -22,68 +22,78 @@ const char decompressed_filename[] = "pantadeusz2.txt";
 /* const char decompressed_filename[] = "bigwiersz2.txt"; */
 
 int main() {
-  // open source file
-  FILE * source_file = fopen(input_filename, "rb");
+  /* // open source file */
+  /* FILE * source_file = fopen(input_filename, "rb"); */
 
-  // calculate source file size
-  fseek(source_file, 0, SEEK_END);
-  int source_len = ftell(source_file);
-  rewind(source_file);
-  cout << "Source len1: " << source_len << endl;
+  /* // calculate source file size */
+  /* fseek(source_file, 0, SEEK_END); */
+  /* int source_len = ftell(source_file); */
+  /* rewind(source_file); */
+  /* /1* cout << "Source len1: " << source_len << endl; *1/ */
 
-  // copy file into memory
-  char source[CHUNK_SIZE + 1] = { 0 };
-  int chunks, last_chunk_size;
-  if (source_len % CHUNK_SIZE == 0) {
-    chunks = source_len / CHUNK_SIZE;
-    last_chunk_size = CHUNK_SIZE;
-  } else {
-    chunks = (source_len / CHUNK_SIZE) + 1;
-    last_chunk_size = source_len % CHUNK_SIZE;
-  }
+  /* // copy file into memory */
+  /* char source[CHUNK_SIZE + 1] = { 0 }; */
+  /* int chunks, last_chunk_size; */
+  /* if (source_len % CHUNK_SIZE == 0) { */
+  /*   chunks = source_len / CHUNK_SIZE; */
+  /*   last_chunk_size = CHUNK_SIZE; */
+  /* } else { */
+  /*   chunks = (source_len / CHUNK_SIZE) + 1; */
+  /*   last_chunk_size = source_len % CHUNK_SIZE; */
+  /* } */
 
-  MoveToFront * mtf = new MoveToFront();
-  int mtf_tbl[CHUNK_SIZE + 4];
-  FILE * htarget = fopen(compressed_filename, "wb");
-  Huffman * huffman1 = new Huffman(1, 0);
-  huffman1->Out = htarget;
-  huffman1->compress_init(source_len + 4 * chunks);
-  for (int i = 0; i < chunks; i++) {
-    int chunk_size;
-    if (i == chunks-1) {
-      chunk_size = last_chunk_size;
-    } else {
-      chunk_size = CHUNK_SIZE;
-    }
-    cout << "Chunk size " << i << ": " << chunk_size << endl;
-    fread(source, chunk_size, 1, source_file);
+  /* MoveToFront * mtf = new MoveToFront(); */
+  /* int mtf_tbl[CHUNK_SIZE + 4]; */
+  /* FILE * htarget = fopen(compressed_filename, "wb"); */
+  /* Huffman * huffman1 = new Huffman(1, 0); */
+  /* huffman1->Out = htarget; */
+  /* huffman1->compress_init(source_len + 4 * chunks); */
+  /* for (int i = 0; i < chunks; i++) { */
+  /*   int chunk_size; */
+  /*   if (i == chunks-1) { */
+  /*     chunk_size = last_chunk_size; */
+  /*   } else { */
+  /*     chunk_size = CHUNK_SIZE; */
+  /*   } */
+  /*   /1* cout << "Chunk size " << i << ": " << chunk_size << endl; *1/ */
+  /*   /1* huffman1->display_map(101); *1/ */
+  /*   fread(source, chunk_size, 1, source_file); */
+  /*   /1* huffman1->display_map(102); *1/ */
 
-    // run bwt
-    char target[chunk_size + 1] = { 0 };
-    LexiBWT * bwt = new LexiBWT(chunk_size);
-    int orig_idx = bwt->transform(source, target);
-    cout << "BWT: " << target << endl;
-    cout << "Index of orig string: " << orig_idx << endl;
+  /*   // run bwt */
+  /*   char target[chunk_size + 1] = { 0 }; */
+  /*   LexiBWT * bwt = new LexiBWT(chunk_size); */
+  /*   int orig_idx = bwt->transform(source, target); */
+  /*   /1* cout << "BWT: " << target << endl; *1/ */
+  /*   /1* cout << "Index of orig string: " << orig_idx << endl; *1/ */
 
-    // MoveToFront
-    mtf->target = mtf_tbl;
-    mtf->run(orig_idx);
-    mtf->run(target, chunk_size);
+  /*   /1* huffman1->display_map(103); *1/ */
+  /*   // MoveToFront */
+  /*   mtf->target = mtf_tbl; */
+  /*   mtf->run(orig_idx); */
+  /*   mtf->run(target, chunk_size); */
 
-    cout << "MTF1:";
-    for (int i = 0; i < chunk_size + 4; i++) {
-      cout << " " << mtf_tbl[i];
-    }
-    cout << endl;
+  /*   /1* cout << "MTF1:"; *1/ */
+  /*   /1* huffman1->display_map(104); *1/ */
+  /*   FILE * jakisplik = fopen("outpucik", "wb"); */
+  /*   for (int i = 0; i < chunk_size + 4; i++) { */
+  /*     /1* cout << " " << mtf_tbl[i]; *1/ */
+  /*     unsigned char c = mtf_tbl[i]; */
+  /*     fwrite(&c, 1, 1, jakisplik); */
+  /*   } */
+  /*   fclose(jakisplik); */
+  /*   cout << endl; */
+  /*   /1* huffman1->display_map(105); *1/ */
 
-    // Huffman
-    huffman1->data_in = mtf_tbl;
-    huffman1->compress(chunk_size + 4);
-    cout << "HUFFMAN OK" << endl;
-  }
-  huffman1->compress_finish();
-  fclose(htarget);
-  fclose(source_file);
+  /*   // Huffman */
+  /*   huffman1->data_in = mtf_tbl; */
+  /*   /1* huffman1->display_map(106); *1/ */
+  /*   huffman1->compress(chunk_size + 4); */
+  /*   cout << "HUFFMAN OK" << endl; */
+  /* } */
+  /* huffman1->compress_finish(); */
+  /* fclose(htarget); */
+  /* fclose(source_file); */
 
   // Dehuffman
   FILE * hsource = fopen(compressed_filename, "rb");
@@ -105,7 +115,7 @@ int main() {
   DemoveToFront * demtf = new DemoveToFront();
   FILE * decompressed_file = fopen(decompressed_filename, "wb");
   char source2[CHUNK_SIZE + 1 - 4] = { 0 };
-  for (int i = 0; i < chunks; i++) {
+  for (int i = 0; i < chunks2; i++) {
     bzero(source2, CHUNK_SIZE + 1 - 4);
     int chunk_size;
     if (i == chunks2-1) {
@@ -117,7 +127,7 @@ int main() {
 
     huffman2->data_out = mtf_tbl2;
     huffman2->decompress(chunk_size + 4);
-    cout << "MTF2:";
+    /* cout << "MTF2:"; */
     for (int i = 0; i < chunk_size + 4; i++) {
       cout << " " << mtf_tbl2[i];
     }
@@ -129,6 +139,7 @@ int main() {
     cout << "Orig idx2: " << orig_idx2 << endl;
     demtf->run(target2, chunk_size);
     cout << "BWT2: " << target2 << endl;
+    cout << "BWT2 successful" << endl;
 
     // Decoding
     LexiDeBWT * debwt = new LexiDeBWT(chunk_size);

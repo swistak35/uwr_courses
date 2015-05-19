@@ -1,4 +1,5 @@
 #include "LexiBWT.h"
+#include <iostream>
 
 using namespace std;
 
@@ -34,7 +35,7 @@ void LexiBWT::sort() {
     }
 
     for (int i = 0; i < this->length; i++) {
-      char c = this->source[get_char_idx(this->positions[i] + it)];
+      unsigned char c = this->source[get_char_idx(this->positions[i] + it)];
       this->hvec[c].push_back(this->positions[i]);
     }
 

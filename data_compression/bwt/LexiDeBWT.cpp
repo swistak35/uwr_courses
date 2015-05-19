@@ -23,7 +23,7 @@ void LexiDeBWT::transform(int orig_idx, char * source, char * target) {
   hvec.assign(256, std::vector<int>(0));
 
   for (int i = 0; i < this->length; i++) {
-    char c = this->source[i];
+    unsigned char c = this->source[i];
     hvec[c].push_back(i);
   }
 

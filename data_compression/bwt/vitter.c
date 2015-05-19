@@ -2,6 +2,7 @@
 #include <memory.h>
 #include <string.h>
 #include <fcntl.h>
+#include <stdio.h>
 
 #define HUFFSTANDALONE 1
 #ifdef unix
@@ -83,6 +84,28 @@ typedef struct {
     HTable table[1];  // the coding table starts here
 } HCoder;
 
+void display_map(HCoder * hcoder) {
+  printf("map");
+  for (int i=0; i<hcoder->size; i++) {
+    printf(" %u", hcoder->map[i]);
+  }
+  printf("\n");
+}
+
+void display_hcoder(HCoder * hcoder) {
+  printf("-----------------------------\n");
+  printf("esc: %u root %u size %u\n", hcoder->esc, hcoder->root, hcoder->size);
+  for (int i = 0; i < 511; i++) {
+    printf("(u %u d %u s %u w %u) \n",
+      hcoder->table[0].up,
+      hcoder->table[0].down,
+      hcoder->table[0].symbol,
+      hcoder->table[0].weight);
+  }
+  display_map(hcoder);
+}
+
+
 //  initialize an adaptive coder
 //  for alphabet size, and count
 //  of nodes to be used
@@ -146,6 +169,7 @@ unsigned pair, node;
     huff->table[node].symbol = symbol;
     huff->table[node].weight = 0;
     huff->table[node].down = 0;
+    printf("Przypisywanie %u do %u\n", node, symbol);
     huff->map[symbol] = node;
 
     //  initialize a new escape node.
@@ -177,7 +201,9 @@ unsigned leader = node, prev, symbol;
 
     huff->table[leader].symbol = symbol;
     huff->table[node].symbol = prev;
+  printf("Leader Przypisywanie %u do %u\n", leader, symbol);
     huff->map[symbol] = leader;
+  printf("Leader Przypisywanie %u do %u\n", node, prev);
     huff->map[prev] = node;
     return leader;
 }
@@ -214,10 +240,12 @@ HTable swap[1];
     if( swap->weight & 1 ) {
         huff->table[swap->down].up = next;
         huff->table[swap->down - 1].up = next;
+    printf("slide1 Przypisywanie %u do %u\n", node, huff->table[node].symbol);
         huff->map[huff->table[node].symbol] = node;
     } else {
         huff->table[huff->table[node].down - 1].up = node;
         huff->table[huff->table[node].down].up = node;
+    printf("slide2 Przypisywanie %u do %u\n", next, swap->symbol);
         huff->map[swap->symbol] = next;
     }
 
@@ -360,11 +388,13 @@ unsigned up, idx, node;
     //  send identification and incorporate
     //  new symbols into the tree
 
+    display_map(huff);
     if( !node )
         huff_sendid(huff, symbol), node = huff_split(huff, symbol);
 
     //  adjust and re-balance the tree
 
+    display_map(huff);
     huff_increment (huff, node);
 }
 
@@ -549,6 +579,7 @@ HCoder *huff;
         size = 256;
 
     huff = huff_init (256, size);
+    display_hcoder(huff);
     putc (size >> 8, Out);
     putc (size, Out);
 
@@ -560,11 +591,17 @@ HCoder *huff;
     putc (size >> 8, Out);
     putc (size, Out);
 
-    while( size )
-      if( symbol = getc(In), huff_encode(huff, symbol), size-- & mask )
+    while( size ) {
+      symbol = getc(In);
+      huff_encode(huff, symbol);
+      if( size-- & mask ) {
+        display_hcoder(huff);
+        /* printf("Encoded `%d`\n", symbol); */
         continue;
-      else
+      } else {
         huff_scale(huff, 1);
+      }
+    }
 
     while( ArcBit )  // flush last few bits
         arc_put1 (0);

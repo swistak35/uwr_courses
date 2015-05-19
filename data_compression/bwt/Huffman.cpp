@@ -82,6 +82,7 @@ unsigned int Huffman::huff_split(HCoder *huff, unsigned symbol) {
   huff->table[node].symbol = symbol;
   huff->table[node].weight = 0;
   huff->table[node].down = 0;
+  /* printf("Przypisywanie %u do %u\n", node, symbol); */
   huff->map[symbol] = node;
 
   //  initialize a new escape node.
@@ -114,7 +115,9 @@ unsigned int huff_leader(HCoder * huff, unsigned int node) {
 
   huff->table[leader].symbol = symbol;
   huff->table[node].symbol = prev;
+  /* printf("Leader Przypisywanie %u do %u\n", leader, symbol); */
   huff->map[symbol] = leader;
+  /* printf("Leader Przypisywanie %u do %u\n", node, prev); */
   huff->map[prev] = node;
   return leader;
 }
@@ -152,10 +155,12 @@ unsigned int huff_slide (HCoder * huff, unsigned int node) {
   if( swap->weight & 1 ) {
     huff->table[swap->down].up = next;
     huff->table[swap->down - 1].up = next;
+    /* printf("slide1 Przypisywanie %u do %u\n", node, huff->table[node].symbol); */
     huff->map[huff->table[node].symbol] = node;
   } else {
     huff->table[huff->table[node].down - 1].up = node;
     huff->table[huff->table[node].down].up = node;
+    /* printf("slide2 Przypisywanie %u do %u\n", next, swap->symbol); */
     huff->map[swap->symbol] = next;
   }
 
@@ -276,7 +281,7 @@ void Huffman::huff_encode(unsigned int symbol) {
   unsigned emit = 1, bit;
   unsigned up, idx, node;
 
-    cout << "Dupa0.1: " << symbol <<  endl;
+    /* cout << "Dupa0.1: " << symbol <<  endl; */
     if( symbol < huff->size )
         node = huff->map[symbol];
     else
@@ -285,19 +290,19 @@ void Huffman::huff_encode(unsigned int symbol) {
     //  for a new symbol, direct the receiver to the escape node
     //  but refuse input if table is already full.
 
-    cout << "Dupa0.2: " << node <<  endl;
+    /* cout << "Dupa0.2: " << node <<  endl; */
     if( !(idx = node) )
       if( !(idx = huff->esc) )
         return;
 
-    cout << "Dupa0.5: " << idx << endl;
+    /* cout << "Dupa0.5: " << idx << endl; */
 
     //  accumulate the code bits by
     //  working up the tree from
     //  the node to the root
 
     up = huff->table[idx].up;
-    cout << "Dupa0.6" << endl;
+    /* cout << "Dupa0.6" << endl; */
     while( up ) {
       emit <<= 1, emit |= idx & 1, idx = up;
       up = huff->table[idx].up;
@@ -305,19 +310,22 @@ void Huffman::huff_encode(unsigned int symbol) {
 
     //  send the code, root selector bit first
 
-    cout << "Dupa1" << endl;
+    /* cout << "Dupa1" << endl; */
     while( bit = emit & 1, emit >>= 1 )
         arc_put1 (bit);
 
-    cout << "Dupa2" << endl;
+    /* cout << "Dupa2" << endl; */
     //  send identification and incorporate
     //  new symbols into the tree
 
+    /* display_map(1, huff); */
+    //
     if( !node )
         huff_sendid(huff, symbol), node = huff_split(huff, symbol);
 
     //  adjust and re-balance the tree
 
+    /* display_map(2, huff); */
     huff_increment (huff, node);
 }
 
@@ -424,12 +432,43 @@ unsigned int Huffman::arc_get1() {
 void Huffman::compress_init(int size) {
   this->length = size;
   huff_init(256, 256);
+  /* display_hcoder(this->hcoder); */
   put_next_char(256 >> 8);
   put_next_char(256);
 
   put_next_char(size >> 16);
   put_next_char(size >> 8);
   put_next_char(size);
+  /* display_map(4); */
+}
+
+void Huffman::display_map(int x, HCoder * hcoder) {
+  printf("%d map", x);
+  for (unsigned int i=0; i<hcoder->size; i++) {
+    printf(" %u", hcoder->map[i]);
+  }
+  printf("\n");
+}
+
+void Huffman::display_map(int x) {
+  printf("%d map", x);
+  for (unsigned int i=0; i<this->hcoder->size; i++) {
+    printf(" %u", this->hcoder->map[i]);
+  }
+  printf("\n");
+}
+
+void Huffman::display_hcoder(HCoder * hcoder) {
+  printf("-----------------------------\n");
+  printf("esc: %u root %u size %u\n", hcoder->esc, hcoder->root, hcoder->size);
+  for (int i = 0; i < 511; i++) {
+    printf("(u %u d %u s %u w %u) \n",
+      hcoder->table[0].up,
+      hcoder->table[0].down,
+      hcoder->table[0].symbol,
+      hcoder->table[0].weight);
+  }
+  /* display_map(0, hcoder); */
 }
 
 void Huffman::compress(int max) {
@@ -438,15 +477,19 @@ void Huffman::compress(int max) {
   unsigned mask = ~0;
 
   while ( this->length && i < max ) {
+    /* display_map(9); */
     symbol = get_next_char();
-    cout << "Encoding " << symbol << endl;
+    /* cout << "Encoding " << symbol << endl; */
+    /* display_map(10); */
     huff_encode(symbol);
-    cout << "Encoded." << endl;
+    /* display_map(11); */
+    /* cout << "Encoded." << endl; */
     if ( this->length & mask ) {
       this->length--;
       i++;
       continue;
     } else {
+      i++;
       huff_scale(1);
     }
   }
