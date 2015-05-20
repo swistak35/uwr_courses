@@ -16,3 +16,9 @@ main: main.cpp $(OBJS)
 
 testing: testing.cpp $(OBJS)
 	g++ $(CPPFLAGS) -o testing testing.cpp $(OBJS)
+
+test: testing
+	rm pantadeusz.bin > /dev/null
+	rm pantadeusz2.txt > /dev/null
+	time (./testing > /dev/null)
+	diff pantadeusz.txt pantadeusz2.txt

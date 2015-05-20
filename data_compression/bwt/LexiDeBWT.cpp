@@ -38,7 +38,7 @@ void LexiDeBWT::transform(int orig_idx, char * source, char * target) {
     }
   }
 
-  cout << "Sorted: " << this->sorted << endl;
+  /* cout << "Sorted: " << this->sorted << endl; */
 
   int transformation[this->length];
 

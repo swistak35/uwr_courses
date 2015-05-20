@@ -23,7 +23,6 @@ void MoveToFront::run(int i) {
   char c;
   for (int j = 0; j < 4; j++) {
     c = si & mask;
-    cout << "Wrzucam bajt: `" << +c << "`\n";
     *this->target = get_char(c);
     this->target++;
     si = si >> 8;
