@@ -1,5 +1,6 @@
 #include "SuffixBWT.h"
 #include <iostream>
+#include <assert.h>
 
 using namespace std;
 
@@ -106,6 +107,15 @@ void SuffixBWT::sort() {
   }
   current_char++;
   
+  // insert 4th node
+  
+  //follow the node, may active_length change
+  //ensure that new lbr is at least as big as previous one
+  suffix_id = 4;
+  if (suffix_id + min_distance + active_length > lastBranchIndex) {
+    min_distance = lastBranchIndex - active_length - suffix_id;
+  }
+  assert(min_distance > 0);
   
 }
 
