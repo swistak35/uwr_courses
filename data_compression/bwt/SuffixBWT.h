@@ -14,15 +14,16 @@ typedef struct {
   int digit;
   int startingChar;
   int endingChar;
-  union {
-    struct BranchNode * bnode;
-    struct InformationNode * inode;
-  } target;
+  /* union { */
+    struct BranchNode * target;
+    /* struct InformationNode * inode; */
+  /* } target; */
 } Edge;
 
 typedef struct BranchNode {
   struct BranchNode * longestProperSuffix;
   vector<Edge*> edges;
+  int suffix_id;
 } BranchNode;
 
 typedef struct InformationNode {
@@ -52,6 +53,10 @@ class SuffixBWT {
     InformationNode * create_information_node();
     Edge * create_edge();
     Edge * find_edge_on_list(BranchNode * node, int c);
+
+    void print_node(int depth, BranchNode * node);
+    void print_tree(BranchNode * root_node);
+    void print_tabs(int depth);
 };
 
 #endif
