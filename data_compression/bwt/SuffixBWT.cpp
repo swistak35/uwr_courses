@@ -31,7 +31,7 @@ int SuffixBWT::transform(char * source, char * target) {
   return 0;
 }
 
-#define LIMITING_STEPS 4
+#define LIMITING_STEPS 5
 
 void SuffixBWT::sort() {
   // init
@@ -47,7 +47,7 @@ void SuffixBWT::sort() {
   
   Edge * next_edge, * edge_to_previous_target;
   BranchNode * new_bnode;
-  for (int i = 1; i <= this->length && i <= LIMITING_STEPS; i++) {
+  for (int i = 0; i < this->length && i < LIMITING_STEPS; i++) {
     printf("======================================= %d\n", i);
     // utworz information node dla tego suffixa
     nodes[i] = create_branch_node();
@@ -55,58 +55,62 @@ void SuffixBWT::sort() {
 
     // utworz krawedz dla nastepnego information node
     Edge * edge_to_suffix = create_edge();
+    BranchNode * last_added_node;
     edge_to_suffix->target = nodes[i];
 
-    looking_char = current_char + active_length;
-    next_edge = find_edge_on_list(active_node, *looking_char);
-    if (next_edge == NULL) {
-      edge_to_suffix->digit = (int) *looking_char;
-      edge_to_suffix->startingChar = active_length + i - 1;
-      edge_to_suffix->endingChar = this->length - 1;
-      active_node->edges.push_back(edge_to_suffix);
-    } else {
-      int j = 1;
-      looking_char++;
-      char * other_char = this->source + next_edge->startingChar + j;
-      bool found = false;
+    bool found = false;
+    while (!found) {
+      looking_char = current_char + active_length;
+      next_edge = find_edge_on_list(active_node, *looking_char);
 
-      while (!found) {
-        while (next_edge->startingChar + j < next_edge->endingChar) {
+      if (next_edge == NULL) {
+        found = true;
+        edge_to_suffix->digit = (int) *looking_char;
+        edge_to_suffix->startingChar = active_length + i;
+        edge_to_suffix->endingChar = this->length - 1;
+        active_node->edges.push_back(edge_to_suffix);
+      } else {
+        /* looking_char++; */
+        int k = 1;
+        char * other_char = this->source + next_edge->startingChar;
+        while (next_edge->startingChar + k < next_edge->endingChar) {
           other_char++;
           looking_char++;
-          j++;
           if (*other_char != *looking_char) {
+            found = true;
             break;
           }
+          k++;
         }
 
-        if (*other_char != *looking_char) {
-          found = true;
-        } else {
-          /* active_node = edge->target; */
-          /* active_length = edge->endingChar; */
-          /* next_edge = find_edge_on_list(active_node, *looking_char); */
+        if (found) {
+          edge_to_previous_target = create_edge();
+          edge_to_previous_target->digit = (int) *other_char;
+          edge_to_previous_target->target = next_edge->target;
+          edge_to_previous_target->startingChar = next_edge->startingChar + k;
+          edge_to_previous_target->endingChar = next_edge->endingChar;
+          edge_to_suffix->digit = (int) *looking_char;
+          edge_to_suffix->startingChar = i + active_length + k;
+          edge_to_suffix->endingChar = this->length - 1;
+          new_bnode = create_branch_node();
+          new_bnode->edges.push_back(edge_to_previous_target);
+          new_bnode->edges.push_back(edge_to_suffix);
 
-          // update active_length?
+          next_edge->endingChar = next_edge->startingChar + k - 1;
+          next_edge->target = new_bnode;
+
+          if (i > 2) {
+            last_added_node->longestProperSuffix = new_bnode;
+          }
+
+          last_added_node = new_bnode;
+        } else {
+          active_node = next_edge->target;
+          active_length = next_edge->endingChar;
         }
       }
 
-      edge_to_previous_target = create_edge();
-      edge_to_previous_target->digit = (int) *other_char;
-      edge_to_previous_target->target = next_edge->target;
-      edge_to_previous_target->startingChar = next_edge->startingChar + j;
-      edge_to_previous_target->endingChar = next_edge->endingChar;
-      edge_to_suffix->digit = (int) *looking_char;
-      edge_to_suffix->startingChar = i + j - 1;
-      edge_to_suffix->endingChar = this->length - 1;
-      new_bnode = create_branch_node();
-      new_bnode->edges.push_back(edge_to_previous_target);
-      new_bnode->edges.push_back(edge_to_suffix);
-
-      next_edge->endingChar = j-1;
-      next_edge->target = new_bnode;
-
-      if (i > 3) {
+      if (i > 2) {
         nodes[i-1]->longestProperSuffix = nodes[i];
       }
     }
