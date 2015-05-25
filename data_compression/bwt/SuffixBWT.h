@@ -24,6 +24,8 @@ typedef struct BranchNode {
   struct BranchNode * longestProperSuffix;
   vector<Edge*> edges;
   int suffix_id;
+  int depth;
+  char debugchar;
 } BranchNode;
 
 typedef struct InformationNode {
