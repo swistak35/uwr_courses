@@ -230,7 +230,6 @@ Edge * SuffixBWT::find_edge_on_list(BranchNode * node, int c) {
 // poinicjalizowac na 0, null itp.
 BranchNode * SuffixBWT::create_branch_node() {
   BranchNode * ptr = (BranchNode *) calloc(1, sizeof(BranchNode));
-  ptr->assign(0, 0);
   printf("CO jest kurwa %d\n", ptr->edges.empty());
   /* bzero(ptr, sizeof(BranchNode)); */
   ptr->longestProperSuffix = NULL;
