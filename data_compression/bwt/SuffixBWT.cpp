@@ -31,7 +31,7 @@ int SuffixBWT::transform(char * source, char * target) {
   return 0;
 }
 
-#define LIMITING_STEPS 9
+#define LIMITING_STEPS 100
 
 void SuffixBWT::sort() {
   // init
