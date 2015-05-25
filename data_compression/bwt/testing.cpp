@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cstdio>
 #include "LexiBWT.h"
+#include "SuffixBWT.h"
 #include "LexiDeBWT.h"
 #include "MoveToFront.h"
 #include "DemoveToFront.h"
@@ -79,6 +80,7 @@ void compress() {
     // run bwt
     char target[chunk_size + 1] = { 0 };
     LexiBWT * bwt = new LexiBWT(chunk_size);
+    /* SuffixBWT * bwt = new SuffixBWT(chunk_size); */
     int orig_idx = bwt->transform(source, target);
     if (DEBUG) {
       cout << "BWT: " << target << endl;

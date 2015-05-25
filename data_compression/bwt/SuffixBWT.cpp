@@ -27,8 +27,8 @@ int SuffixBWT::transform(char * source, char * target) {
   sort();
   /* print_sorted(); */
 
-  /* return this->ranks[0]; */
-  return 0;
+  return this->ranks[0];
+  /* return 0; */
 }
 
 #define LIMITING_STEPS 100
@@ -42,7 +42,7 @@ void SuffixBWT::sort() {
   root_node->depth = 0;
   BranchNode * active_node = root_node;
   int active_length = 0;
-  int min_distance = 0;
+  /* int min_distance = 0; */
   BranchNode * nodes[this->length + 1];
   // are they all null?
   
@@ -71,13 +71,13 @@ void SuffixBWT::sort() {
     while (!found) {
       looking_char = current_char + active_length;
       if (SUFFIX_BWT_VERBOSE) {
-        printf("== Ehhh %d, %d, %d\n", current_char - this->source, looking_char - this->source, active_length);
+        printf("== Ehhh %ld, %ld, %d\n", current_char - this->source, looking_char - this->source, active_length);
       }
       next_edge = find_edge_on_list(active_node, *looking_char);
 
       if (next_edge == NULL) {
         if (SUFFIX_BWT_VERBOSE) {
-          printf("== Nie znalazlem nastepnej litery (%c), wiec dodaje nowa krawedz do %c\n", *looking_char, active_node);
+          printf("== Nie znalazlem nastepnej litery (%c), wiec dodaje nowa krawedz do %c\n", *looking_char, active_node->debugchar);
         }
         found = true;
         edge_to_suffix->digit = (int) *looking_char;
@@ -92,7 +92,7 @@ void SuffixBWT::sort() {
           other_char++;
           looking_char++;
           if (SUFFIX_BWT_VERBOSE) {
-            printf("== Porownuje %c (%d) z %c (%d)\n", *other_char, other_char - this->source, *looking_char, looking_char - this->source);
+            printf("== Porownuje %c (%ld) z %c (%ld)\n", *other_char, other_char - this->source, *looking_char, looking_char - this->source);
           }
           if (*other_char != *looking_char) {
             found = true;

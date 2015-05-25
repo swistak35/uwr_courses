@@ -2,7 +2,7 @@ CPPFLAGS=-g -Wall -Wextra -std=c++11
 # LDFLAGS=-g $(shell root-config --ldflags)
 # LDLIBS=$(shell root-config --libs)
 
-SRCS=LexiBWT.cpp LexiDeBWT.cpp Huffman.cpp MoveToFront.cpp DemoveToFront.cpp
+SRCS=LexiBWT.cpp LexiDeBWT.cpp Huffman.cpp MoveToFront.cpp DemoveToFront.cpp SuffixBWT.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
 
 # tool: $(OBJS)
