@@ -4,7 +4,7 @@
 #define SUFFIX_BWT_VERBOSE 0
 
 #include <algorithm>
-#include <vector>
+#include <list>
 #include <iostream>
 #include <cmath>
 
@@ -22,7 +22,7 @@ typedef struct {
 
 typedef struct BranchNode {
   struct BranchNode * longestProperSuffix;
-  vector<Edge*> edges;
+  list<Edge*> edges;
   int suffix_id;
   int depth;
   char debugchar;
@@ -55,6 +55,7 @@ class SuffixBWT {
     InformationNode * create_information_node();
     Edge * create_edge();
     Edge * find_edge_on_list(BranchNode * node, int c);
+    void insert_edge_into_bnode(BranchNode * node, Edge * edge);
 
     void print_node(int depth, BranchNode * node);
     void print_tree(BranchNode * root_node);
