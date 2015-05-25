@@ -73,7 +73,7 @@ void SuffixBWT::sort() {
         edge_to_suffix->digit = (int) *looking_char;
         edge_to_suffix->startingChar = active_length + i;
         edge_to_suffix->endingChar = this->length - 1;
-        active_node->edges.push_back(edge_to_suffix);
+        active_node->edges->push_back(edge_to_suffix);
       } else {
         /* looking_char++; */
         int k = 1;
@@ -164,13 +164,13 @@ void SuffixBWT::print_tabs(int depth) {
 }
 
 void SuffixBWT::insert_edge_into_bnode(BranchNode * bnode, Edge * edge) {
-  for (std::list<Edge*>::iterator it = bnode->edges.begin(); it != bnode->edges.end(); it++) {
+  for (std::list<Edge*>::iterator it = bnode->edges->begin(); it != bnode->edges->end(); it++) {
     if (edge->digit < (*it)->digit) {
-      bnode->edges.insert(it, edge);
+      bnode->edges->insert(it, edge);
       return;
     }
   }
-  bnode->edges.push_back(edge);
+  bnode->edges->push_back(edge);
 }
 
 void SuffixBWT::print_tree(BranchNode * node) {
@@ -194,7 +194,7 @@ void SuffixBWT::print_node(int depth, BranchNode * node) {
         node->longestProperSuffix->debugchar);
   }
   Edge * edge;
-  for (list<Edge*>::iterator it = node->edges.begin(); it != node->edges.end(); it++) {
+  for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
     edge = *it;
     char str[32] = {0};
     int k = 0;
@@ -209,16 +209,16 @@ void SuffixBWT::print_node(int depth, BranchNode * node) {
         edge->startingChar, edge->endingChar,
         str);
   }
-  for (list<Edge*>::iterator it = node->edges.begin(); it != node->edges.end(); it++) {
+  for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
     edge = *it;
     print_node(depth + 1, edge->target);
   }
 }
 
 Edge * SuffixBWT::find_edge_on_list(BranchNode * node, int c) {
-  printf("== edges size: %d %p %p %d\n", node->edges.empty(), node->edges.begin(), node->edges.end(), c);
-  printf("== huehue: %d\n", node->edges.size());
-  for (list<Edge*>::iterator it = node->edges.begin(); it != node->edges.end(); ++it) {
+  printf("== edges size: %d %p %p %d\n", node->edges->empty(), node->edges->begin(), node->edges->end(), c);
+  printf("== huehue: %d\n", node->edges->size());
+  for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); ++it) {
     printf("== TRolololo\n");
     if ((*it)->digit == c) {
       return *it;
@@ -230,7 +230,8 @@ Edge * SuffixBWT::find_edge_on_list(BranchNode * node, int c) {
 // poinicjalizowac na 0, null itp.
 BranchNode * SuffixBWT::create_branch_node() {
   BranchNode * ptr = (BranchNode *) calloc(1, sizeof(BranchNode));
-  printf("CO jest kurwa %d\n", ptr->edges.empty());
+  ptr->edges = new list<Edge*>();
+  printf("CO jest kurwa %d\n", ptr->edges->empty());
   /* bzero(ptr, sizeof(BranchNode)); */
   ptr->longestProperSuffix = NULL;
   ptr->debugchar = current_debug_char;
