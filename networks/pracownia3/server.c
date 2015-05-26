@@ -19,9 +19,6 @@
 #define HTTP_TYPES_AMOUNT 8
 #define STRING_LENGTH 128
 
-// pilnowac polaczenia z ta sekunda i "Connection: "
-// powtorzyc senda jak sie nie udalo
-
 char buffer[4096];
 int buffer_len;
 int buffer_cnt;
