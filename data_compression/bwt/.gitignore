@@ -1,3 +1,10 @@
 main
 testing
+compress-lexi
+compress-lecture
+compress-suffix
+decompress0
+decompress1
 *.o
+tests/*.compressed
+tests/*.decompressed
