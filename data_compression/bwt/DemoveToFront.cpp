@@ -11,7 +11,7 @@ DemoveToFront::~DemoveToFront() {
 
 void DemoveToFront::reset() {
   this->table.clear();
-  for (int i = 0; i < 256; i++) {
+  for (int i = -128; i <= 128; i++) {
     this->table.push_back(i);
   }
 }

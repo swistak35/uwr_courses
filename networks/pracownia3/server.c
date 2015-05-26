@@ -359,6 +359,13 @@ void parse_http_other_line(struct http_request * req, char recv_buffer[]) {
     req->param_content_length = atoi(param_value);
     dprintf("Content-Length: `%d`\n", req->param_content_length);
   }
+
+  if (strcmp(param_name, "Connection:") == 0) {
+    if (strcmp(param_value, "Close") == 0) {
+      req->param_connection = 1;
+    }
+    dprintf("Connection: `%d`\n", req->param_content_length);
+  }
 }
 
 int bind_server(struct sockaddr_in * server_address, int server_port) {

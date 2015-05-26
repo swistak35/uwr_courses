@@ -103,13 +103,21 @@ void SuffixBWT::sort() {
 
         if (found) {
           edge_to_previous_target = create_edge();
-          edge_to_previous_target->digit = (int) *other_char;
           edge_to_previous_target->target = next_edge->target;
           edge_to_previous_target->startingChar = next_edge->startingChar + k;
           edge_to_previous_target->endingChar = next_edge->endingChar;
-          edge_to_suffix->digit = (int) *looking_char;
+          if (edge_to_previous_target->startingChar == this->length - 1) {
+            edge_to_previous_target->digit = 999;
+          } else {
+            edge_to_previous_target->digit = (int) *other_char;
+          }
           edge_to_suffix->startingChar = i + active_length + k;
           edge_to_suffix->endingChar = this->length - 1;
+          if (edge_to_suffix->startingChar == this->length - 1) {
+            edge_to_suffix->digit = 999;
+          } else {
+            edge_to_suffix->digit = (int) *looking_char;
+          }
           new_bnode = create_branch_node();
           insert_edge_into_bnode(new_bnode, edge_to_previous_target);
           insert_edge_into_bnode(new_bnode, edge_to_suffix);

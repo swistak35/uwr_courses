@@ -431,10 +431,10 @@ unsigned int Huffman::arc_get1() {
 
 void Huffman::compress_init(int size) {
   this->length = size;
-  huff_init(256, 256);
+  huff_init(257, 257);
   /* display_hcoder(this->hcoder); */
-  put_next_char(256 >> 8);
-  put_next_char(256);
+  put_next_char(257 >> 8);
+  put_next_char(257);
 
   put_next_char(size >> 16);
   put_next_char(size >> 8);
@@ -502,11 +502,11 @@ void Huffman::compress_finish() {
 }
 
 int Huffman::decompress_init() {
-  int size = 256;
+  int size = 257;
   size = get_next_char() << 8;
   size |= get_next_char();
 
-  huff_init(256, 256);
+  huff_init(257, 257);
 
   size = get_next_char() << 16;
   size |= get_next_char() << 8;
@@ -535,7 +535,7 @@ int Huffman::get_next_char() {
   if (this->source_type == 0) {
     return getc(In);
   } else if (this->source_type == 1) {
-    unsigned char c = *this->data_in;
+    int c = *this->data_in;
     this->data_in++;
     return c;
   } else {
@@ -547,7 +547,7 @@ void Huffman::put_next_char(int c) {
   if (this->target_type == 0) {
     putc(c, Out);
   } else if (this->target_type == 1) {
-    *this->data_out = (unsigned char) c;
+    *this->data_out = c;
     this->data_out++;
   }
 }

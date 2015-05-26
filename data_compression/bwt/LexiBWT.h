@@ -12,7 +12,7 @@ class LexiBWT {
   public:
     LexiBWT(int length);
     ~LexiBWT();
-    int transform(char * source, char * target);
+    int transform(char * source, int * target);
   /* private: */
     std::vector<int> ranks; // na ktorym miejscu jest i-ty string
     std::vector<int> positions; // ktory string jest na i-tym miejscu
@@ -20,9 +20,10 @@ class LexiBWT {
     void sort();
     void display_string(int idx);
     int get_char_idx(int idx);
+    int get_source_char(int i);
     int length;
     char * source;
-    char * target;
+    int * target;
     char * source_end;
 };
 

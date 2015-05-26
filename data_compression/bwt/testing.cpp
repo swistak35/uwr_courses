@@ -11,8 +11,8 @@
 using namespace std;
 
 #define CHUNK_SIZE 256
-#define DEBUG 0
-#define PHASE_COMP 1
+#define DEBUG 1
+#define PHASE_COMP 0
 #define PHASE_DECOMP 1
 
 void compress();
@@ -44,6 +44,7 @@ void compress() {
   fseek(source_file, 0, SEEK_END);
   int source_len = ftell(source_file);
   rewind(source_file);
+  source_len++;
   if (DEBUG) {
     cout << "Source len1: " << source_len << endl;
   }
@@ -79,9 +80,13 @@ void compress() {
 
     // run bwt
     char target[chunk_size + 1] = { 0 };
+    int tmp_int_tbl[chunk_size + 1] = { 0 };
     LexiBWT * bwt = new LexiBWT(chunk_size);
     /* SuffixBWT * bwt = new SuffixBWT(chunk_size); */
-    int orig_idx = bwt->transform(source, target);
+    int orig_idx = bwt->transform(source, tmp_int_tbl);
+    /* for (int j = 0; j < chunk_size; j++) { */
+    /*   tmp_int_tbl[j] = (int) target[j]; */
+    /* } */
     if (DEBUG) {
       cout << "BWT: " << target << endl;
       cout << "Index of orig string: " << orig_idx << endl;
@@ -90,7 +95,8 @@ void compress() {
     // MoveToFront
     mtf->target = mtf_tbl;
     mtf->run(orig_idx);
-    mtf->run(target, chunk_size);
+    cout << "Tu bylo spoko" << endl;
+    mtf->run(tmp_int_tbl, chunk_size);
 
     if (DEBUG) {
       cout << "MTF1:";
