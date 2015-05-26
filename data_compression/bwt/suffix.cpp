@@ -6,19 +6,27 @@
 using namespace std;
 
 int main() {
-  char txt[] = "ababbabbaabbabb";
+  unsigned char txt[] = "ababbabbaabbabbz";
+  int target1[17] = { 0 };
+  SuffixBWT * suffix_bwt = new SuffixBWT(16);
+  int res1 = suffix_bwt->transform(txt, target1);
+  cout << "Target1: ";
+  for (int i = 0; i < 16; i++) {
+    cout << target1[i] << " ";
+  }
+  cout << endl;
+  cout << "Res1: " << res1 << endl;
 
-  char target[17];
-  bzero(target, sizeof(target));
-  SuffixBWT * suffix_bwt = new SuffixBWT(15);
-  int res1 = suffix_bwt->transform(txt, target);
-  printf("Target1: `%s` (%d)\n", target, res1);
-
-  char target2[17];
-  bzero(target2, sizeof(target2));
-  LexiBWT * lexi_bwt = new LexiBWT(15);
-  int res2 = lexi_bwt->transform(txt, target2);
-  printf("Target2: `%s` (%d)\n", target2, res2);
+  unsigned char txt2[] = "ababbabbaabbabbz";
+  int target2[17] = { 0 };
+  LexiBWT * lexi_bwt = new LexiBWT(16);
+  int res2 = lexi_bwt->transform(txt2, target2);
+  cout << "Target2: ";
+  for (int i = 0; i < 16; i++) {
+    cout << target2[i] << " ";
+  }
+  cout << endl;
+  cout << "Res2: " << res2 << endl;
 
   return 0;
 }

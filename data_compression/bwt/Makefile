@@ -18,10 +18,18 @@ main: main.cpp $(OBJS)
 testing: testing.cpp $(OBJS)
 	g++ $(CPPFLAGS) -o testing testing.cpp $(OBJS)
 
+suffix: suffix.cpp SuffixBWT.o LexiBWT.o
+	g++ $(CPPFLAGS) -o suffix suffix.cpp SuffixBWT.o LexiBWT.o
+
 COMPRESS_LEXI_SRCS=LexiBWT.cpp Huffman.cpp MoveToFront.cpp
 COMPRESS_LEXI_OBJS=$(subst .cpp,.o,$(COMPRESS_LEXI_SRCS))
 compress-lexi: compress-lexi.cpp $(COMPRESS_LEXI_OBJS)
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-lexi compress-lexi.cpp $(COMPRESS_LEXI_OBJS)
+
+COMPRESS_SUFFIX_SRCS=SuffixBWT.cpp Huffman.cpp MoveToFront.cpp
+COMPRESS_SUFFIX_OBJS=$(subst .cpp,.o,$(COMPRESS_SUFFIX_SRCS))
+compress-suffix: compress-suffix.cpp $(COMPRESS_SUFFIX_OBJS)
+	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-suffix compress-suffix.cpp $(COMPRESS_SUFFIX_OBJS)
 
 DECOMPRESS0_SRCS=LexiDeBWT.cpp Huffman.cpp DemoveToFront.cpp
 DECOMPRESS0_OBJS=$(subst .cpp,.o,$(DECOMPRESS0_SRCS))

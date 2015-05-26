@@ -8,14 +8,13 @@ using namespace std;
 
 SuffixBWT::SuffixBWT(int length) {
   this->length = length;
-  /* this->hvec.assign(256, std::vector<int>(0)); */
 }
 
 SuffixBWT::~SuffixBWT() {
 }
 
-int SuffixBWT::transform(char * source, char * target) {
-  this->source_end = source + (this->length);
+int SuffixBWT::transform(unsigned char * source, int * target) {
+  this->source_end = source + this->length;
   this->source = source;
   this->target = target;
 
@@ -25,18 +24,16 @@ int SuffixBWT::transform(char * source, char * target) {
   }
 
   sort();
-  /* print_sorted(); */
 
   return this->ranks[0];
-  /* return 0; */
 }
 
 #define LIMITING_STEPS 100
 
 void SuffixBWT::sort() {
   // init
-  char * current_char = this->source;
-  char * looking_char;
+  unsigned char * current_char = this->source;
+  unsigned char * looking_char;
   BranchNode * root_node = create_branch_node();
   root_node->longestProperSuffix = root_node;
   root_node->depth = 0;
@@ -87,7 +84,7 @@ void SuffixBWT::sort() {
       } else {
         /* looking_char++; */
         int k = 1;
-        char * other_char = this->source + next_edge->startingChar;
+        unsigned char * other_char = this->source + next_edge->startingChar;
         while (next_edge->startingChar + k <= next_edge->endingChar) {
           other_char++;
           looking_char++;
@@ -233,7 +230,7 @@ void SuffixBWT::print_node(int depth, BranchNode * node) {
     char str[32] = {0};
     int k = 0;
     for (int j = edge->startingChar; j <= edge->endingChar; j++) {
-      str[k] = this->source[j];
+      str[k] = (char) this->source[j];
       k++;
     }
     print_tabs(depth);
@@ -289,59 +286,3 @@ int SuffixBWT::get_char_idx(int idx) {
     return idx;
   }
 }
-
-void SuffixBWT::display_string(int idx) {
-  char * starting_char = this->source + idx;
-  char * current_char = starting_char;
-  cout << "STRING " << idx << ": ";
-  while (true) {
-    cout << *current_char;
-    current_char++;
-    if (current_char == this->source_end) {
-      current_char = this->source;
-    }
-    if (current_char == starting_char) {
-      break;
-    }
-  }
-  cout << "\n";
-}
-
-/*
- * Poczatek:
- * 0    B A B A C A 3
- * 1    A B A C A B 0
- * 2    B A C A B A 4
- * 3    A C A B A B 1
- * 4    C A B A B A 5
- * 5    A B A B A C 2
- *
- * Iteracja 0:
- * 1    A B A C A B 3
- * 3    A C A B A B 5
- * 5    A B A B A C 4
- * 0    B A B A C A 0
- * 2    B A C A B A 1
- * 4    C A B A B A 2
- * 3 0 4 1 5 2
- *
- *
- * Iteracja 1a:
- * 0    B A B A C A 3
- * 2    B A C A B A 4
- * 4    C A B A B A 5
- * 1    A B A C A B 0
- * 5    A B A B A C 1
- * 3    A C A B A B 2
- * 0 3 1 5 2 4
- *
- *
- * Iteracja 1b:
- * 1    A B A C A B
- * 5    A B A B A C
- * 3    A C A B A B
- * 0    B A B A C A
- * 2    B A C A B A
- * 4    C A B A B A
- * 3 0 4 2 5 1
- */
