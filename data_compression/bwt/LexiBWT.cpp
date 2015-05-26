@@ -11,7 +11,7 @@ LexiBWT::LexiBWT(int length) {
 LexiBWT::~LexiBWT() {
 }
 
-int LexiBWT::transform(char * source, char * target) {
+int LexiBWT::transform(unsigned char * source, int * target) {
   this->source_end = source + (this->length);
   this->source = source;
   this->target = target;
@@ -87,8 +87,8 @@ int LexiBWT::get_char_idx(int idx) {
 }
 
 void LexiBWT::display_string(int idx) {
-  char * starting_char = this->source + idx;
-  char * current_char = starting_char;
+  unsigned char * starting_char = this->source + idx;
+  unsigned char * current_char = starting_char;
   cout << "STRING " << idx << ": ";
   while (true) {
     cout << *current_char;

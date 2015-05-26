@@ -13,14 +13,14 @@ class DemoveToFront {
   public:
     DemoveToFront();
     ~DemoveToFront();
-    void run(char * target, int count);
+    void run(int * target, int count);
     void run(int * target);
     void reset();
     int * source;
 
   private:
-    char get_char(int pos);
-    std::list<char> table;
+    int get_char(int pos);
+    std::list<int> table;
 };
 
 #endif

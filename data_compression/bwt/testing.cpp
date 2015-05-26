@@ -11,21 +11,35 @@
 using namespace std;
 
 #define CHUNK_SIZE 256
-#define DEBUG 0
+#define DEBUG 1
 #define PHASE_COMP 1
 #define PHASE_DECOMP 1
 
 void compress();
 void decompress();
 
-const char input_filename[] = "pantadeusz.txt";
-const char compressed_filename[] = "pantadeusz.bin";
-const char decompressed_filename[] = "pantadeusz2.txt";
-/* const char input_filename[] = "wiersz.txt"; */
-/* const char compressed_filename[] = "wiersz.bin"; */
-/* const char decompressed_filename[] = "wiersz2.txt"; */
+char input_filename[64];
+char compressed_filename[64];
+char decompressed_filename[64];
 
-int main() {
+void parse_args(int argc, char ** argv) {
+  if (argc == 1) {
+    sprintf(input_filename, "pantadeusz.input");
+    sprintf(compressed_filename, "pantadeusz.compressed");
+    sprintf(decompressed_filename, "pantadeusz.decompressed");
+  } else if (argc == 2) {
+    sprintf(input_filename, "%s.input", argv[1]);
+    sprintf(compressed_filename, "%s.compressed", argv[1]);
+    sprintf(decompressed_filename, "%s.decompressed", argv[1]);
+  } else {
+    printf("Zle argumenty!\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+int main(int argc, char ** argv) {
+  parse_args(argc, argv);
+
   if (PHASE_COMP) {
     compress();
   }
@@ -48,7 +62,7 @@ void compress() {
     cout << "Source len1: " << source_len << endl;
   }
 
-  char source[CHUNK_SIZE + 1] = { 0 };
+  unsigned char source[CHUNK_SIZE + 1] = { 0 };
   int chunks, last_chunk_size;
   if (source_len % CHUNK_SIZE == 0) {
     chunks = source_len / CHUNK_SIZE;
@@ -78,12 +92,17 @@ void compress() {
     fread(source, chunk_size, 1, source_file);
 
     // run bwt
-    char target[chunk_size + 1] = { 0 };
+    int target[chunk_size + 1] = { 0 };
     LexiBWT * bwt = new LexiBWT(chunk_size);
     /* SuffixBWT * bwt = new SuffixBWT(chunk_size); */
     int orig_idx = bwt->transform(source, target);
     if (DEBUG) {
-      cout << "BWT: " << target << endl;
+      /* cout << "BWT: " << target << endl; */
+      cout << "BWT1: ";
+      for (int j = 0; j < chunk_size; j++) {
+        cout << " " << target[j];
+      }
+      cout << "\nBWT1 successful" << endl;
       cout << "Index of orig string: " << orig_idx << endl;
     }
 
@@ -128,10 +147,10 @@ void decompress() {
   }
 
   int mtf_tbl2[CHUNK_SIZE + 4];
-  char target2[CHUNK_SIZE + 1 - 4] = { 0 };
+  int target2[CHUNK_SIZE + 1 - 4] = { 0 };
   DemoveToFront * demtf = new DemoveToFront();
   FILE * decompressed_file = fopen(decompressed_filename, "wb");
-  char source2[CHUNK_SIZE + 1 - 4] = { 0 };
+  unsigned char source2[CHUNK_SIZE + 1 - 4] = { 0 };
   for (int i = 0; i < chunks2; i++) {
     cout << "Decompressing " << float(i) / chunks2 * 100 << "%\n";
     bzero(source2, CHUNK_SIZE + 1 - 4);
@@ -150,11 +169,12 @@ void decompress() {
 
     if (DEBUG) {
       cout << "MTF2:";
-      for (int i = 0; i < chunk_size + 4; i++) {
-        cout << " " << mtf_tbl2[i];
+      for (int j = 0; j < chunk_size + 4; j++) {
+        cout << " " << mtf_tbl2[j];
       }
       cout << endl;
     }
+
 
     demtf->source = mtf_tbl2;
     int orig_idx2;
@@ -164,16 +184,20 @@ void decompress() {
     }
     demtf->run(target2, chunk_size);
     if (DEBUG) {
-      cout << "BWT2: " << target2 << endl;
-      cout << "BWT2 successful" << endl;
+      /* cout << "BWT2: " << target2 << endl; */
+      cout << "BWT2: ";
+      for (int j = 0; j < chunk_size; j++) {
+        cout << " " << target2[j];
+      }
+      cout << "\nBWT2 successful" << endl;
     }
 
     // Decoding
     LexiDeBWT * debwt = new LexiDeBWT(chunk_size);
     debwt->transform(orig_idx2, target2, source2);
-    if (DEBUG) {
-      cout << "Source2: " << source2 << endl;
-    }
+    /* if (DEBUG) { */
+    /*   cout << "Source2: " << source2 << endl; */
+    /* } */
 
     fwrite(source2, chunk_size, 1, decompressed_file);
   }

@@ -28,21 +28,21 @@ void DemoveToFront::run(int * i) {
   }
 }
 
-void DemoveToFront::run(char * target, int count) {
+void DemoveToFront::run(int * target, int count) {
   for (int i = 0; i < count; i++) {
     target[i] = get_char(*this->source);
     this->source++;
   }
 }
 
-char DemoveToFront::get_char(int pos) {
-  list<char>::iterator it = this->table.begin();
+int DemoveToFront::get_char(int pos) {
+  list<int>::iterator it = this->table.begin();
 
   for (int i = 0; i < pos; i++) {
     it++;
   }
 
-  char c = *it;
+  int c = *it;
   this->table.erase(it);
   this->table.push_front(c);
 
