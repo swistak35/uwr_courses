@@ -5,13 +5,13 @@ using namespace std;
 
 LexiBWT::LexiBWT(int length) {
   this->length = length;
-  this->hvec.assign(257, std::vector<int>(0));
+  this->hvec.assign(256, std::vector<int>(0));
 }
 
 LexiBWT::~LexiBWT() {
 }
 
-int LexiBWT::transform(char * source, int * target) {
+int LexiBWT::transform(char * source, char * target) {
   this->source_end = source + (this->length);
   this->source = source;
   this->target = target;
@@ -35,12 +35,12 @@ void LexiBWT::sort() {
     }
 
     for (int i = 0; i < this->length; i++) {
-      int znak = get_source_char(this->positions[i] + it);
-      this->hvec[znak].push_back(this->positions[i]);
+      unsigned char c = this->source[get_char_idx(this->positions[i] + it)];
+      this->hvec[c].push_back(this->positions[i]);
     }
 
     this->positions.clear();
-    for (int i = 0; i < 257; i++) {
+    for (int i = 0; i < 256; i++) {
       for (int v : this->hvec[i]) {
         this->positions.push_back(v);
       }
@@ -51,7 +51,7 @@ void LexiBWT::sort() {
     }
 
     for (int i = 0; i < this->length; i++) {
-      this->target[this->ranks[i]] = get_source_char(i);
+      this->target[this->ranks[i]] = this->source[i];
     }
 
     if (LEXI_BWT_VERBOSE) {
@@ -71,20 +71,12 @@ void LexiBWT::sort() {
     it--;
   }
 
-  this->target[this->ranks[0]] = 256; // this->source[this->length-1];
+  this->target[this->ranks[0]] = this->source[this->length-1];
   for (int i = 1; i < this->length; i++) {
-    this->target[this->ranks[i]] = get_source_char(i-1); //this->source[i-1];
+    this->target[this->ranks[i]] = this->source[i-1];
   }
 }
 
-int LexiBWT::get_source_char(int i) {
-  if (i == this->length - 1) {
-    return 256;
-  } else {
-    unsigned char c = this->source[get_char_idx(i)];
-    return (int)c;
-  }
-}
 
 int LexiBWT::get_char_idx(int idx) {
   if (idx >= this->length) {

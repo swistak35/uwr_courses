@@ -14,14 +14,13 @@ class MoveToFront {
     MoveToFront();
     ~MoveToFront();
     void run(char * source, int count);
-    void run(int * source, int count);
     void run(int source);
     void reset();
     int * target;
   private:
-    int get_char(int c);
+    int get_char(char c);
     int batchSize;
-    std::list<int> table;
+    std::list<char> table;
 };
 
 #endif
