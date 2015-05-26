@@ -115,6 +115,10 @@ int main(int argc, char ** argv) {
 	packet_size = build_response_packet(&http_res, &packet);
 	Send(conn_sockfd, packet, packet_size, 0);
 	free(packet);
+
+	if (http_req.param_connection) {
+	  connection_alive = false;
+	}
       } else {
 	connection_alive = false;
       }

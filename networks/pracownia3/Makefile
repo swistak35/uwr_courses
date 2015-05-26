@@ -14,4 +14,4 @@ clean:
 all: server.out
 
 run: server.out
-	./server.out
+	./server.out 8888 "dir1/strony_www/"
