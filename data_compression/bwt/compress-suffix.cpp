@@ -57,23 +57,23 @@ int main(int argc, char ** argv) {
   /* Huffman * huffman1 = new Huffman(1, 0); */
   /* huffman1->Out = htarget; */
   /* huffman1->compress_init(source_len + 4 * chunks); */
-  /* for (int i = 0; i < chunks; i++) { */
+  for (int i = 0; i < chunks; i++) {
   /*   cout << "Compressing " << float(i) / (chunks - 1) * 100 << "%\n"; */
-  /*   int current_chunk_size; */
-  /*   if (i == chunks-1) { */
-  /*     current_chunk_size = last_chunk_size; */
-  /*   } else { */
-  /*     current_chunk_size = max_chunk_size; */
-  /*   } */
-  /*   if (DEBUG) { */
-  /*     cout << "Chunk size " << i << ": " << current_chunk_size << endl; */
-  /*   } */
-  /*   fread(source, current_chunk_size, 1, source_file); */
+    int current_chunk_size;
+    if (i == chunks-1) {
+      current_chunk_size = last_chunk_size;
+    } else {
+      current_chunk_size = max_chunk_size;
+    }
+    if (DEBUG) {
+      cout << "Chunk size " << i << ": " << current_chunk_size << endl;
+    }
+    fread(source, current_chunk_size, 1, source_file);
 
   /*   // run bwt */
-  /*   int target[current_chunk_size + 1] = { 0 }; */
-  /*   LexiBWT * bwt = new LexiBWT(current_chunk_size); */
-  /*   int orig_idx = bwt->transform(source, target); */
+    int target[current_chunk_size + 1] = { 0 };
+    SuffixBWT * bwt = new SuffixBWT(current_chunk_size);
+    int orig_idx = bwt->transform(source, target);
   /*   if (DEBUG) { */
   /*     /1* cout << "BWT: " << target << endl; *1/ */
   /*     cout << "BWT1: "; */
@@ -100,7 +100,7 @@ int main(int argc, char ** argv) {
   /*   // Huffman */
   /*   huffman1->data_in = mtf_tbl; */
   /*   huffman1->compress(current_chunk_size + 4); */
-  /* } */
+  }
   /* huffman1->compress_finish(); */
   /* fclose(htarget); */
   fclose(input_file);
