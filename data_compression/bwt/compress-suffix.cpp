@@ -8,7 +8,7 @@
 using namespace std;
 
 #define DEFAULT_CHUNK_SIZE 256
-#define DEBUG 0
+#define DEBUG 1
 
 int main(int argc, char ** argv) {
   char * input_filename;
@@ -51,14 +51,14 @@ int main(int argc, char ** argv) {
     last_chunk_size = source_len % max_chunk_size;
   }
 
-  /* MoveToFront * mtf = new MoveToFront(); */
-  /* int mtf_tbl[max_chunk_size + 4]; */
-  /* FILE * htarget = fopen(output_filename, "wb"); */
-  /* Huffman * huffman1 = new Huffman(1, 0); */
-  /* huffman1->Out = htarget; */
-  /* huffman1->compress_init(source_len + 4 * chunks); */
+  MoveToFront * mtf = new MoveToFront();
+  int mtf_tbl[max_chunk_size + 5];
+  FILE * htarget = fopen(output_filename, "wb");
+  Huffman * huffman1 = new Huffman(1, 0, 256);
+  huffman1->Out = htarget;
+  huffman1->compress_init(source_len + 5 * chunks);
   for (int i = 0; i < chunks; i++) {
-  /*   cout << "Compressing " << float(i) / (chunks - 1) * 100 << "%\n"; */
+    cout << "Compressing " << float(i) / (chunks - 1) * 100 << "%\n";
     int current_chunk_size;
     if (i == chunks-1) {
       current_chunk_size = last_chunk_size;
@@ -68,42 +68,55 @@ int main(int argc, char ** argv) {
     if (DEBUG) {
       cout << "Chunk size " << i << ": " << current_chunk_size << endl;
     }
-    fread(source, current_chunk_size, 1, source_file);
+    fread(source, current_chunk_size, 1, input_file);
+    source[current_chunk_size] = 0;
 
-  /*   // run bwt */
+    if (DEBUG) {
+      cout << "Source: ";
+      for (int j = 0; j < current_chunk_size + 1; j++) {
+        cout << " " << +source[j];
+      }
+      cout << endl;
+    }
+
+    // run bwt
     int target[current_chunk_size + 1] = { 0 };
-    SuffixBWT * bwt = new SuffixBWT(current_chunk_size);
+    /* cout << "uuu: " << target[0]; */
+    SuffixBWT * bwt = new SuffixBWT(current_chunk_size + 1);
     int orig_idx = bwt->transform(source, target);
-  /*   if (DEBUG) { */
-  /*     /1* cout << "BWT: " << target << endl; *1/ */
-  /*     cout << "BWT1: "; */
-  /*     for (int j = 0; j < current_chunk_size; j++) { */
-  /*       cout << " " << target[j]; */
-  /*     } */
-  /*     cout << "\nBWT1 successful" << endl; */
-  /*     cout << "Index of orig string: " << orig_idx << endl; */
-  /*   } */
+    delete bwt;
+    if (DEBUG) {
+      cout << "BWT1: ";
+      /* cout << " " << target[0]; */
+      for (int j = 0; j < current_chunk_size + 1; j++) {
+        cout << " " << target[j];
+      }
+      cout << "\nBWT1 successful" << endl;
+      cout << "Index of orig string: " << orig_idx << endl;
+    }
 
-  /*   // MoveToFront */
-  /*   mtf->target = mtf_tbl; */
-  /*   mtf->run(orig_idx); */
-  /*   mtf->run(target, current_chunk_size); */
+    // MoveToFront
+    mtf->target = mtf_tbl;
+    mtf->run(orig_idx);
+    mtf->run(target, current_chunk_size + 1);
 
-  /*   if (DEBUG) { */
-  /*     cout << "MTF1:"; */
-  /*     for (int i = 0; i < current_chunk_size + 4; i++) { */
-  /*       cout << " " << mtf_tbl[i]; */
-  /*     } */
-  /*     cout << endl; */
-  /*   } */
+    if (DEBUG) {
+      cout << "MTF1:";
+      for (int i = 0; i < current_chunk_size + 4 + 1; i++) {
+        cout << " " << mtf_tbl[i];
+      }
+      cout << endl;
+    }
 
-  /*   // Huffman */
-  /*   huffman1->data_in = mtf_tbl; */
-  /*   huffman1->compress(current_chunk_size + 4); */
+    // Huffman
+    huffman1->data_in = mtf_tbl;
+    huffman1->compress(current_chunk_size + 5);
   }
-  /* huffman1->compress_finish(); */
-  /* fclose(htarget); */
+  huffman1->compress_finish();
+  fclose(htarget);
   fclose(input_file);
+
+  delete mtf;
 
   return 0;
 }

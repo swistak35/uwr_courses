@@ -8,13 +8,26 @@ using namespace std;
 
 SuffixBWT::SuffixBWT(int length) {
   this->length = length;
+  this->current_position = 0;
 }
 
 SuffixBWT::~SuffixBWT() {
+  destroy_structures(this->root_node);
+}
+
+void SuffixBWT::destroy_structures(BranchNode * node) {
+  Edge * edge;
+  for (std::list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
+    edge = *it;
+    destroy_structures(edge->target);
+    free(edge);
+  }
+  delete node->edges;
+  free(node);
 }
 
 int SuffixBWT::transform(unsigned char * source, int * target) {
-  this->source_end = source + this->length;
+  this->source_end = source + (this->length - 1);
   this->source = source;
   this->target = target;
 
@@ -28,13 +41,14 @@ int SuffixBWT::transform(unsigned char * source, int * target) {
   return this->ranks[0];
 }
 
-#define LIMITING_STEPS 100
+#define LIMITING_STEPS 1000000
 
 void SuffixBWT::sort() {
   // init
   unsigned char * current_char = this->source;
-  unsigned char * looking_char;
+  unsigned char * looking_char = NULL;
   BranchNode * root_node = create_branch_node();
+  this->root_node = root_node;
   root_node->longestProperSuffix = root_node;
   root_node->depth = 0;
   BranchNode * active_node = root_node;
@@ -43,9 +57,10 @@ void SuffixBWT::sort() {
   BranchNode * nodes[this->length + 1];
   // are they all null?
   
-  Edge * next_edge, * edge_to_previous_target;
-  BranchNode * new_bnode;
-  BranchNode * last_added_node;
+  Edge * next_edge = NULL;
+  Edge * edge_to_previous_target = NULL;
+  BranchNode * new_bnode = NULL;
+  BranchNode * last_added_node = NULL;
   for (int i = 0; i < this->length && i < LIMITING_STEPS; i++) {
     if (SUFFIX_BWT_VERBOSE) {
       printf("======================================= %d\n", i);
@@ -56,19 +71,21 @@ void SuffixBWT::sort() {
 
     // podazaj za longest suffix
     if (SUFFIX_BWT_VERBOSE) {
-      printf("== Zaczynamy od active_node == %c\n", active_node->debugchar);
+      printf("== Zaczynamy od active_node == %d\n", active_node->debugchar);
     }
-    active_node = active_node->longestProperSuffix; 
-    active_length = active_node->depth;
-    if (SUFFIX_BWT_VERBOSE) {
-      printf("== Przeszliśmy do active_node == %c\n", active_node->debugchar);
+    if (active_node->longestProperSuffix != NULL) {
+      active_node = active_node->longestProperSuffix; 
+      active_length = active_node->depth;
+      if (SUFFIX_BWT_VERBOSE) {
+        printf("== Przeszliśmy do active_node == %d\n", active_node->debugchar);
+      }
     }
 
     bool found = false;
     while (!found) {
       looking_char = current_char + active_length;
       if (SUFFIX_BWT_VERBOSE) {
-        printf("== Ehhh %ld, %ld, %d\n", current_char - this->source, looking_char - this->source, active_length);
+        printf("== Ehhh %p, %p, %d\n", current_char, looking_char, active_length);
       }
       next_edge = find_edge_on_list(active_node, *looking_char);
 
@@ -77,10 +94,10 @@ void SuffixBWT::sort() {
           printf("== Nie znalazlem nastepnej litery (%c), wiec dodaje nowa krawedz do %c\n", *looking_char, active_node->debugchar);
         }
         found = true;
-        edge_to_suffix->digit = (int) *looking_char;
+        edge_to_suffix->digit = get_digit(looking_char);
         edge_to_suffix->startingChar = active_length + i;
         edge_to_suffix->endingChar = this->length - 1;
-        active_node->edges->push_back(edge_to_suffix);
+        insert_edge_into_bnode(active_node, edge_to_suffix);
       } else {
         /* looking_char++; */
         int k = 1;
@@ -89,7 +106,7 @@ void SuffixBWT::sort() {
           other_char++;
           looking_char++;
           if (SUFFIX_BWT_VERBOSE) {
-            printf("== Porownuje %c (%ld) z %c (%ld)\n", *other_char, other_char - this->source, *looking_char, looking_char - this->source);
+            printf("== Porownuje %c (%p) z %c (%p)\n", *other_char, other_char, *looking_char, looking_char);
           }
           if (*other_char != *looking_char) {
             found = true;
@@ -100,11 +117,11 @@ void SuffixBWT::sort() {
 
         if (found) {
           edge_to_previous_target = create_edge();
-          edge_to_previous_target->digit = (int) *other_char;
+          edge_to_previous_target->digit = get_digit(other_char);
           edge_to_previous_target->target = next_edge->target;
           edge_to_previous_target->startingChar = next_edge->startingChar + k;
           edge_to_previous_target->endingChar = next_edge->endingChar;
-          edge_to_suffix->digit = (int) *looking_char;
+          edge_to_suffix->digit = get_digit(looking_char);
           edge_to_suffix->startingChar = i + active_length + k;
           edge_to_suffix->endingChar = this->length - 1;
           new_bnode = create_branch_node();
@@ -120,13 +137,13 @@ void SuffixBWT::sort() {
           if (active_node == root_node && next_edge->endingChar == next_edge->startingChar) {
             new_bnode->longestProperSuffix = root_node;
             if (SUFFIX_BWT_VERBOSE) {
-              printf("== Ustawiam lps1 wierzch %c na %c\n", new_bnode->debugchar, root_node->debugchar);
+              printf("== Ustawiam lps1 wierzch %d na %d\n", new_bnode->debugchar, root_node->debugchar);
             }
           }
-          if (i > 2 && last_added_node->longestProperSuffix == NULL) {
+          if (i > 2 && last_added_node != NULL && last_added_node->longestProperSuffix == NULL) {
             last_added_node->longestProperSuffix = new_bnode;
             if (SUFFIX_BWT_VERBOSE) {
-              printf("== Ustawiam lps2 wierzch %c na %c\n", last_added_node->debugchar, new_bnode->debugchar);
+              printf("== Ustawiam lps2 wierzch %d na %d\n", last_added_node->debugchar, new_bnode->debugchar);
             }
           }
           /* if (i > 2) { */
@@ -142,6 +159,7 @@ void SuffixBWT::sort() {
 
           last_added_node = new_bnode;
         } else {
+          assert(next_edge->target != NULL);
           active_node = next_edge->target;
           active_length = active_node->depth;
         }
@@ -152,6 +170,7 @@ void SuffixBWT::sort() {
     nodes[i] = create_branch_node();
     nodes[i]->suffix_id = i;
     nodes[i]->depth = this->length - 1;
+    nodes[i]->longestProperSuffix = NULL;
 
     // utworz krawedz dla nastepnego information node
     edge_to_suffix->target = nodes[i];
@@ -165,17 +184,38 @@ void SuffixBWT::sort() {
   }
 
   set_ranks(root_node);
+  
+  /* printf("%d", target[0]); */
 }
 
-int current_position = 0;
+int SuffixBWT::get_digit(unsigned char * chr_ptr) {
+  /* printf("get_digit %p %p\n", chr_ptr, this->source_end); */
+  if (chr_ptr == this->source_end) {
+    return 256;
+  } else {
+    return ((int) *chr_ptr);
+  }
+}
+
 
 void SuffixBWT::set_ranks(BranchNode * node) {
+  if (SUFFIX_BWT_VERBOSE) {
+    printf("Setting ranks for node %d...\n", node->debugchar);
+    printf("BranchNode< %d > (%d, %d) [ nil ]\n",
+        node->debugchar,
+        node->depth,
+        node->suffix_id);
+  }
   if (node->suffix_id != -1) {
-    this->ranks[node->suffix_id] = current_position;
+    assert(node->suffix_id >= 0);
+    assert(node->suffix_id < this->length);
+    this->ranks[node->suffix_id] = this->current_position;
+    /* printf("Current position: %d\n", this->current_position); */
+    assert(current_position < this->length);
     /* this->target[current_position] = this->source[node->suffix_id]; */
     /* this->target[this->ranks[node->suffix_id]] = this->source[node->suffix_id]; */
     if (node->suffix_id == 0) {
-      this->target[this->ranks[node->suffix_id]] = this->source[this->length-1];
+      this->target[this->ranks[node->suffix_id]] = 0;
     } else {
       this->target[this->ranks[node->suffix_id]] = this->source[node->suffix_id - 1];
     }
@@ -208,17 +248,18 @@ void SuffixBWT::print_tree(BranchNode * node) {
   print_node(1, node);
 }
 
-char current_debug_char = 'A';
+/* char current_debug_char = 'A'; */
+int current_debug_char = 0;
 
 void SuffixBWT::print_node(int depth, BranchNode * node) {
   print_tabs(depth);
   if (node->longestProperSuffix == NULL) {
-    printf("BranchNode< %c > (%d, %d) [ nil ]\n",
+    printf("BranchNode< %d > (%d, %d) [ nil ]\n",
         node->debugchar,
         node->depth,
         node->suffix_id);
   } else {
-    printf("BranchNode< %c > (%d, %d) [ %c ]\n",
+    printf("BranchNode< %d > (%d, %d) [ %d ]\n",
         node->debugchar,
         node->depth,
         node->suffix_id,
@@ -227,18 +268,21 @@ void SuffixBWT::print_node(int depth, BranchNode * node) {
   Edge * edge;
   for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
     edge = *it;
-    char str[32] = {0};
-    int k = 0;
-    for (int j = edge->startingChar; j <= edge->endingChar; j++) {
-      str[k] = (char) this->source[j];
-      k++;
-    }
+    /* char str[2048] = {0}; */
+    /* int k = 0; */
+    /* for (int j = edge->startingChar; j <= edge->endingChar; j++) { */
+      /* str[k] = (char) this->source[j]; */
+      /* k++; */
+    /* } */
     print_tabs(depth);
-    printf("Edge ->%c (%d) [%d .. %d] <%s>\n",
+    assert(edge->digit >= 0);
+    assert(edge->digit <= 256);
+    printf("Edge ->%d (%d) [%d .. %d] <>\n",
         edge->target->debugchar,
         edge->digit,
-        edge->startingChar, edge->endingChar,
-        str);
+        edge->startingChar, edge->endingChar);
+        /* edge->startingChar, edge->endingChar, */
+        /* str); */
   }
   for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
     edge = *it;
@@ -248,6 +292,12 @@ void SuffixBWT::print_node(int depth, BranchNode * node) {
 
 Edge * SuffixBWT::find_edge_on_list(BranchNode * node, int c) {
   for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); ++it) {
+    /* Edge * edge = *it; */
+    /* int digit = (*it)->digit; */
+    /* printf("Szukanie przez %p\n", edge); */
+    /* printf("Szukanie cyfry %d\n", digit); */
+    /* printf("A porownujemy do %d\n", c); */
+
     if ((*it)->digit == c) {
       return *it;
     }
@@ -257,7 +307,8 @@ Edge * SuffixBWT::find_edge_on_list(BranchNode * node, int c) {
 
 // poinicjalizowac na 0, null itp.
 BranchNode * SuffixBWT::create_branch_node() {
-  BranchNode * ptr = (BranchNode *) calloc(1, sizeof(BranchNode));
+  BranchNode * ptr = (BranchNode *) malloc(sizeof(BranchNode));
+  assert(ptr != NULL);
   ptr->suffix_id = -1;
   ptr->edges = new list<Edge*>();
   /* bzero(ptr, sizeof(BranchNode)); */
@@ -274,8 +325,9 @@ InformationNode * SuffixBWT::create_information_node() {
 }
 
 Edge * SuffixBWT::create_edge() {
-  Edge * ptr = (Edge *) calloc(1, sizeof(Edge));
-  bzero(ptr, sizeof(Edge));
+  Edge * ptr = (Edge *) malloc(sizeof(Edge));
+  assert(ptr != NULL);
+  ptr->digit = -99;
   return ptr;
 }
 

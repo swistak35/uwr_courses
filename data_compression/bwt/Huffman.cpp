@@ -7,9 +7,10 @@ using namespace std;
 void arc_put1(unsigned bit);
 unsigned arc_get1();
 
-Huffman::Huffman(int source_type, int target_type) {
+Huffman::Huffman(int source_type, int target_type, int alphabet_size) {
   this->source_type = source_type;
   this->target_type = target_type;
+  this->alphabet_size = alphabet_size;
   ArcBit = 0;
   ArcChar = 0;
 }
@@ -431,10 +432,10 @@ unsigned int Huffman::arc_get1() {
 
 void Huffman::compress_init(int size) {
   this->length = size;
-  huff_init(256, 256);
+  huff_init(this->alphabet_size, this->alphabet_size);
   /* display_hcoder(this->hcoder); */
-  put_next_char(256 >> 8);
-  put_next_char(256);
+  put_next_char(this->alphabet_size >> 8);
+  put_next_char(this->alphabet_size);
 
   put_next_char(size >> 16);
   put_next_char(size >> 8);
@@ -502,11 +503,11 @@ void Huffman::compress_finish() {
 }
 
 int Huffman::decompress_init() {
-  int size = 256;
+  int size = this->alphabet_size;
   size = get_next_char() << 8;
   size |= get_next_char();
 
-  huff_init(256, 256);
+  huff_init(this->alphabet_size, this->alphabet_size);
 
   size = get_next_char() << 16;
   size |= get_next_char() << 8;

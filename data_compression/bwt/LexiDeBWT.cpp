@@ -21,7 +21,7 @@ void LexiDeBWT::transform(int orig_idx, int * source, unsigned char * target) {
 
   std::vector<std::vector<int>> hvec;
   std::vector<int> positions;
-  hvec.assign(256, std::vector<int>(0));
+  hvec.assign(257, std::vector<int>(0));
 
   for (int i = 0; i < this->length; i++) {
     int c = this->source[i];
@@ -30,7 +30,7 @@ void LexiDeBWT::transform(int orig_idx, int * source, unsigned char * target) {
 
   {
     int j = 0;
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i <= 256; i++) {
       for (int v : hvec[i]) {
         positions.push_back(v);
         this->sorted[j] = i;

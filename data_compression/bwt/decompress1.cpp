@@ -27,7 +27,7 @@ int main(int argc, char ** argv) {
     }
   } else {
     cout << "Zle argumenty." << endl;
-    cout << "./decompress0 plik_wejsciowy plik_wyjsciowy rozmiar_okna=256" << endl;
+    cout << "./decompress1 plik_wejsciowy plik_wyjsciowy rozmiar_okna=256" << endl;
     exit(EXIT_FAILURE);
   }
 
@@ -37,19 +37,19 @@ int main(int argc, char ** argv) {
   // Initiate huffman class
   Huffman * huffman2 = new Huffman(0, 1, 256);
   huffman2->In = hsource;
-  int mtf_tbl2[max_chunk_size + 4];
+  int mtf_tbl2[max_chunk_size + 5];
 
   // Extract original file length from compressed file
   int source_len2 = huffman2->decompress_init();
 
   // Calculate chunks size
   int chunks2, last_chunk_size2;
-  if (source_len2 % (max_chunk_size + 4) == 0) {
-    chunks2 = source_len2 / (max_chunk_size + 4);
+  if (source_len2 % (max_chunk_size + 5) == 0) {
+    chunks2 = source_len2 / (max_chunk_size + 5);
     last_chunk_size2 = max_chunk_size;
   } else {
-    chunks2 = (source_len2 / (max_chunk_size + 4)) + 1;
-    last_chunk_size2 = (source_len2 % (max_chunk_size + 4)) - 4;
+    chunks2 = (source_len2 / (max_chunk_size + 5)) + 1;
+    last_chunk_size2 = (source_len2 % (max_chunk_size + 5)) - 5;
   }
 
   print_debug_source_len(source_len2);
@@ -76,11 +76,11 @@ int main(int argc, char ** argv) {
     }
 
     huffman2->data_out = mtf_tbl2;
-    huffman2->decompress(current_chunk_size + 4);
+    huffman2->decompress(current_chunk_size + 5);
 
     if (DEBUG) {
       cout << "MTF2:";
-      for (int j = 0; j < current_chunk_size + 4; j++) {
+      for (int j = 0; j < current_chunk_size + 5; j++) {
         cout << " " << mtf_tbl2[j];
       }
       cout << endl;
@@ -93,22 +93,28 @@ int main(int argc, char ** argv) {
     if (DEBUG) {
       cout << "Orig idx2: " << orig_idx2 << endl;
     }
-    demtf->run(target2, current_chunk_size);
+    demtf->run(target2, current_chunk_size + 1);
+    target2[orig_idx2] = 256;
     if (DEBUG) {
       /* cout << "BWT2: " << target2 << endl; */
       cout << "BWT2: ";
-      for (int j = 0; j < current_chunk_size; j++) {
+      for (int j = 0; j < current_chunk_size + 1; j++) {
         cout << " " << target2[j];
       }
       cout << "\nBWT2 successful" << endl;
     }
 
     // Decoding
-    LexiDeBWT * debwt = new LexiDeBWT(current_chunk_size);
+    LexiDeBWT * debwt = new LexiDeBWT(current_chunk_size + 1);
     debwt->transform(orig_idx2, target2, source2);
-    /* if (DEBUG) { */
-    /*   cout << "Source2: " << source2 << endl; */
-    /* } */
+    if (DEBUG) {
+      cout << "Source2: " << source2 << endl;
+      cout << "Source2: ";
+      for (int j = 0; j < current_chunk_size + 1; j++) {
+        cout << " " << +source2[j];
+      }
+      cout << endl;
+    }
 
     fwrite(source2, current_chunk_size, 1, output_file);
   }
@@ -123,3 +129,4 @@ void print_debug_source_len(int source_len) {
     cout << "Source len: " << source_len << endl;
   }
 }
+

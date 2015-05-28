@@ -27,7 +27,7 @@ typedef struct {
 class Huffman {
   public:
     // basic stuff
-    Huffman(int source_type, int target_type);
+    Huffman(int source_type, int target_type, int alphabet_size);
     ~Huffman();
 
     // from original algorithm
@@ -48,6 +48,7 @@ class Huffman {
     HCoder * hcoder;
     unsigned char ArcBit;
     int ArcChar;
+    int alphabet_size;
     int get_next_char();
     void put_next_char(int c);
     void compress_init(int size);

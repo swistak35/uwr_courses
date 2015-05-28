@@ -9,8 +9,8 @@ OBJS=$(subst .cpp,.o,$(SRCS))
 # tool: $(OBJS)
 #     g++ -o tool tool.o support.o $(LDLIBS) 
 
-%.o: %.cpp
-	g++ $(CPPFLAGS) -c $< 
+%.o: %.cpp %.h
+	g++ $(CPPFLAGS) $(DEBUGFLAGS) -c $< 
 
 main: main.cpp $(OBJS)
 	g++ $(CPPFLAGS) -o main main.cpp $(OBJS)
@@ -36,6 +36,11 @@ DECOMPRESS0_OBJS=$(subst .cpp,.o,$(DECOMPRESS0_SRCS))
 decompress0: decompress0.cpp $(DECOMPRESS0_OBJS)
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o decompress0 decompress0.cpp $(DECOMPRESS0_OBJS)
 
+DECOMPRESS1_SRCS=LexiDeBWT.cpp Huffman.cpp DemoveToFront.cpp
+DECOMPRESS1_OBJS=$(subst .cpp,.o,$(DECOMPRESS1_SRCS))
+decompress1: decompress1.cpp $(DECOMPRESS1_OBJS)
+	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o decompress1 decompress1.cpp $(DECOMPRESS1_OBJS)
+
 test: testing
 	rm -f minipantadeusz.bin > /dev/null
 	rm -f minipantadeusz2.txt > /dev/null
@@ -43,6 +48,7 @@ test: testing
 	diff minipantadeusz.txt minipantadeusz2.txt
 
 clean:
+	rm -f *.o
 	rm -f tests/*.compressed
 	rm -f tests/*.decompressed
 	rm -f compress-lexi compress-suffix compress-lecture decompress0 decompress1

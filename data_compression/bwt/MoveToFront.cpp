@@ -7,6 +7,7 @@ MoveToFront::MoveToFront() {
 }
 
 MoveToFront::~MoveToFront() {
+  this->table.clear();
 }
 
 void MoveToFront::reset() {

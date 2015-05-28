@@ -3,15 +3,23 @@
 
 using namespace std;
 
-int main() {
-  int x = 255;
-  char c = -1; 
-  cout << hex << x << endl;
-  cout << hex << +c << endl;
-  if (x == c) {
-    cout << "Kurwa..." << endl;
+class SsijMiPale {
+
+  public:
+  void tescik() {
+    static int chuj = 0;
+    printf("chuj = %d\n", chuj);
+    chuj++;
   }
-  cout << sizeof(int) <<endl;
-  cout << sizeof(uint16_t) << endl;
+};
+
+int main() {
+  SsijMiPale * serio = new SsijMiPale();
+  serio->tescik();
+  serio->tescik();
+  SsijMiPale * bardzo_serio = new SsijMiPale();
+  bardzo_serio->tescik();
+  bardzo_serio->tescik();
+
   return 0;
 }

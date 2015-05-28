@@ -1,7 +1,9 @@
 #ifndef SUFFIX_BWT_H
 #define SUFFIX_BWT_H
 
-#define SUFFIX_BWT_VERBOSE 0
+#ifndef SUFFIX_BWT_VERBOSE
+#define SUFFIX_BWT_VERBOSE 1
+#endif
 
 #include <algorithm>
 #include <list>
@@ -23,7 +25,7 @@ typedef struct BranchNode {
   list<Edge*> * edges;
   int suffix_id;
   int depth;
-  char debugchar;
+  int debugchar;
 } BranchNode;
 
 typedef struct InformationNode {
@@ -42,13 +44,17 @@ class SuffixBWT {
     /* std::vector<std::vector<int>> hvec; */
     void sort();
     int get_char_idx(int idx);
+    int get_digit(unsigned char * chr_ptr);
     int length;
     unsigned char * source;
     int * target;
     unsigned char * source_end;
     void set_ranks(BranchNode * node);
+    void destroy_structures(BranchNode * node);
+    int current_position;
 
     // builder
+    BranchNode * root_node;
     BranchNode * create_branch_node();
     InformationNode * create_information_node();
     Edge * create_edge();

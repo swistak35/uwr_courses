@@ -54,7 +54,7 @@ int main(int argc, char ** argv) {
   MoveToFront * mtf = new MoveToFront();
   int mtf_tbl[max_chunk_size + 4];
   FILE * htarget = fopen(output_filename, "wb");
-  Huffman * huffman1 = new Huffman(1, 0);
+  Huffman * huffman1 = new Huffman(1, 0, 256);
   huffman1->Out = htarget;
   huffman1->compress_init(source_len + 4 * chunks);
   for (int i = 0; i < chunks; i++) {
