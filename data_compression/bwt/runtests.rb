@@ -10,7 +10,8 @@ TEST_CASES = {
       'empty', 'onlychar', 'onechar', 'spacja', 'dwaslowa', 'jednozdanie', 'krotkie',
       '253', '254', '255', '256', '257', '258',
       '1022', '1023', '1024', '1025', '1026', '2048',
-      # 'minipantadeusz',
+      'minipantadeusz',
+      'pantadeusz',
     ],
     plans: [
       { name: "lexi", size: 256 },

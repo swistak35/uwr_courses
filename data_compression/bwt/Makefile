@@ -3,7 +3,7 @@ DEBUGFLAGS=-g
 # LDFLAGS=-g $(shell root-config --ldflags)
 # LDLIBS=$(shell root-config --libs)
 
-SRCS=LexiBWT.cpp LexiDeBWT.cpp Huffman.cpp MoveToFront.cpp DemoveToFront.cpp SuffixBWT.cpp
+SRCS=LexiBWT.cpp DeBWT.cpp Huffman.cpp MoveToFront.cpp DemoveToFront.cpp SuffixBWT.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
 
 # tool: $(OBJS)
@@ -31,12 +31,12 @@ COMPRESS_SUFFIX_OBJS=$(subst .cpp,.o,$(COMPRESS_SUFFIX_SRCS))
 compress-suffix: compress-suffix.cpp $(COMPRESS_SUFFIX_OBJS)
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-suffix compress-suffix.cpp $(COMPRESS_SUFFIX_OBJS)
 
-DECOMPRESS0_SRCS=LexiDeBWT.cpp Huffman.cpp DemoveToFront.cpp
+DECOMPRESS0_SRCS=DeBWT.cpp Huffman.cpp DemoveToFront.cpp
 DECOMPRESS0_OBJS=$(subst .cpp,.o,$(DECOMPRESS0_SRCS))
 decompress0: decompress0.cpp $(DECOMPRESS0_OBJS)
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o decompress0 decompress0.cpp $(DECOMPRESS0_OBJS)
 
-DECOMPRESS1_SRCS=LexiDeBWT.cpp Huffman.cpp DemoveToFront.cpp
+DECOMPRESS1_SRCS=DeBWT.cpp Huffman.cpp DemoveToFront.cpp
 DECOMPRESS1_OBJS=$(subst .cpp,.o,$(DECOMPRESS1_SRCS))
 decompress1: decompress1.cpp $(DECOMPRESS1_OBJS)
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o decompress1 decompress1.cpp $(DECOMPRESS1_OBJS)

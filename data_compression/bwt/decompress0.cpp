@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdio>
-#include "LexiDeBWT.h"
+#include "DeBWT.h"
 #include "DemoveToFront.h"
 #include "Huffman.h"
 
@@ -104,7 +104,7 @@ int main(int argc, char ** argv) {
     }
 
     // Decoding
-    LexiDeBWT * debwt = new LexiDeBWT(current_chunk_size);
+    DeBWT * debwt = new DeBWT(current_chunk_size);
     debwt->transform(orig_idx2, target2, source2);
     /* if (DEBUG) { */
     /*   cout << "Source2: " << source2 << endl; */
