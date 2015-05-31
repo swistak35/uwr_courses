@@ -6,17 +6,8 @@ DEBUGFLAGS=-g
 SRCS=LexiBWT.cpp DeBWT.cpp Huffman.cpp MoveToFront.cpp DemoveToFront.cpp SuffixBWT.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
 
-# tool: $(OBJS)
-#     g++ -o tool tool.o support.o $(LDLIBS) 
-
 %.o: %.cpp %.h
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -c $< 
-
-main: main.cpp $(OBJS)
-	g++ $(CPPFLAGS) -o main main.cpp $(OBJS)
-
-testing: testing.cpp $(OBJS)
-	g++ $(CPPFLAGS) -o testing testing.cpp $(OBJS)
 
 suffix: suffix.cpp SuffixBWT.o LexiBWT.o
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o suffix suffix.cpp SuffixBWT.o LexiBWT.o
