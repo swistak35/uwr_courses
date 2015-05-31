@@ -41,13 +41,13 @@ void LexiDeBWT::transform(int orig_idx, int * source, unsigned char * target) {
 
   /* cout << "Sorted: " << this->sorted << endl; */
 
-  int transformation[this->length];
+  /* int transformation[this->length]; */
 
-  for (int i = 0; i < this->length; i++) {
+  /* for (int i = 0; i < this->length; i++) { */
     /* char c = this->sorted[i]; */
     /* int gdzie_on_byl = this->positions[i]; */
-    transformation[i] = positions[i];
-  }
+    /* transformation[i] = positions[i]; */
+  /* } */
 
   {
     int i = orig_idx;
@@ -55,15 +55,15 @@ void LexiDeBWT::transform(int orig_idx, int * source, unsigned char * target) {
     // first iteration
     unsigned char c = (unsigned char) this->source[i];
     this->target[this->length - 1] = c;
-    printf("Przypisywanie `%d` na %d\n", (int) c, this->length - 1);
-    i = transformation[i];
+    /* printf("Przypisywanie `%d` na %d\n", (int) c, this->length - 1); */
+    i = positions[i];
 
     // rest of the iterations
     for (int j = 1; j < this->length; j++) {
       c = (unsigned char) this->source[i];
       this->target[j - 1] = c;
-      printf("Przypisywanie `%d` na %d\n", (int) c, j - 1);
-      i = transformation[i];
+      /* printf("Przypisywanie `%d` na %d\n", (int) c, j - 1); */
+      i = positions[i];
     }
   }
 }
