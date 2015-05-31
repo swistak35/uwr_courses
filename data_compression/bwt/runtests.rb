@@ -15,7 +15,7 @@ TEST_CASES = {
     ],
     plans: [
       { name: "lexi", size: 256 },
-      { name: "lexi", size: 1024 },
+      # { name: "lexi", size: 1024 },
       { name: "suffix", size: 256 },
       { name: "suffix", size: 1024 },
     ]
