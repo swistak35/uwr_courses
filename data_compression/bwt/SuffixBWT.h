@@ -22,6 +22,7 @@ typedef struct {
 
 typedef struct BranchNode {
   struct BranchNode * longestProperSuffix;
+  struct BranchNode * parent;
   list<Edge*> * edges;
   int suffix_id;
   int depth;

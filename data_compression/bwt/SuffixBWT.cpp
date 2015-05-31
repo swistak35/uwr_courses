@@ -98,6 +98,24 @@ void SuffixBWT::sort() {
         edge_to_suffix->startingChar = active_length + i;
         edge_to_suffix->endingChar = this->length - 1;
         insert_edge_into_bnode(active_node, edge_to_suffix);
+        nodes[i] = create_branch_node();
+        nodes[i]->parent = active_node;
+
+        if (last_added_node != NULL) {
+          assert(last_added_node->longestProperSuffix == NULL);
+          BranchNode * candidate_node = nodes[i];
+          /* print_node(0, last_added_node); */
+          printf("Ustalamy longestProperSuffix dla %d, zaczynamy od %d\n", last_added_node->debugchar,
+              nodes[i]->debugchar);
+          while (candidate_node->depth != last_added_node->depth - 1) {
+            candidate_node = candidate_node->parent;
+            assert(candidate_node != NULL);
+            printf("Zamiana candidate_node na %d\n", candidate_node->debugchar);
+          }
+          last_added_node->longestProperSuffix = candidate_node;
+        }
+
+        last_added_node = NULL;
       } else {
         /* looking_char++; */
         int k = 1;
@@ -131,33 +149,52 @@ void SuffixBWT::sort() {
           /* new_bnode->edges.push_back(edge_to_suffix); */
           /* new_bnode->longestProperSuffix = root_node; */
           new_bnode->depth = active_node->depth + k;
+          new_bnode->parent = active_node;
           next_edge->endingChar = next_edge->startingChar + k - 1;
           next_edge->target = new_bnode;
 
-          if (active_node == root_node && next_edge->endingChar == next_edge->startingChar) {
-            new_bnode->longestProperSuffix = root_node;
-            if (SUFFIX_BWT_VERBOSE) {
-              printf("== Ustawiam lps1 wierzch %d na %d\n", new_bnode->debugchar, root_node->debugchar);
+          /* if (active_node == root_node && next_edge->endingChar == next_edge->startingChar) { */
+            /* new_bnode->longestProperSuffix = root_node; */
+            /* if (SUFFIX_BWT_VERBOSE) { */
+              /* printf("== Ustawiam lps1 wierzch %d na %d\n", new_bnode->debugchar, root_node->debugchar); */
+            /* } */
+          /* } */
+          if (last_added_node != NULL) {
+            assert(last_added_node->longestProperSuffix == NULL);
+            BranchNode * candidate_node = new_bnode;
+            /* print_node(0, last_added_node); */
+            printf("Ustalamy longestProperSuffix dla %d, zaczynamy od %d\n", last_added_node->debugchar,
+                new_bnode->debugchar);
+            while (candidate_node->depth != last_added_node->depth - 1) {
+              candidate_node = candidate_node->parent;
+              assert(candidate_node != NULL);
+              printf("Zamiana candidate_node na %d\n", candidate_node->debugchar);
             }
+            last_added_node->longestProperSuffix = candidate_node;
           }
-          if (i > 2 && last_added_node != NULL && last_added_node->longestProperSuffix == NULL) {
-            last_added_node->longestProperSuffix = new_bnode;
-            if (SUFFIX_BWT_VERBOSE) {
-              printf("== Ustawiam lps2 wierzch %d na %d\n", last_added_node->debugchar, new_bnode->debugchar);
-            }
-          }
+          /* if (i > 2 && last_added_node != NULL && new_bnode->longestProperSuffix == NULL) { */
+          /*   new_bnode->longestProperSuffix = last_added_node; */
+          /*   if (SUFFIX_BWT_VERBOSE) { */
+          /*     printf("== Ustawiam lps2 wierzch %d na %d\n", last_added_node->debugchar, new_bnode->debugchar); */
+          /*   } */
+          /* } */
           /* if (i > 2) { */
-          /*   printf("++ %c %d %d %d %d %d %d\n", */
+          /*   printf("++ %d %d %d %d %d %d %d\n", */
           /*       last_added_node->debugchar, */
           /*       active_node == root_node, */
           /*       next_edge->endingChar == next_edge->startingChar, */
           /*       i > 2, */
-          /*       last_added_node->longestProperSuffix == NULL, */
+          /*       new_bnode->longestProperSuffix == NULL, */
           /*       active_node == root_node && next_edge->endingChar == next_edge->startingChar, */
-          /*       i > 2 && last_added_node->longestProperSuffix == NULL); */
+          /*       i > 2 && new_bnode->longestProperSuffix == NULL); */
           /* } */
 
           last_added_node = new_bnode;
+          if (SUFFIX_BWT_VERBOSE) {
+            printf("Ustawiamy last_added_node na %d\n", new_bnode->debugchar);
+          }
+          nodes[i] = create_branch_node();
+          nodes[i]->parent = new_bnode;
         } else {
           assert(next_edge->target != NULL);
           active_node = next_edge->target;
@@ -167,7 +204,6 @@ void SuffixBWT::sort() {
     }
 
     // utworz information node dla tego suffix
-    nodes[i] = create_branch_node();
     nodes[i]->suffix_id = i;
     nodes[i]->depth = this->length - 1;
     nodes[i]->longestProperSuffix = NULL;
@@ -310,6 +346,7 @@ BranchNode * SuffixBWT::create_branch_node() {
   BranchNode * ptr = (BranchNode *) malloc(sizeof(BranchNode));
   assert(ptr != NULL);
   ptr->suffix_id = -1;
+  ptr->parent = NULL;
   ptr->edges = new list<Edge*>();
   /* bzero(ptr, sizeof(BranchNode)); */
   ptr->longestProperSuffix = NULL;
