@@ -2,7 +2,7 @@
 #define SUFFIX_BWT_H
 
 #ifndef SUFFIX_BWT_VERBOSE
-#define SUFFIX_BWT_VERBOSE 1
+#define SUFFIX_BWT_VERBOSE 0
 #endif
 
 #include <algorithm>
@@ -50,17 +50,23 @@ class SuffixBWT {
     unsigned char * source;
     int * target;
     unsigned char * source_end;
-    void set_ranks(BranchNode * node);
+    void set_ranks(int depth, BranchNode * node);
+    void set_ranks_root();
     void destroy_structures(BranchNode * node);
     int current_position;
 
     // builder
     BranchNode * root_node;
+    BranchNode * pin_node;
     BranchNode * create_branch_node();
     InformationNode * create_information_node();
     Edge * create_edge();
     Edge * find_edge_on_list(BranchNode * node, int c);
     void insert_edge_into_bnode(BranchNode * node, Edge * edge);
+    int canonize(BranchNode * node, int startingChar, int endingChar, BranchNode ** result);
+    bool test_and_split(BranchNode * node, int startingChar, int endingChar, int current_char,
+      BranchNode ** bnode);
+    int update(BranchNode * node, int startingChar, int endingChar, BranchNode ** result);
 
     void print_node(int depth, BranchNode * node);
     void print_tree(BranchNode * root_node);

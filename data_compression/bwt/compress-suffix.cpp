@@ -38,7 +38,7 @@ int main(int argc, char ** argv) {
   int source_len = ftell(input_file);
   rewind(input_file);
   if (DEBUG) {
-    cout << "Source len: " << source_len << endl;
+    cout << "Sourcelen: " << source_len << endl;
   }
 
   unsigned char source[max_chunk_size + 1] = { 0 };
@@ -86,12 +86,12 @@ int main(int argc, char ** argv) {
     int orig_idx = bwt->transform(source, target);
     delete bwt;
     if (DEBUG) {
-      cout << "BWT1: ";
+      cout << "BWT: ";
       /* cout << " " << target[0]; */
       for (int j = 0; j < current_chunk_size + 1; j++) {
         cout << " " << target[j];
       }
-      cout << "\nBWT1 successful" << endl;
+      cout << "\nBWTsuccessful" << endl;
       cout << "Index of orig string: " << orig_idx << endl;
     }
 
@@ -101,7 +101,7 @@ int main(int argc, char ** argv) {
     mtf->run(target, current_chunk_size + 1);
 
     if (DEBUG) {
-      cout << "MTF1:";
+      cout << "MTF:";
       for (int i = 0; i < current_chunk_size + 4 + 1; i++) {
         cout << " " << mtf_tbl[i];
       }

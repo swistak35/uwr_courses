@@ -46,13 +46,14 @@ def compress_lexi(path, chunk_size = nil)
   unless $?.success?
     puts "Runtime!"
     puts result
-    exit(1)
+    return false
   end
 
   compressed_file = File.size("#{path}.compressed")
 
   print timing.to_s.ljust(8)
   print compressed_file.to_s.ljust(8)
+  true
 end
 
 def compress_suffix(path, chunk_size = nil)
@@ -65,13 +66,14 @@ def compress_suffix(path, chunk_size = nil)
   unless $?.success?
     puts "Runtime!"
     puts result
-    exit(1)
+    return false
   end
 
   compressed_file = File.size("#{path}.compressed")
 
   print timing.to_s.ljust(8)
   print compressed_file.to_s.ljust(8)
+  true
 end
 
 def decompress0(path, chunk_size = nil)
@@ -84,17 +86,18 @@ def decompress0(path, chunk_size = nil)
   unless $?.success?
     puts "Runtime!"
     puts result
-    exit(1)
+    return false
   end
 
   result = `diff #{path}.input #{path}.decompressed`
   unless $?.success?
     puts "Diff!"
     puts result
-    exit(1)
+    return false
   end
 
   print timing.to_s.ljust(8)
+  true
 end
 
 def decompress1(path, chunk_size = nil)
@@ -107,29 +110,30 @@ def decompress1(path, chunk_size = nil)
   unless $?.success?
     puts "Runtime!"
     puts result
-    exit(1)
+    return false
   end
 
   result = `diff #{path}.input #{path}.decompressed`
   unless $?.success?
     puts "Diff!"
     puts result
-    exit(1)
+    return false
   end
 
   print timing.to_s.ljust(8)
+  true
 end
 
 SMALLER.each do |name|
   path = File.join(TESTS, name)
   print "Wykonywanie #{name.ljust(16)}"
 
-  compress_lexi(path)
-  decompress0(path)
-  compress_lexi(path, 1024)
-  decompress0(path, 1024)
-  compress_suffix(path)
-  decompress1(path)
+  next unless compress_lexi(path)
+  next unless decompress0(path)
+  next unless compress_lexi(path, 1024)
+  next unless decompress0(path, 1024)
+  next unless compress_suffix(path)
+  next unless decompress1(path)
 
   puts
 end

@@ -10,7 +10,7 @@ LexiDeBWT::~LexiDeBWT() {
 }
 
 void LexiDeBWT::transform(int orig_idx, int * source, unsigned char * target) {
-  this->source_end = source + (this->length);
+  this->source_end = source + (this->length - 1);
   this->source = source;
   this->target = target;
 
@@ -53,12 +53,16 @@ void LexiDeBWT::transform(int orig_idx, int * source, unsigned char * target) {
     int i = orig_idx;
 
     // first iteration
-    this->target[this->length - 1] = (unsigned char) this->source[i];
+    unsigned char c = (unsigned char) this->source[i];
+    this->target[this->length - 1] = c;
+    printf("Przypisywanie `%d` na %d\n", (int) c, this->length - 1);
     i = transformation[i];
 
     // rest of the iterations
     for (int j = 1; j < this->length; j++) {
-      this->target[j - 1] = (unsigned char) this->source[i];
+      c = (unsigned char) this->source[i];
+      this->target[j - 1] = c;
+      printf("Przypisywanie `%d` na %d\n", (int) c, j - 1);
       i = transformation[i];
     }
   }

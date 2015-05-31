@@ -19,7 +19,7 @@ testing: testing.cpp $(OBJS)
 	g++ $(CPPFLAGS) -o testing testing.cpp $(OBJS)
 
 suffix: suffix.cpp SuffixBWT.o LexiBWT.o
-	g++ $(CPPFLAGS) -o suffix suffix.cpp SuffixBWT.o LexiBWT.o
+	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o suffix suffix.cpp SuffixBWT.o LexiBWT.o
 
 COMPRESS_LEXI_SRCS=LexiBWT.cpp Huffman.cpp MoveToFront.cpp
 COMPRESS_LEXI_OBJS=$(subst .cpp,.o,$(COMPRESS_LEXI_SRCS))

@@ -56,15 +56,15 @@ int main(int argc, char ** argv) {
 
   // Initialize Demove to front
   DemoveToFront * demtf = new DemoveToFront();
-  int target2[max_chunk_size + 1 - 4] = { 0 };
+  int target2[max_chunk_size + 1] = { 0 };
 
   // Data structures for output file
   FILE * output_file = fopen(output_filename, "wb");
-  unsigned char source2[max_chunk_size + 1 - 4] = { 0 };
+  unsigned char source2[max_chunk_size + 1] = { 0 };
 
   for (int i = 0; i < chunks2; i++) {
     cout << "Decompressing " << float(i) / chunks2 * 100 << "%\n";
-    bzero(source2, max_chunk_size + 1 - 4);
+    bzero(source2, max_chunk_size + 1);
     int current_chunk_size;
     if (i == chunks2-1) {
       current_chunk_size = last_chunk_size2;
@@ -79,7 +79,7 @@ int main(int argc, char ** argv) {
     huffman2->decompress(current_chunk_size + 5);
 
     if (DEBUG) {
-      cout << "MTF2:";
+      cout << "MTF:";
       for (int j = 0; j < current_chunk_size + 5; j++) {
         cout << " " << mtf_tbl2[j];
       }
@@ -94,21 +94,21 @@ int main(int argc, char ** argv) {
       cout << "Orig idx2: " << orig_idx2 << endl;
     }
     demtf->run(target2, current_chunk_size + 1);
-    target2[orig_idx2] = 256;
     if (DEBUG) {
       /* cout << "BWT2: " << target2 << endl; */
-      cout << "BWT2: ";
+      cout << "BWT: ";
       for (int j = 0; j < current_chunk_size + 1; j++) {
         cout << " " << target2[j];
       }
-      cout << "\nBWT2 successful" << endl;
+      cout << "\nBWT successful" << endl;
     }
+    target2[orig_idx2] = 256;
 
     // Decoding
     LexiDeBWT * debwt = new LexiDeBWT(current_chunk_size + 1);
     debwt->transform(orig_idx2, target2, source2);
     if (DEBUG) {
-      cout << "Source2: " << source2 << endl;
+      cout << "Sourcetxt2: " << source2 << endl;
       cout << "Source2: ";
       for (int j = 0; j < current_chunk_size + 1; j++) {
         cout << " " << +source2[j];
