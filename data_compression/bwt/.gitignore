@@ -9,3 +9,4 @@ decompress1
 *.o
 tests/*.compressed
 tests/*.decompressed
+tmp/*
