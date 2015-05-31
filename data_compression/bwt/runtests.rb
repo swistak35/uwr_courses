@@ -49,10 +49,20 @@ def compress_lexi(path, chunk_size = nil)
     return false
   end
 
+  input_file = File.size("#{path}.input")
   compressed_file = File.size("#{path}.compressed")
+  if input_file == 0
+    efficiency = 100
+  else
+    efficiency = ((compressed_file.to_f / input_file) * 100).to_i
+  end
 
   print timing.to_s.ljust(8)
-  print compressed_file.to_s.ljust(8)
+  if efficiency >= 100
+    print "no".ljust(4)
+  else
+    print "#{efficiency}%".ljust(4)
+  end
   true
 end
 
@@ -69,10 +79,20 @@ def compress_suffix(path, chunk_size = nil)
     return false
   end
 
+  input_file = File.size("#{path}.input")
   compressed_file = File.size("#{path}.compressed")
+  if input_file == 0
+    efficiency = 100
+  else
+    efficiency = ((compressed_file.to_f / input_file) * 100).to_i
+  end
 
   print timing.to_s.ljust(8)
-  print compressed_file.to_s.ljust(8)
+  if efficiency >= 100
+    print "no".ljust(4)
+  else
+    print "#{efficiency}%".ljust(4)
+  end
   true
 end
 
@@ -124,9 +144,27 @@ def decompress1(path, chunk_size = nil)
   true
 end
 
+print "Informacje o teście".ljust(32)
+print "Lexi (256)".ljust(36)
+print "Lexi (1024)".ljust(36)
+print "Suffix (256)".ljust(36)
+print "Suffix (1024)".ljust(36)
+puts
+
+print "Nazwa".ljust(16)
+print "Rozmiar".ljust(16)
+4.times do
+  print "comp.".ljust(8)
+  print "eff.".ljust(4)
+  print "decomp.".ljust(8)
+end
+puts
+
 SMALLER.each do |name|
   path = File.join(TESTS, name)
-  print "Wykonywanie #{name.ljust(16)}"
+
+  print name.ljust(16)
+  print File.size("#{path}.input").to_s.ljust(16)
 
   next unless compress_lexi(path)
   next unless decompress0(path)
