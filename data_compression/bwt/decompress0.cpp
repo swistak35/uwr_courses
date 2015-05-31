@@ -8,7 +8,7 @@
 using namespace std;
 
 #define DEFAULT_CHUNK_SIZE 256
-#define DEBUG 1
+#define DEBUG 0
 
 // Debug printing methods
 void print_debug_source_len(int source_len);

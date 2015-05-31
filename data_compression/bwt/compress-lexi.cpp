@@ -8,7 +8,7 @@
 using namespace std;
 
 #define DEFAULT_CHUNK_SIZE 256
-#define DEBUG 1
+#define DEBUG 0
 
 int main(int argc, char ** argv) {
   char * input_filename;

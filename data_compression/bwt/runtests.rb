@@ -48,7 +48,7 @@ COLUMN_SIZE = {
 def main
   compile_all
 
-  run_test_cases("bin")
+  run_test_cases("text")
 
   puts
   puts "Wszystko OK!"
