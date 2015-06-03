@@ -12,6 +12,9 @@ OBJS=$(subst .cpp,.o,$(SRCS))
 suffix: suffix.cpp SuffixBWT.o LexiBWT.o
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o suffix suffix.cpp SuffixBWT.o LexiBWT.o
 
+uni: uni.cpp UniBWT.o LexiBWT.o
+	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o uni uni.cpp UniBWT.o LexiBWT.o
+
 COMPRESS_LEXI_SRCS=LexiBWT.cpp Huffman.cpp MoveToFront.cpp
 COMPRESS_LEXI_OBJS=$(subst .cpp,.o,$(COMPRESS_LEXI_SRCS))
 compress-lexi: compress-lexi.cpp $(COMPRESS_LEXI_OBJS)

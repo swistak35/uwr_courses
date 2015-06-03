@@ -12,7 +12,9 @@ class UniBWT {
     ~UniBWT();
     int transform(unsigned char * source, int * target);
   private:
+    int hvecs;
     int * ranks;
+    int * new_ranks;
     int * positions;
     std::vector<std::vector<int>> hvec;
     void sort();
