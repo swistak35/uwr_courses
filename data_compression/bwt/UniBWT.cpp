@@ -5,21 +5,34 @@ using namespace std;
 
 UniBWT::UniBWT(int length) {
   this->length = length;
+
   this->ranks = (int *) calloc(this->length, sizeof(int));
+  if (this->ranks == NULL) {
+    throw "Failed to allocate memory for UniBWT.ranks\n"; 
+  }
+
   this->new_ranks = (int *) calloc(this->length, sizeof(int));
+  if (this->new_ranks == NULL) {
+    throw "Failed to allocate memory for UniBWT.new_ranks\n"; 
+  }
+
   this->positions = (int *) calloc(this->length, sizeof(int));
+  if (this->positions == NULL) {
+    throw "Failed to allocate memory for UniBWT.positions\n"; 
+  }
+
   if (this->length < 256) {
     this->hvecs = 256;
   } else {
     this->hvecs = this->length;
   }
   this->hvec.assign(this->hvecs, std::vector<int>(0));
-  if (this->ranks == NULL || this->positions == NULL || this->new_ranks == NULL) {
-    printf("nieudane zajecie pamieci\n");
-  }
 }
 
 UniBWT::~UniBWT() {
+  free(this->ranks);
+  free(this->new_ranks);
+  free(this->positions);
 }
 
 int UniBWT::transform(unsigned char * source, int * target) {

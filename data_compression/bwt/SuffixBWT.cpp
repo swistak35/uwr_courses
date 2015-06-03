@@ -26,7 +26,14 @@ SuffixBWT::SuffixBWT(int length) {
 /* } */
 
 SuffixBWT::~SuffixBWT() {
-  destroy_structures(this->root_node);
+  while (bnode_stack_ptr > bnode_stack) {
+    bnode_stack_ptr--;
+    for (std::list<Edge*>::iterator it = bnode_stack_ptr->edges->begin();
+        it != bnode_stack_ptr->edges->end(); it++) {
+      free(*it);
+    }
+    delete bnode_stack_ptr->edges;
+  }
   free(this->bnode_stack);
 }
 

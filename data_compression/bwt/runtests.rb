@@ -50,6 +50,15 @@ TEST_CASES = {
     tests: name_generator("trzysta", 1000),
     plans: [ { name: "suffix", size: 256 } ]
   },
+  unieff: {
+    tests: ["mobi0.mobi", "epub0.epub", "bin0.bin", "pantadeusz"],
+    plans: [
+      { name: "uni", size: 1024 },
+      { name: "uni", size: 2*1024 },
+      { name: "uni", size: 5*1024 },
+      { name: "uni", size: 10*1024 },
+    ],
+  },
   mobi: {
     tests: name_generator("mobi", 20),
     plans: [
