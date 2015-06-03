@@ -3,28 +3,28 @@
 
 using namespace std;
 
-UniBWT::UniBWT(int length) {
-  this->length = length;
+UniBWT::UniBWT(int max_length) {
+  this->max_length = max_length;
 
-  this->ranks = (int *) calloc(this->length, sizeof(int));
+  this->ranks = (int *) calloc(this->max_length, sizeof(int));
   if (this->ranks == NULL) {
     throw "Failed to allocate memory for UniBWT.ranks\n"; 
   }
 
-  this->new_ranks = (int *) calloc(this->length, sizeof(int));
+  this->new_ranks = (int *) calloc(this->max_length, sizeof(int));
   if (this->new_ranks == NULL) {
     throw "Failed to allocate memory for UniBWT.new_ranks\n"; 
   }
 
-  this->positions = (int *) calloc(this->length, sizeof(int));
+  this->positions = (int *) calloc(this->max_length, sizeof(int));
   if (this->positions == NULL) {
     throw "Failed to allocate memory for UniBWT.positions\n"; 
   }
 
-  if (this->length < 256) {
+  if (this->max_length < 256) {
     this->hvecs = 256;
   } else {
-    this->hvecs = this->length;
+    this->hvecs = this->max_length;
   }
   this->hvec.assign(this->hvecs, std::vector<int>(0));
 }
@@ -33,6 +33,10 @@ UniBWT::~UniBWT() {
   free(this->ranks);
   free(this->new_ranks);
   free(this->positions);
+}
+
+void UniBWT::prepare(int length) {
+  this->length = length;
 }
 
 int UniBWT::transform(unsigned char * source, int * target) {
@@ -48,9 +52,9 @@ void UniBWT::sort() {
   // Init vectors
   /* bzero(this->ranks, sizeof(int) * this->length); */
 
-  for (int i = 0; i < this->length; i++) {
-    this->positions[i] = i;
-  }
+  /* for (int i = 0; i < this->length; i++) { */
+  /*   this->positions[i] = i; */
+  /* } */
 
   // first iteration
   {
@@ -77,8 +81,6 @@ void UniBWT::sort() {
   int k = 0;
   int offset = 1 << k;
   while (offset <= this->length / 2) {
-    printf("k = %d | offset = %d\n", k, offset);
-
     // moze wystarczy utrzymywac wartosc previous_buckets i tylko te czyscic
     for (int i = 0; i < buckets; i++) {
       hvec[i].clear();

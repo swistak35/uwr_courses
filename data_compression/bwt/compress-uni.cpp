@@ -57,6 +57,7 @@ int main(int argc, char ** argv) {
   Huffman * huffman1 = new Huffman(1, 0, 256);
   huffman1->Out = htarget;
   huffman1->compress_init(source_len + 4 * chunks);
+  UniBWT * bwt = new UniBWT(max_chunk_size);
   for (int i = 0; i < chunks; i++) {
     cout << "Compressing " << float(i) / (chunks - 1) * 100 << "%\n";
     int current_chunk_size;
@@ -80,9 +81,9 @@ int main(int argc, char ** argv) {
 
     // run bwt
     int target[current_chunk_size + 1] = { 0 };
-    UniBWT * bwt = new UniBWT(current_chunk_size);
+    bwt->prepare(current_chunk_size);
     int orig_idx = bwt->transform(source, target);
-    delete bwt;
+    /* delete bwt; */
     if (DEBUG) {
       /* cout << "BWT: " << target << endl; */
       cout << "BWT1: ";
@@ -114,6 +115,7 @@ int main(int argc, char ** argv) {
   fclose(htarget);
   fclose(source_file);
 
+  delete bwt;
   delete huffman1;
   delete mtf;
 

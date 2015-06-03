@@ -10,8 +10,10 @@ class UniBWT {
   public:
     UniBWT(int length);
     ~UniBWT();
+    void prepare(int length);
     int transform(unsigned char * source, int * target);
   private:
+    int max_length;
     int hvecs;
     int * ranks;
     int * new_ranks;
