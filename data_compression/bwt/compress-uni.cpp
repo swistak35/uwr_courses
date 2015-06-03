@@ -30,7 +30,7 @@ int main(int argc, char ** argv) {
   // open source file
   FILE * source_file = fopen(input_filename, "rb");
   if (source_file == NULL) {
-    cout << "Plik zrodlowy nie istnieje" << endl;
+    throw "Plik zrodlowy nie istnieje";
   }
 
   // calculate source file size
