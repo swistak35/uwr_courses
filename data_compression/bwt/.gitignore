@@ -10,3 +10,11 @@ decompress1
 tests/*.compressed
 tests/*.decompressed
 tmp/*
+
+tests/trzysta*
+tests/mobi*
+tests/epub*
+tests/pdf*
+tests/bin*
+tests/rfc*
+tests/1*MB*

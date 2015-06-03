@@ -206,7 +206,7 @@ void SuffixBWT::set_ranks(int depth, BranchNode * node) {
         node->depth,
         node->suffix_id);
   }
-  if (node->edges->size() == 0) {
+  if (node->edges->empty()) {
     int suffix_id = this->length - depth;
     assert(suffix_id >= 0);
     assert(suffix_id < this->length);

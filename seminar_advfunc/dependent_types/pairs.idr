@@ -1,10 +1,3 @@
--- pairs
-data Pair2 : Type -> Type -> Type where
-  MkPair2 : a -> b -> Pair2 a b
-
-Pair3 : Type -> Type -> Type
-MkPair3 : a -> b -> Pair3 a b
-
 data Fin : Nat -> Type where
   FZ : Fin (S n)
   FS : Fin n -> Fin (S n)
@@ -37,19 +30,8 @@ fin2NatInjective : (m : Fin k) -> (n : Fin k) -> (fin2Nat m) = (fin2Nat n) -> m 
 fin2NatInjective FZ FZ Refl = Refl
 -- fin2NatInjective (FS m) FZ Refl impossible
 -- fin2NatInjective FZ (FS n) Refl impossible
-fin2NatInjective (FS m) (FS n) prf  =
-  cong (fin2NatInjective m n (succInjective (fin2Nat m) (fin2Nat n) prf)) 
+fin2NatInjective (FS m) (FS n) p =
+  cong (fin2NatInjective m n (succInjective (fin2Nat m) (fin2Nat n) p))
 
-succInjective : (n : Nat) -> (m : Nat) -> S n = S m -> n = m
-cong : {a : Type} -> {b : Type} -> {x : a} -> {y : a} -> {f : a -> b} -> x = y -> f x = f y
-
--- fin2NatInjective m n Refl = Refl
-
-
-
--- nat2Fin x@(S x1) y@(S y1) = if x >= y then Nothing else (case (nat2Fin x1 y1) of  --((nat2Fin x1 y) >>= (\z => Just $ FS z))
---   Just z => (Just $ FS z)
---   Nothing => Nothing)
-
--- nat2Fin : Nat -> (n : Nat) -> Maybe (Fin n)
-
+-- succInjective : (n : Nat) -> (m : Nat) -> S n = S m -> n = m
+-- cong : {a : Type} -> {b : Type} -> {x : a} -> {y : a} -> {f : a -> b} -> x = y -> f x = f y

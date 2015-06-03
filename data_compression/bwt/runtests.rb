@@ -4,6 +4,14 @@ require 'benchmark'
 
 TESTS = "tests"
 
+ExecutionRuntimeError = Class.new(StandardError)
+
+def name_generator(name, count)
+  count.times.map do |i|
+    "#{name}#{i}.#{name}"
+  end
+end
+
 TEST_CASES = {
   text: {
     tests: [
@@ -21,7 +29,82 @@ TEST_CASES = {
     ]
   },
   bin: {
-    tests: [ '1MB.bin', '5MB.bin', ],
+    tests: name_generator("bin", 20),
+    plans: [
+      { name: "suffix", size: 100*1024 },
+      { name: "suffix", size: 200*1024 },
+      { name: "suffix", size: 300*1024 },
+      { name: "suffix", size: 400*1024 },
+      { name: "suffix", size: 500*1024 },
+      { name: "suffix", size: 600*1024 },
+      { name: "suffix", size: 700*1024 },
+      { name: "suffix", size: 800*1024 },
+      { name: "suffix", size: 900*1024 },
+    ]
+  },
+  trzysta: {
+    tests: name_generator("trzysta", 1000),
+    plans: [ { name: "suffix", size: 256 } ]
+  },
+  mobi: {
+    tests: [ 'mobi1.mobi', 'mobi2.mobi', 'mobi3.mobi', 'mobi4.mobi', 'mobi5.mobi', 'mobi6.mobi', 'mobi7.mobi', 'mobi8.mobi', 'mobi9.mobi', 'mobi10.mobi', 'mobi11.mobi', 'mobi12.mobi', 'mobi13.mobi', 'mobi14.mobi', 'mobi15.mobi', 'mobi16.mobi', 'mobi17.mobi', 'mobi18.mobi', 'mobi19.mobi', 'mobi20.mobi', ],
+    plans: [
+      { name: "suffix", size: 100*1024 },
+      { name: "suffix", size: 200*1024 },
+      { name: "suffix", size: 300*1024 },
+      { name: "suffix", size: 400*1024 },
+      { name: "suffix", size: 500*1024 },
+      { name: "suffix", size: 600*1024 },
+      { name: "suffix", size: 700*1024 },
+      { name: "suffix", size: 800*1024 },
+      { name: "suffix", size: 900*1024 },
+    ]
+  },
+  epub: {
+    tests: [ 'epub1.epub', 'epub2.epub', 'epub3.epub', 'epub4.epub', 'epub5.epub', 'epub6.epub', 'epub7.epub', 'epub8.epub', 'epub9.epub', 'epub10.epub', 'epub11.epub', 'epub12.epub', 'epub13.epub', 'epub14.epub', 'epub15.epub', 'epub16.epub', 'epub17.epub', 'epub18.epub', 'epub19.epub', 'epub20.epub', ],
+    plans: [
+      { name: "suffix", size: 100*1024 },
+      { name: "suffix", size: 200*1024 },
+      { name: "suffix", size: 300*1024 },
+      { name: "suffix", size: 400*1024 },
+      { name: "suffix", size: 500*1024 },
+      { name: "suffix", size: 600*1024 },
+      { name: "suffix", size: 700*1024 },
+      { name: "suffix", size: 800*1024 },
+      { name: "suffix", size: 900*1024 },
+    ]
+  },
+  pdf: {
+    tests: [ 'pdf1.pdf', 'pdf2.pdf', 'pdf3.pdf', 'pdf4.pdf', 'pdf5.pdf', 'pdf6.pdf', 'pdf7.pdf', 'pdf8.pdf', 'pdf9.pdf', 'pdf10.pdf', 'pdf11.pdf', 'pdf12.pdf', 'pdf13.pdf', 'pdf14.pdf', 'pdf15.pdf', 'pdf16.pdf', 'pdf17.pdf', 'pdf18.pdf', 'pdf19.pdf', 'pdf20.pdf', ],
+    plans: [
+      { name: "suffix", size: 100*1024 },
+      { name: "suffix", size: 200*1024 },
+      { name: "suffix", size: 300*1024 },
+      { name: "suffix", size: 400*1024 },
+      { name: "suffix", size: 500*1024 },
+      { name: "suffix", size: 600*1024 },
+      { name: "suffix", size: 700*1024 },
+      { name: "suffix", size: 800*1024 },
+      { name: "suffix", size: 900*1024 },
+    ]
+  },
+  rfc: {
+    tests: [
+      # 'rfc1.txt',
+      # 'rfc2.txt',
+      # 'rfc3.txt', # nope
+      # 'rfc4.txt', # nope
+      # 'rfc5.txt', # nope
+      # 'rfc6.txt', # nope
+      # 'rfc7.txt', # nope
+      'rfc8.txt',
+      'rfc9.txt',
+      'rfc10.txt',
+      'rfc11.txt',
+      'rfc12.txt',
+      'rfc13.txt',
+      'rfc14.txt',
+    ],
     plans: [
       { name: "suffix", size: 100*1024 },
       { name: "suffix", size: 200*1024 },
@@ -49,7 +132,10 @@ COLUMN_SIZE = {
 def main
   compile_all
 
-  run_test_cases("text")
+  # run_test_cases("text")
+  # run_test_cases("trzysta")
+  run_test_cases("mobi")
+  # run_test_cases("pdf")
   # run_test_cases("bin")
 
   puts
@@ -70,16 +156,20 @@ def run_test_cases(testcase_name)
     print File.size("#{path}.input").to_s.ljust(COLUMN_SIZE[:header2_size])
 
     plans.each do |test|
-      case test[:name]
-      when "lexi"
-        compress_lexi(path, test[:size])
-        decompress0(path, test[:size])
-      when "suffix"
-        compress_suffix(path, test[:size])
-        decompress1(path, test[:size])
-      else
-        puts "Zły typ testu."
-        exit(1)
+      begin
+        case test[:name]
+        when "lexi"
+          compress_lexi(path, test[:size])
+          decompress0(path, test[:size])
+        when "suffix"
+          compress_suffix(path, test[:size])
+          decompress1(path, test[:size])
+        else
+          puts "Zły typ testu."
+          exit(1)
+        end
+      rescue ExecutionRuntimeError
+        puts
       end
     end
 
