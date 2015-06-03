@@ -22,17 +22,9 @@ typedef struct {
 
 typedef struct BranchNode {
   struct BranchNode * longestProperSuffix;
-  struct BranchNode * parent;
   list<Edge*> * edges;
-  int suffix_id;
-  int depth;
   int debugchar;
 } BranchNode;
-
-typedef struct InformationNode {
-  int id;
-} InformationNode;
-
 
 class SuffixBWT {
   public:
@@ -56,10 +48,12 @@ class SuffixBWT {
     int current_position;
 
     // builder
+    BranchNode * bnode_stack;
+    BranchNode * bnode_stack_ptr;
+    int bnode_counter;
     BranchNode * root_node;
     BranchNode * pin_node;
     BranchNode * create_branch_node();
-    InformationNode * create_information_node();
     Edge * create_edge();
     Edge * find_edge_on_list(BranchNode * node, int c);
     void insert_edge_into_bnode(BranchNode * node, Edge * edge);

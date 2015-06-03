@@ -9,10 +9,25 @@ using namespace std;
 SuffixBWT::SuffixBWT(int length) {
   this->length = length;
   this->current_position = 0;
+  this->bnode_counter = 0;
+  this->bnode_stack = (BranchNode *) calloc(2 * this->length + 4, sizeof(BranchNode));
+  this->bnode_stack_ptr = this->bnode_stack;
 }
+
+/* SuffixBWT::prepare(int length) { */
+/*   if (this->length < length) { */
+/*     free(this->bnode_stack); */
+/*   } else { */
+
+/*   } */
+/*   this->length = length; */
+/*   this->current_position = 0; */
+/*   this->bnode_stack_ptr = */ 
+/* } */
 
 SuffixBWT::~SuffixBWT() {
   destroy_structures(this->root_node);
+  free(this->bnode_stack);
 }
 
 void SuffixBWT::destroy_structures(BranchNode * node) {
@@ -23,7 +38,7 @@ void SuffixBWT::destroy_structures(BranchNode * node) {
     free(edge);
   }
   delete node->edges;
-  free(node);
+  /* free(node); */
 }
 
 int SuffixBWT::transform(unsigned char * source, int * target) {
@@ -201,20 +216,15 @@ int SuffixBWT::get_digit(unsigned char * chr_ptr) {
 void SuffixBWT::set_ranks(int depth, BranchNode * node) {
   if (SUFFIX_BWT_VERBOSE) {
     printf("Setting ranks for node %d depth=%d...\n", node->debugchar, depth);
-    printf("BranchNode< %d > (%d, %d) [ nil ]\n",
-        node->debugchar,
-        node->depth,
-        node->suffix_id);
+    printf("BranchNode< %d > [ nil ]\n",
+        node->debugchar);
   }
   if (node->edges->empty()) {
     int suffix_id = this->length - depth;
     assert(suffix_id >= 0);
     assert(suffix_id < this->length);
     this->ranks[suffix_id] = this->current_position;
-    /* printf("Current position: %d\n", this->current_position); */
     assert(current_position < this->length);
-    /* this->target[current_position] = this->source[node->suffix_id]; */
-    /* this->target[this->ranks[node->suffix_id]] = this->source[node->suffix_id]; */
     if (suffix_id == 0) {
       this->target[this->ranks[suffix_id]] = 0;
     } else {
@@ -249,32 +259,21 @@ void SuffixBWT::print_tree(BranchNode * node) {
   print_node(1, node);
 }
 
-/* char current_debug_char = 'A'; */
 int current_debug_char = 0;
 
 void SuffixBWT::print_node(int depth, BranchNode * node) {
   print_tabs(depth);
   if (node->longestProperSuffix == NULL) {
-    printf("BranchNode< %d > (%d, %d) [ nil ]\n",
-        node->debugchar,
-        node->depth,
-        node->suffix_id);
+    printf("BranchNode< %d > [ nil ]\n",
+        node->debugchar);
   } else {
-    printf("BranchNode< %d > (%d, %d) [ %d ]\n",
+    printf("BranchNode< %d > [ %d ]\n",
         node->debugchar,
-        node->depth,
-        node->suffix_id,
         node->longestProperSuffix->debugchar);
   }
   Edge * edge;
   for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
     edge = *it;
-    /* char str[2048] = {0}; */
-    /* int k = 0; */
-    /* for (int j = edge->startingChar; j <= edge->endingChar; j++) { */
-      /* str[k] = (char) this->source[j]; */
-      /* k++; */
-    /* } */
     print_tabs(depth);
     assert(edge->digit >= 0);
     assert(edge->digit <= 256);
@@ -282,8 +281,6 @@ void SuffixBWT::print_node(int depth, BranchNode * node) {
         edge->target->debugchar,
         edge->digit,
         edge->startingChar, edge->endingChar);
-        /* edge->startingChar, edge->endingChar, */
-        /* str); */
   }
   for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
     edge = *it;
@@ -302,21 +299,16 @@ Edge * SuffixBWT::find_edge_on_list(BranchNode * node, int c) {
 
 // poinicjalizowac na 0, null itp.
 BranchNode * SuffixBWT::create_branch_node() {
-  BranchNode * ptr = (BranchNode *) malloc(sizeof(BranchNode));
-  assert(ptr != NULL);
-  ptr->suffix_id = -1;
-  ptr->parent = NULL;
+  /* printf("Dodano bnode %d\n", bnode_counter); */
+  /* BranchNode * ptr = (BranchNode *) malloc(sizeof(BranchNode)); */
+  BranchNode * ptr = bnode_stack_ptr;
   ptr->edges = new list<Edge*>();
-  /* bzero(ptr, sizeof(BranchNode)); */
   ptr->longestProperSuffix = NULL;
-  ptr->debugchar = current_debug_char;
-  current_debug_char++;
-  return ptr;
-}
 
-InformationNode * SuffixBWT::create_information_node() {
-  InformationNode * ptr = (InformationNode *) calloc(1, sizeof(InformationNode));
-  bzero(ptr, sizeof(InformationNode));
+  ptr->debugchar = bnode_counter;
+
+  bnode_counter++;
+  bnode_stack_ptr++;
   return ptr;
 }
 

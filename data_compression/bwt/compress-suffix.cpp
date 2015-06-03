@@ -15,6 +15,10 @@ int main(int argc, char ** argv) {
   char * output_filename;
   int max_chunk_size = DEFAULT_CHUNK_SIZE;
 
+  clock_t cbeg, cend;
+  long int cmtf = 0, chuff = 0, cbwt = 0;
+  
+
   if (argc >= 3) {
     input_filename  = argv[1];
     output_filename = argv[2];
@@ -82,9 +86,12 @@ int main(int argc, char ** argv) {
     // run bwt
     int target[current_chunk_size + 1] = { 0 };
     /* cout << "uuu: " << target[0]; */
+    cbeg = clock();
     SuffixBWT * bwt = new SuffixBWT(current_chunk_size + 1);
     int orig_idx = bwt->transform(source, target);
     delete bwt;
+    cend = clock();
+    cbwt += (cend - cbeg);
     if (DEBUG) {
       cout << "BWT: ";
       /* cout << " " << target[0]; */
@@ -97,8 +104,11 @@ int main(int argc, char ** argv) {
 
     // MoveToFront
     mtf->target = mtf_tbl;
+    cbeg = clock();
     mtf->run(orig_idx);
     mtf->run(target, current_chunk_size + 1);
+    cend = clock();
+    cmtf += (cend - cbeg);
 
     if (DEBUG) {
       cout << "MTF:";
@@ -110,13 +120,18 @@ int main(int argc, char ** argv) {
 
     // Huffman
     huffman1->data_in = mtf_tbl;
+    cbeg = clock();
     huffman1->compress(current_chunk_size + 5);
+    cend = clock();
+    chuff += (cend - cbeg);
   }
   huffman1->compress_finish();
   fclose(htarget);
   fclose(input_file);
 
   delete mtf;
+
+  printf("BWT: %ld | MTF: %ld | HUFF: %ld\n", cbwt, cmtf, chuff);
 
   return 0;
 }

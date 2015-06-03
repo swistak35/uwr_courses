@@ -19,10 +19,10 @@ TEST_CASES = {
       '253', '254', '255', '256', '257', '258',
       '1022', '1023', '1024', '1025', '1026', '2048',
       'minipantadeusz',
-      'pantadeusz',
+      'pantadeusz', '1MB.bin',
     ],
     plans: [
-      { name: "lexi", size: 256 },
+      # { name: "lexi", size: 256 },
       # { name: "lexi", size: 1024 },
       { name: "suffix", size: 256 },
       { name: "suffix", size: 1024 },
@@ -132,9 +132,9 @@ COLUMN_SIZE = {
 def main
   compile_all
 
-  # run_test_cases("text")
-  # run_test_cases("trzysta")
-  run_test_cases("mobi")
+  run_test_cases("trzysta")
+  run_test_cases("text")
+  # run_test_cases("mobi")
   # run_test_cases("pdf")
   # run_test_cases("bin")
 
@@ -146,6 +146,8 @@ def run_test_cases(testcase_name)
   testcase = TEST_CASES[testcase_name.to_sym]
   tests = testcase[:tests]
   plans = testcase[:plans]
+
+  @timing_sum = 0
 
   print_first_header(plans)
   print_second_header(plans)
@@ -175,6 +177,8 @@ def run_test_cases(testcase_name)
 
     puts
   end
+
+  puts "Suma czasow: #{@timing_sum}"
 end
 
 def calculate_time(time_in_ms)
@@ -234,6 +238,7 @@ end
 
 def compress_lexi(path, chunk_size = nil)
   timing = execute("./compress-lexi #{path}.input #{path}.compressed #{chunk_size.to_s}")
+  @timing_sum += timing
 
   efficiency = calculate_efficiency(path)
 
@@ -243,6 +248,7 @@ end
 
 def compress_suffix(path, chunk_size = nil)
   timing = execute("./compress-suffix #{path}.input #{path}.compressed #{chunk_size.to_s}")
+  @timing_sum += timing
 
   efficiency = calculate_efficiency(path)
 
@@ -252,6 +258,7 @@ end
 
 def decompress0(path, chunk_size = nil)
   timing = execute("./decompress0 #{path}.compressed #{path}.decompressed #{chunk_size.to_s}")
+  @timing_sum += timing
 
   execute("diff #{path}.input #{path}.decompressed")
 
@@ -260,6 +267,7 @@ end
 
 def decompress1(path, chunk_size = nil)
   timing = execute("./decompress1 #{path}.compressed #{path}.decompressed #{chunk_size.to_s}")
+  @timing_sum += timing
 
   execute("diff #{path}.input #{path}.decompressed")
 
