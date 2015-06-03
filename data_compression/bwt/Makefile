@@ -20,6 +20,11 @@ COMPRESS_LEXI_OBJS=$(subst .cpp,.o,$(COMPRESS_LEXI_SRCS))
 compress-lexi: compress-lexi.cpp $(COMPRESS_LEXI_OBJS)
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-lexi compress-lexi.cpp $(COMPRESS_LEXI_OBJS)
 
+COMPRESS_UNI_SRCS=UniBWT.cpp Huffman.cpp MoveToFront.cpp
+COMPRESS_UNI_OBJS=$(subst .cpp,.o,$(COMPRESS_UNI_SRCS))
+compress-uni: compress-uni.cpp $(COMPRESS_UNI_OBJS)
+	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-uni compress-uni.cpp $(COMPRESS_UNI_OBJS)
+
 COMPRESS_SUFFIX_SRCS=SuffixBWT.cpp Huffman.cpp MoveToFront.cpp
 COMPRESS_SUFFIX_OBJS=$(subst .cpp,.o,$(COMPRESS_SUFFIX_SRCS))
 compress-suffix: compress-suffix.cpp $(COMPRESS_SUFFIX_OBJS)
@@ -45,4 +50,4 @@ clean:
 	rm -f *.o
 	rm -f tests/*.compressed
 	rm -f tests/*.decompressed
-	rm -f compress-lexi compress-suffix compress-lecture decompress0 decompress1
+	rm -f compress-lexi compress-suffix compress-uni decompress0 decompress1

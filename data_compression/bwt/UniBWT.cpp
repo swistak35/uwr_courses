@@ -84,7 +84,7 @@ void UniBWT::sort() {
       for (int v : this->hvec[i]) {
         this->positions[j] = v;
         int rank_right = this->ranks[v];
-        int rank_left = this->ranks[v - offset];
+        int rank_left = this->ranks[get_char_idx(v - offset)];
         if (rank_left != prev_rank_left || rank_right != prev_rank_right) {
           current_rank++;
           prev_rank_left = rank_left;
@@ -104,47 +104,38 @@ void UniBWT::sort() {
     offset <<= 1;
   }
 
+  int it = this->length - offset - 1;
+  while (it >= 0) {
+    for (int i = 0; i < 256; i++) {
+      hvec[i].clear();
+    }
+
+    for (int i = 0; i < this->length; i++) {
+      unsigned char c = this->source[get_char_idx(this->positions[i] + it)];
+      this->hvec[c].push_back(this->positions[i]);
+    }
+
+    {
+      int j = 0;
+      for (int i = 0; i < 256; i++) {
+        for (int v : this->hvec[i]) {
+          this->positions[j] = v;
+          j++;
+        }
+      }
+    }
+
+    it--;
+  }
+
+  for (int i = 0; i < this->length; i++) {
+    this->ranks[this->positions[i]] = i;
+  }
+
   this->target[this->ranks[0]] = this->source[this->length-1];
   for (int i = 1; i < this->length; i++) {
     this->target[this->ranks[i]] = this->source[i-1];
   }
-
-  /* for (int i = 0; i < this->length; i++) { */
-  /*   this->positions[i] = i; */
-  /* } */
-
-  /* int it = this->length - 1; */
-  /* while (it >= 0) { */
-  /*   for (auto &h : this->hvec) { */
-  /*     h.clear(); */
-  /*   } */
-
-  /*   for (int i = 0; i < this->length; i++) { */
-  /*     unsigned char c = this->source[get_char_idx(this->positions[i] + it)]; */
-  /*     this->hvec[c].push_back(this->positions[i]); */
-  /*   } */
-
-  /*   { */
-  /*     int j = 0; */
-  /*     for (int i = 0; i < 256; i++) { */
-  /*       for (int v : this->hvec[i]) { */
-  /*         this->positions[j] = v; */
-  /*         j++; */
-  /*       } */
-  /*     } */
-  /*   } */
-
-  /*   it--; */
-  /* } */
-
-  /* for (int i = 0; i < this->length; i++) { */
-  /*   this->ranks[this->positions[i]] = i; */
-  /* } */
-
-  /* this->target[this->ranks[0]] = this->source[this->length-1]; */
-  /* for (int i = 1; i < this->length; i++) { */
-  /*   this->target[this->ranks[i]] = this->source[i-1]; */
-  /* } */
 }
 
 int UniBWT::get_char_idx(int idx) {

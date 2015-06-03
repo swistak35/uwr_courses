@@ -8,7 +8,7 @@
 using namespace std;
 
 #define DEFAULT_CHUNK_SIZE 256
-#define DEBUG 0
+#define DEBUG 1
 
 // Debug printing methods
 void print_debug_source_len(int source_len);
@@ -110,6 +110,13 @@ int main(int argc, char ** argv) {
     /*   cout << "Source2: " << source2 << endl; */
     /* } */
 
+    if (DEBUG) {
+      cout << "Source:";
+      for (int j = 0; j < current_chunk_size; j++) {
+        cout << " " << +source2[j];
+      }
+      cout << endl;
+    }
     fwrite(source2, current_chunk_size, 1, output_file);
   }
   fclose(hsource);

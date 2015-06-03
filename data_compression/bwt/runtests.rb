@@ -12,8 +12,10 @@ def name_generator(name, count)
   end
 end
 
+
+
 TEST_CASES = {
-  text: {
+  default: {
     tests: [
       'empty', 'onlychar', 'onechar', 'spacja', 'dwaslowa', 'jednozdanie', 'krotkie',
       '253', '254', '255', '256', '257', '258',
@@ -24,6 +26,8 @@ TEST_CASES = {
     plans: [
       # { name: "lexi", size: 256 },
       # { name: "lexi", size: 1024 },
+      { name: "uni", size: 256 },
+      { name: "uni", size: 1024 },
       { name: "suffix", size: 256 },
       { name: "suffix", size: 1024 },
     ]
@@ -47,21 +51,21 @@ TEST_CASES = {
     plans: [ { name: "suffix", size: 256 } ]
   },
   mobi: {
-    tests: [ 'mobi1.mobi', 'mobi2.mobi', 'mobi3.mobi', 'mobi4.mobi', 'mobi5.mobi', 'mobi6.mobi', 'mobi7.mobi', 'mobi8.mobi', 'mobi9.mobi', 'mobi10.mobi', 'mobi11.mobi', 'mobi12.mobi', 'mobi13.mobi', 'mobi14.mobi', 'mobi15.mobi', 'mobi16.mobi', 'mobi17.mobi', 'mobi18.mobi', 'mobi19.mobi', 'mobi20.mobi', ],
+    tests: name_generator("mobi", 20),
     plans: [
-      { name: "suffix", size: 100*1024 },
-      { name: "suffix", size: 200*1024 },
-      { name: "suffix", size: 300*1024 },
-      { name: "suffix", size: 400*1024 },
-      { name: "suffix", size: 500*1024 },
-      { name: "suffix", size: 600*1024 },
-      { name: "suffix", size: 700*1024 },
-      { name: "suffix", size: 800*1024 },
-      { name: "suffix", size: 900*1024 },
+      { name: "uni", size: 100*1024 },
+      { name: "uni", size: 200*1024 },
+      { name: "uni", size: 300*1024 },
+      { name: "uni", size: 400*1024 },
+      { name: "uni", size: 500*1024 },
+      { name: "uni", size: 600*1024 },
+      { name: "uni", size: 700*1024 },
+      { name: "uni", size: 800*1024 },
+      { name: "uni", size: 900*1024 },
     ]
   },
   epub: {
-    tests: [ 'epub1.epub', 'epub2.epub', 'epub3.epub', 'epub4.epub', 'epub5.epub', 'epub6.epub', 'epub7.epub', 'epub8.epub', 'epub9.epub', 'epub10.epub', 'epub11.epub', 'epub12.epub', 'epub13.epub', 'epub14.epub', 'epub15.epub', 'epub16.epub', 'epub17.epub', 'epub18.epub', 'epub19.epub', 'epub20.epub', ],
+    tests: name_generator("epub", 20),
     plans: [
       { name: "suffix", size: 100*1024 },
       { name: "suffix", size: 200*1024 },
@@ -75,7 +79,7 @@ TEST_CASES = {
     ]
   },
   pdf: {
-    tests: [ 'pdf1.pdf', 'pdf2.pdf', 'pdf3.pdf', 'pdf4.pdf', 'pdf5.pdf', 'pdf6.pdf', 'pdf7.pdf', 'pdf8.pdf', 'pdf9.pdf', 'pdf10.pdf', 'pdf11.pdf', 'pdf12.pdf', 'pdf13.pdf', 'pdf14.pdf', 'pdf15.pdf', 'pdf16.pdf', 'pdf17.pdf', 'pdf18.pdf', 'pdf19.pdf', 'pdf20.pdf', ],
+    tests: name_generator("pdf", 20),
     plans: [
       { name: "suffix", size: 100*1024 },
       { name: "suffix", size: 200*1024 },
@@ -132,14 +136,11 @@ COLUMN_SIZE = {
 def main
   compile_all
 
-  run_test_cases("trzysta")
-  run_test_cases("text")
-  # run_test_cases("mobi")
-  # run_test_cases("pdf")
-  # run_test_cases("bin")
-
-  puts
-  puts "Wszystko OK!"
+  if ARGV[0].nil?
+    run_test_cases("default")
+  else
+    run_test_cases(ARGV[0])
+  end
 end
 
 def run_test_cases(testcase_name)
@@ -162,6 +163,9 @@ def run_test_cases(testcase_name)
         case test[:name]
         when "lexi"
           compress_lexi(path, test[:size])
+          decompress0(path, test[:size])
+        when "uni"
+          compress_uni(path, test[:size])
           decompress0(path, test[:size])
         when "suffix"
           compress_suffix(path, test[:size])
@@ -196,6 +200,7 @@ end
 
 def compile_all
   compile "compress-lexi"
+  compile "compress-uni"
   compile "compress-suffix"
   compile "decompress0"
   compile "decompress1"
@@ -238,6 +243,16 @@ end
 
 def compress_lexi(path, chunk_size = nil)
   timing = execute("./compress-lexi #{path}.input #{path}.compressed #{chunk_size.to_s}")
+  @timing_sum += timing
+
+  efficiency = calculate_efficiency(path)
+
+  print calculate_time(timing).ljust(COLUMN_SIZE[:header2_comp])
+  print efficiency.ljust(COLUMN_SIZE[:header2_eff])
+end
+
+def compress_uni(path, chunk_size = nil)
+  timing = execute("./compress-uni #{path}.input #{path}.compressed #{chunk_size.to_s}")
   @timing_sum += timing
 
   efficiency = calculate_efficiency(path)
