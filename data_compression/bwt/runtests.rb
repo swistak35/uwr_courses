@@ -51,12 +51,12 @@ TEST_CASES = {
     plans: [ { name: "suffix", size: 256 } ]
   },
   unieff: {
-    tests: ["mobi0.mobi", "epub0.epub", "bin0.bin", "pantadeusz"],
+    tests: ["mobi0.mobi", "epub0.epub", "pantadeusz"],
     plans: [
       { name: "uni", size: 1024 },
       { name: "uni", size: 2*1024 },
       { name: "uni", size: 5*1024 },
-      { name: "uni", size: 10*1024 },
+      # { name: "uni", size: 10*1024 },
     ],
   },
   mobi: {
