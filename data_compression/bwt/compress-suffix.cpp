@@ -130,6 +130,7 @@ int main(int argc, char ** argv) {
   fclose(input_file);
 
   delete mtf;
+  delete huffman1;
 
   printf("BWT: %ld | MTF: %ld | HUFF: %ld\n", cbwt, cmtf, chuff);
 

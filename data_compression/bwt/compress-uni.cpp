@@ -82,6 +82,7 @@ int main(int argc, char ** argv) {
     int target[current_chunk_size + 1] = { 0 };
     UniBWT * bwt = new UniBWT(current_chunk_size);
     int orig_idx = bwt->transform(source, target);
+    delete bwt;
     if (DEBUG) {
       /* cout << "BWT: " << target << endl; */
       cout << "BWT1: ";

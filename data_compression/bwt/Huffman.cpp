@@ -16,6 +16,8 @@ Huffman::Huffman(int source_type, int target_type, int alphabet_size) {
 }
 
 Huffman::~Huffman() {
+  free(this->hcoder->map);
+  free(this->hcoder);
 }
 
 void Huffman::huff_init(unsigned int size, unsigned int root) {
