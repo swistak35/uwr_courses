@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <vector>
 #include <iostream>
-#include <strings.h>
+#include <cstring>
+
 
 class UniBWT {
   public:
