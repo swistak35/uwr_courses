@@ -14,6 +14,11 @@
 using namespace std;
 
 typedef struct {
+  int offset;
+  int length;
+} WindowResult;
+
+typedef struct {
   int digit;
   int startingChar;
   int endingChar;
@@ -65,6 +70,21 @@ class SuffixBWT {
     void print_node(int depth, BranchNode * node);
     void print_tree(BranchNode * root_node);
     void print_tabs(int depth);
+
+    void step();
+    void set_input_buf(unsigned char * input_buf, int * input_buf_idx, int * input_buf_max);
+    void set_dict_buf(unsigned char * dict_buf, int * dict_buf_idx, int * dict_buf_max);
+  private:
+    unsigned char * dict_buf;
+    unsigned char * input_buf;
+    int * dict_buf_idx;
+    int * input_buf_idx;
+    int * dict_buf_max;
+    int * input_buf_max;
+    WindowResult * result;
+
+    BranchNode * current_node;
+    void prepare();
 };
 
 #endif
