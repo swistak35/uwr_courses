@@ -37,17 +37,6 @@ SuffixBWT::~SuffixBWT() {
   free(this->bnode_stack);
 }
 
-void SuffixBWT::destroy_structures(BranchNode * node) {
-  Edge * edge;
-  for (std::list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
-    edge = *it;
-    destroy_structures(edge->target);
-    free(edge);
-  }
-  delete node->edges;
-  /* free(node); */
-}
-
 int SuffixBWT::transform(unsigned char * source, int * target) {
   this->source_end = source + (this->length - 1);
   this->source = source;
@@ -59,17 +48,43 @@ int SuffixBWT::transform(unsigned char * source, int * target) {
   }
 
   sort();
-
   set_ranks_root();
 
-  /* return 0; */
   return this->ranks[0];
 }
 
-#define LIMITING_STEPS 3
-
 void SuffixBWT::set_ranks_root() {
-  set_ranks(0, this->root_node);
+  forward_list<pair<BranchNode *, int>> next_nodes_list;
+  next_nodes_list.push_front(make_pair(this->root_node, 0));
+
+  BranchNode * node;
+  int depth;
+  while (!next_nodes_list.empty()) {
+    node = next_nodes_list.front().first;
+    depth = next_nodes_list.front().second;
+    next_nodes_list.pop_front();
+
+    if (node->edges->empty()) {
+      int suffix_id = this->length - depth;
+      assert(suffix_id >= 0);
+      assert(suffix_id < this->length);
+      this->ranks[suffix_id] = this->current_position;
+      assert(current_position < this->length);
+      if (suffix_id == 0) {
+        this->target[this->ranks[suffix_id]] = 0;
+      } else {
+        this->target[this->ranks[suffix_id]] = this->source[suffix_id - 1];
+      }
+      current_position++;
+    } else {
+      Edge * edge;
+      for (list<Edge*>::reverse_iterator it = node->edges->rbegin(); it != node->edges->rend(); it++) {
+        edge = *it;
+        next_nodes_list.push_front(make_pair(edge->target,
+              depth + edge->endingChar - edge->startingChar + 1));
+      }
+    }
+  }
 }
 
 int SuffixBWT::update(BranchNode * node, int startingChar, int endingChar, BranchNode ** result) {
@@ -219,33 +234,6 @@ int SuffixBWT::get_digit(unsigned char * chr_ptr) {
   }
 }
 
-
-void SuffixBWT::set_ranks(int depth, BranchNode * node) {
-  if (SUFFIX_BWT_VERBOSE) {
-    printf("Setting ranks for node %d depth=%d...\n", node->debugchar, depth);
-    printf("BranchNode< %d > [ nil ]\n",
-        node->debugchar);
-  }
-  if (node->edges->empty()) {
-    int suffix_id = this->length - depth;
-    assert(suffix_id >= 0);
-    assert(suffix_id < this->length);
-    this->ranks[suffix_id] = this->current_position;
-    assert(current_position < this->length);
-    if (suffix_id == 0) {
-      this->target[this->ranks[suffix_id]] = 0;
-    } else {
-      this->target[this->ranks[suffix_id]] = this->source[suffix_id - 1];
-    }
-    current_position++;
-  }
-  Edge * edge;
-  for (std::list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
-    edge = *it;
-    set_ranks(depth + edge->endingChar - edge->startingChar + 1, edge->target);
-  }
-}
-
 void SuffixBWT::print_tabs(int depth) {
   for (int i = 0; i < depth; i++) {
     printf("-");
@@ -324,12 +312,4 @@ Edge * SuffixBWT::create_edge() {
   assert(ptr != NULL);
   ptr->digit = -99;
   return ptr;
-}
-
-int SuffixBWT::get_char_idx(int idx) {
-  if (idx >= this->length) {
-    return (idx - this->length);
-  } else {
-    return idx;
-  }
 }

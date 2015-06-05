@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <list>
+#include <forward_list>
 #include <vector>
 #include <iostream>
 #include <cmath>
@@ -31,20 +32,17 @@ class SuffixBWT {
     SuffixBWT(int length);
     ~SuffixBWT();
     int transform(unsigned char * source, int * target);
-  /* private: */
+  private:
     std::vector<int> ranks; // na ktorym miejscu jest i-ty string
-    /* std::vector<int> positions; // ktory string jest na i-tym miejscu */
-    /* std::vector<std::vector<int>> hvec; */
+    std::vector<int> positions; // ktory string jest na i-tym miejscu
     void sort();
-    int get_char_idx(int idx);
+
     int get_digit(unsigned char * chr_ptr);
     int length;
     unsigned char * source;
     int * target;
     unsigned char * source_end;
-    void set_ranks(int depth, BranchNode * node);
     void set_ranks_root();
-    void destroy_structures(BranchNode * node);
     int current_position;
 
     // builder
@@ -66,5 +64,12 @@ class SuffixBWT {
     void print_tree(BranchNode * root_node);
     void print_tabs(int depth);
 };
+
+// optymalizacje:
+// - stack dla edge
+// - stack dla par przy set_ranks_root
+// - ifdef ifndef
+// - mapy
+// - obwarowac ifdefami asserty
 
 #endif
