@@ -21,6 +21,8 @@ class UniBWT {
     int * positions;
     std::vector<std::vector<int>> hvec;
     void sort();
+    void first_iteration();
+    void lex_sort(int offset, int * buckets);
     int get_char_idx(int idx);
     int length;
     unsigned char * source;

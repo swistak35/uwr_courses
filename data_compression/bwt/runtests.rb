@@ -53,10 +53,14 @@ TEST_CASES = {
   unieff: {
     tests: ["mobi0.mobi", "epub0.epub", "pantadeusz"],
     plans: [
-      { name: "uni", size: 1024 },
-      { name: "uni", size: 2*1024 },
-      { name: "uni", size: 5*1024 },
-      # { name: "uni", size: 10*1024 },
+      { name: "uni", size: 100*1024 },
+      { name: "uni", size: 200*1024 },
+      { name: "uni", size: 500*1024 },
+      { name: "uni", size: 900*1024 },
+      { name: "suffix", size: 100*1024 },
+      { name: "suffix", size: 200*1024 },
+      { name: "suffix", size: 500*1024 },
+      { name: "suffix", size: 900*1024 },
     ],
   },
   mobi: {
