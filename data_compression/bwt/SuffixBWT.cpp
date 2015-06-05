@@ -28,7 +28,6 @@ SuffixBWT::SuffixBWT(int length) {
 SuffixBWT::~SuffixBWT() {
   while (bnode_stack_ptr > bnode_stack) {
     bnode_stack_ptr--;
-    /* for (std::list<Edge*>::iterator it = bnode_stack_ptr->edges->begin(); */
     for (std::map<int,Edge*>::iterator it = bnode_stack_ptr->edges->begin();
         it != bnode_stack_ptr->edges->end(); it++) {
       free((*it).second);
@@ -228,7 +227,6 @@ void SuffixBWT::sort() {
 }
 
 int SuffixBWT::get_digit(unsigned char * chr_ptr) {
-  /* printf("get_digit %p %p\n", chr_ptr, this->source_end); */
   if (chr_ptr == this->source_end) {
     return 256;
   } else {
@@ -259,8 +257,6 @@ void SuffixBWT::print_node(int depth, BranchNode * node) {
         node->longestProperSuffix->debugchar);
   }
   Edge * edge;
-  /* for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) { */
-  /*   edge = *it; */
   for (map<int,Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
     edge = (*it).second;
     print_tabs(depth);
@@ -271,8 +267,6 @@ void SuffixBWT::print_node(int depth, BranchNode * node) {
         edge->digit,
         edge->startingChar, edge->endingChar);
   }
-  /* for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) { */
-    /* edge = *it; */
   for (map<int,Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); it++) {
     edge = (*it).second;
     print_node(depth + 1, edge->target);
@@ -287,31 +281,16 @@ Edge * SuffixBWT::find_edge_on_list(BranchNode * node, int c) {
   } else {
     return (*it).second;
   }
-  /* for (list<Edge*>::iterator it = node->edges->begin(); it != node->edges->end(); ++it) { */
-  /*   if ((*it)->digit == c) { */
-  /*     return *it; */
-  /*   } */
-  /* } */
-  /* return NULL; */
 }
 
 void SuffixBWT::insert_edge_into_bnode(BranchNode * bnode, Edge * edge) {
   bnode->edges->insert(pair<int,Edge*>(edge->digit, edge));
-  /* for (std::list<Edge*>::iterator it = bnode->edges->begin(); it != bnode->edges->end(); it++) { */
-  /*   if (edge->digit < (*it)->digit) { */
-  /*     bnode->edges->insert(it, edge); */
-  /*     return; */
-  /*   } */
-  /* } */
-  /* bnode->edges->push_back(edge); */
 }
 
 // poinicjalizowac na 0, null itp.
 BranchNode * SuffixBWT::create_branch_node() {
-  /* printf("Dodano bnode %d\n", bnode_counter); */
   /* BranchNode * ptr = (BranchNode *) malloc(sizeof(BranchNode)); */
   BranchNode * ptr = bnode_stack_ptr;
-  /* ptr->edges = new list<Edge*>(); */
   ptr->edges = new map<int,Edge*>();
   ptr->longestProperSuffix = NULL;
 
