@@ -70,7 +70,9 @@ class SuffixBWT {
 // - stack dla edge
 // - stack dla par przy set_ranks_root
 // - ifdef ifndef
-// - mapy
 // - obwarowac ifdefami asserty
+// - inicjalizacja wszystkich map na poczatku
+// - valgrind!
+// - tylko raz inicjalizujemy SuffixBWT
 
 #endif
