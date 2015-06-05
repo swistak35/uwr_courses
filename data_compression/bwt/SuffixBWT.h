@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <list>
 #include <forward_list>
+#include <map>
 #include <vector>
 #include <iostream>
 #include <cmath>
@@ -23,7 +24,7 @@ typedef struct {
 
 typedef struct BranchNode {
   struct BranchNode * longestProperSuffix;
-  list<Edge*> * edges;
+  map<int, Edge*> * edges;
   int debugchar;
 } BranchNode;
 
