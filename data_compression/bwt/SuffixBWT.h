@@ -37,9 +37,7 @@ class SuffixBWT {
 // - stack dla par przy set_ranks_root
 // - ifdef ifndef
 // - obwarowac ifdefami asserty
-// - inicjalizacja wszystkich map na poczatku
 // - valgrind!
-// - tylko raz inicjalizujemy SuffixBWT
 // - templates i korzystanie z unsigned char gdzie sie da, albo ogolnie mniejszych typow
 
 #endif

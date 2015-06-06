@@ -51,6 +51,9 @@ class SuffixTree {
     // BranchNodes memory
     BranchNode * bnode_stack;
     BranchNode * bnode_stack_ptr;
+    // Edges memory
+    Edge * edge_stack;
+    Edge * edge_stack_ptr;
 
     int bnode_counter;
     BranchNode * pin_node;

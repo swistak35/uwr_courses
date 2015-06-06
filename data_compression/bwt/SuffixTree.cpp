@@ -16,18 +16,22 @@ SuffixTree::SuffixTree(int max_length, unsigned char * source) {
   for (int i = 0; i < 2 * this->max_length + 4; i++) {
     this->bnode_stack[i].edges = new map<int,Edge*>();
   }
+
+  this->edge_stack = (Edge *) calloc(2 * this->max_length + 4 + 257, sizeof(Edge));
+  this->edge_stack_ptr = this->edge_stack;
 }
 
 SuffixTree::~SuffixTree() {
   while (bnode_stack_ptr > bnode_stack) {
     bnode_stack_ptr--;
-    for (std::map<int,Edge*>::iterator it = bnode_stack_ptr->edges->begin();
-        it != bnode_stack_ptr->edges->end(); it++) {
-      free((*it).second);
-    }
+    /* for (std::map<int,Edge*>::iterator it = bnode_stack_ptr->edges->begin(); */
+        /* it != bnode_stack_ptr->edges->end(); it++) { */
+      /* free((*it).second); */
+    /* } */
     delete bnode_stack_ptr->edges;
   }
   free(this->bnode_stack);
+  free(this->edge_stack);
 }
 
 void SuffixTree::update(int endingChar) {
@@ -125,6 +129,8 @@ void SuffixTree::canonize(BranchNode * node, int endingChar) {
 void SuffixTree::initialize(int length) {
   this->length = length;
   this->bnode_counter = 0;
+  this->bnode_stack_ptr = this->bnode_stack;
+  this->edge_stack_ptr = this->edge_stack;
   this->source_end = source + (this->length - 1);
 
   BranchNode * root_node = create_branch_node();
@@ -196,6 +202,10 @@ BranchNode * SuffixTree::create_branch_node() {
   /* assert(ptr != NULL); */
   BranchNode * ptr = bnode_stack_ptr;
   /* ptr->edges = new map<int,Edge*>(); */
+  /* for (std::map<int,Edge*>::iterator it = ptr->edges->begin(); */
+      /* it != ptr->edges->end(); it++) { */
+    /* free((*it).second); */
+  /* } */
   ptr->edges->clear();
   ptr->longestProperSuffix = NULL;
   ptr->debugchar = bnode_counter;
@@ -206,8 +216,10 @@ BranchNode * SuffixTree::create_branch_node() {
 }
 
 Edge * SuffixTree::create_edge() {
-  Edge * ptr = (Edge *) malloc(sizeof(Edge));
-  assert(ptr != NULL);
+  /* Edge * ptr = (Edge *) malloc(sizeof(Edge)); */
+  /* assert(ptr != NULL); */
+  Edge * ptr = edge_stack_ptr;
+  edge_stack_ptr++;
   return ptr;
 }
 
