@@ -32,7 +32,7 @@ void SuffixTree::update(int endingChar) {
   BranchNode * information_node = NULL;
   BranchNode * bnode = NULL;
   int current_char = get_digit(this->source + endingChar);
-  bool end_point = test_and_split(current_node, endingChar - 1, current_char, &bnode);
+  bool end_point = test_and_split(endingChar - 1, current_char, &bnode);
   Edge * edge = NULL;
 
   while (!end_point) {
@@ -41,7 +41,7 @@ void SuffixTree::update(int endingChar) {
     edge = create_edge();
     edge->target = information_node;
     edge->startingChar = endingChar;
-    edge->endingChar = this->length - 1;
+    edge->endingChar = 1000000000;
     edge->digit = get_digit(this->source + endingChar);
     insert_edge_into_bnode(bnode, edge);
 
@@ -50,7 +50,7 @@ void SuffixTree::update(int endingChar) {
     }
     oldr = bnode;
     canonize(current_node->longestProperSuffix, endingChar - 1);
-    end_point = test_and_split(current_node, endingChar - 1, current_char, &bnode);
+    end_point = test_and_split(endingChar - 1, current_char, &bnode);
   }
 
   if (oldr != this->root_node) {
@@ -58,19 +58,18 @@ void SuffixTree::update(int endingChar) {
   }
 }
 
-bool SuffixTree::test_and_split(BranchNode * node, int endingChar, int current_char,
-    BranchNode ** bnode) {
+bool SuffixTree::test_and_split(int endingChar, int current_char, BranchNode ** bnode) {
   if (SUFFIX_TREE_VERBOSE) {
     printf("== test_and_split node=%d startingChar=%d endingChar=%d current_char=%d\n",
-        node->debugchar, startingChar, endingChar, current_char);
+        current_node->debugchar, startingChar, endingChar, current_char);
   }
   if (startingChar <= endingChar) { // or endingChar == INFINITY
     int charAtStartingChar = get_digit(this->source + startingChar);
-    Edge * edge = find_edge_on_list(node, charAtStartingChar);
+    Edge * edge = find_edge_on_list(current_node, charAtStartingChar);
     assert(edge != NULL);
     int forward_char = get_digit(this->source + edge->startingChar + endingChar - startingChar + 1);
     if (current_char == forward_char) {
-      *bnode = node;
+      *bnode = current_node;
       return true;
     } else {
       BranchNode * new_bnode = create_branch_node();
@@ -91,8 +90,8 @@ bool SuffixTree::test_and_split(BranchNode * node, int endingChar, int current_c
       return false;
     }
   } else {
-    Edge * edge = find_edge_on_list(node, current_char);
-    *bnode = node;
+    Edge * edge = find_edge_on_list(current_node, current_char);
+    *bnode = current_node;
     if (edge == NULL) {
       return false;
     } else {
@@ -144,6 +143,11 @@ void SuffixTree::initialize(unsigned char * source) {
   this->startingChar = 0;
   this->current_char = -1;
 }
+
+/* void SuffixTree::remove() { */
+/*   removing_node = currently_first_leaf; */
+/*   targeting_insertion_point = */ 
+/* } */
 
 void SuffixTree::insert_next() {
     current_char++;

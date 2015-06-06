@@ -9,13 +9,10 @@ using namespace std;
 SuffixBWT::SuffixBWT(int length) {
   this->length = length;
   this->current_position = 0;
-  this->bnode_counter = 0;
-  this->bnode_stack = (BranchNode *) calloc(2 * this->length + 4, sizeof(BranchNode));
-  this->bnode_stack_ptr = this->bnode_stack;
 }
 
-/* SuffixBWT::prepare(int length) { */
-/*   if (this->length < length) { */
+/* SuffixBWT::initialize(int length) { */
+/* /1*   if (this->length < length) { *1/ */
 /*     free(this->bnode_stack); */
 /*   } else { */
 
@@ -29,7 +26,6 @@ SuffixBWT::~SuffixBWT() {
 }
 
 int SuffixBWT::transform(unsigned char * source, int * target) {
-  this->source_end = source + (this->length - 1);
   this->source = source;
   this->target = target;
 
@@ -80,8 +76,13 @@ void SuffixBWT::set_ranks_root() {
       /* for (list<Edge*>::reverse_iterator it = node->edges->rbegin(); it != node->edges->rend(); it++) { */
       for (map<int,Edge*>::reverse_iterator it = node->edges->rbegin(); it != node->edges->rend(); it++) {
         edge = (*it).second;
-        next_nodes_list.push_front(make_pair(edge->target,
-              depth + edge->endingChar - edge->startingChar + 1));
+        if (edge->endingChar == 1000000000) {
+          next_nodes_list.push_front(make_pair(edge->target,
+                depth + this->length - 1 - edge->startingChar + 1));
+        } else {
+          next_nodes_list.push_front(make_pair(edge->target,
+                depth + edge->endingChar - edge->startingChar + 1));
+        }
       }
     }
   }

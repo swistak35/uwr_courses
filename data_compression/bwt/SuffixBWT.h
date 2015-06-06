@@ -22,9 +22,7 @@ class SuffixBWT {
     ~SuffixBWT();
     int transform(unsigned char * source, int * target);
   private:
-    std::vector<int> ranks; // na ktorym miejscu jest i-ty string
-    std::vector<int> positions; // ktory string jest na i-tym miejscu
-    void sort();
+    std::vector<int> ranks;
     SuffixTree * tree;
 
     int get_digit(unsigned char * chr_ptr);
@@ -34,25 +32,6 @@ class SuffixBWT {
     unsigned char * source_end;
     void set_ranks_root();
     int current_position;
-
-    // builder
-    BranchNode * bnode_stack;
-    BranchNode * bnode_stack_ptr;
-    int bnode_counter;
-    BranchNode * root_node;
-    BranchNode * pin_node;
-    BranchNode * create_branch_node();
-    Edge * create_edge();
-    Edge * find_edge_on_list(BranchNode * node, int c);
-    void insert_edge_into_bnode(BranchNode * node, Edge * edge);
-    int canonize(BranchNode * node, int startingChar, int endingChar, BranchNode ** result);
-    bool test_and_split(BranchNode * node, int startingChar, int endingChar, int current_char,
-      BranchNode ** bnode);
-    int update(BranchNode * node, int startingChar, int endingChar, BranchNode ** result);
-
-    void print_node(int depth, BranchNode * node);
-    void print_tree(BranchNode * root_node);
-    void print_tabs(int depth);
 };
 
 // optymalizacje:
