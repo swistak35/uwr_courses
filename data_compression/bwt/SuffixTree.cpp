@@ -32,7 +32,7 @@ void SuffixTree::update(BranchNode * node, int endingChar, BranchNode ** result)
   BranchNode * information_node = NULL;
   BranchNode * bnode = NULL;
   int current_char = get_digit(this->source + endingChar);
-  bool end_point = test_and_split(node, startingChar, endingChar - 1, current_char, &bnode);
+  bool end_point = test_and_split(node, endingChar - 1, current_char, &bnode);
   Edge * edge = NULL;
 
   while (!end_point) {
@@ -50,7 +50,7 @@ void SuffixTree::update(BranchNode * node, int endingChar, BranchNode ** result)
     }
     oldr = bnode;
     canonize(node->longestProperSuffix, endingChar - 1, &node);
-    end_point = test_and_split(node, startingChar, endingChar - 1, current_char, &bnode);
+    end_point = test_and_split(node, endingChar - 1, current_char, &bnode);
   }
 
   if (oldr != this->root_node) {
@@ -60,7 +60,7 @@ void SuffixTree::update(BranchNode * node, int endingChar, BranchNode ** result)
   *result = node;
 }
 
-bool SuffixTree::test_and_split(BranchNode * node, int startingChar, int endingChar, int current_char,
+bool SuffixTree::test_and_split(BranchNode * node, int endingChar, int current_char,
     BranchNode ** bnode) {
   if (SUFFIX_TREE_VERBOSE) {
     printf("== test_and_split node=%d startingChar=%d endingChar=%d current_char=%d\n",
