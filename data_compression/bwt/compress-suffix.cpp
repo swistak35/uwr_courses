@@ -57,6 +57,8 @@ int main(int argc, char ** argv) {
 
   MoveToFront * mtf = new MoveToFront();
   int mtf_tbl[max_chunk_size + 5];
+  int target[max_chunk_size + 1];
+  SuffixBWT * bwt = new SuffixBWT(max_chunk_size + 1, source, target);
   FILE * htarget = fopen(output_filename, "wb");
   Huffman * huffman1 = new Huffman(1, 0, 256);
   huffman1->Out = htarget;
@@ -84,17 +86,13 @@ int main(int argc, char ** argv) {
     }
 
     // run bwt
-    int target[current_chunk_size + 1] = { 0 };
-    /* cout << "uuu: " << target[0]; */
     cbeg = clock();
-    SuffixBWT * bwt = new SuffixBWT(current_chunk_size + 1);
-    int orig_idx = bwt->transform(source, target);
-    delete bwt;
+    int orig_idx = bwt->transform(current_chunk_size + 1);
     cend = clock();
     cbwt += (cend - cbeg);
+
     if (DEBUG) {
       cout << "BWT: ";
-      /* cout << " " << target[0]; */
       for (int j = 0; j < current_chunk_size + 1; j++) {
         cout << " " << target[j];
       }
@@ -129,6 +127,7 @@ int main(int argc, char ** argv) {
   fclose(htarget);
   fclose(input_file);
 
+  delete bwt;
   delete mtf;
   delete huffman1;
 

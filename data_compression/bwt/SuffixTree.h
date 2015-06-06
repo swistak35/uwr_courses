@@ -30,12 +30,13 @@ typedef struct BranchNode {
 
 class SuffixTree {
   public:
-    SuffixTree(int length);
+    SuffixTree(int max_length, unsigned char * source);
     ~SuffixTree();
-    void initialize(unsigned char * source);
+    void initialize(int length);
     void insert_next();
     BranchNode * root_node;
   private:
+    int max_length;
     void sort();
     int startingChar;
     int current_char;

@@ -18,20 +18,18 @@ using namespace std;
 
 class SuffixBWT {
   public:
-    SuffixBWT(int length);
+    SuffixBWT(int max_length, unsigned char * source, int * target);
     ~SuffixBWT();
-    int transform(unsigned char * source, int * target);
+    int transform(int length);
   private:
-    std::vector<int> ranks;
+    int * ranks;
     SuffixTree * tree;
 
-    int get_digit(unsigned char * chr_ptr);
     int length;
+    int max_length;
     unsigned char * source;
     int * target;
-    unsigned char * source_end;
     void set_ranks_root();
-    int current_position;
 };
 
 // optymalizacje:

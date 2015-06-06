@@ -6,13 +6,17 @@
 
 using namespace std;
 
-SuffixTree::SuffixTree(int length) {
-  this->length = length;
-  this->bnode_counter = 0;
+SuffixTree::SuffixTree(int max_length, unsigned char * source) {
+  this->max_length = max_length;
+  this->source = source;
 
   // BranchNodes memory
-  this->bnode_stack = (BranchNode *) calloc(2 * this->length + 4, sizeof(BranchNode));
+  this->bnode_stack = (BranchNode *) calloc(2 * this->max_length + 4, sizeof(BranchNode));
   this->bnode_stack_ptr = this->bnode_stack;
+  /* for (int i = 0; i < 2 * this->max_length + 4; i++) { */
+    /* this->bnode_stack[i]->edges = new map<int,Edge*>(); */
+  /* } */
+  // inicjalizacja wszystkich map
 }
 
 SuffixTree::~SuffixTree() {
@@ -119,9 +123,10 @@ void SuffixTree::canonize(BranchNode * node, int endingChar) {
   }
 }
 
-void SuffixTree::initialize(unsigned char * source) {
+void SuffixTree::initialize(int length) {
+  this->length = length;
+  this->bnode_counter = 0;
   this->source_end = source + (this->length - 1);
-  this->source = source;
 
   BranchNode * root_node = create_branch_node();
   this->root_node = root_node;
