@@ -13,7 +13,7 @@ SuffixBWT::SuffixBWT(int max_length, unsigned char * source, int * target) {
   this->target = target;
 
   this->ranks = (int *) calloc(this->max_length, sizeof(int));
-  this->tree = new SuffixTree(this->max_length, this->source);
+  /* this->tree = new SuffixTree(this->max_length, this->source); */
 }
 
 SuffixBWT::~SuffixBWT() {
