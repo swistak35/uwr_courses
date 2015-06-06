@@ -13,10 +13,9 @@ SuffixTree::SuffixTree(int max_length, unsigned char * source) {
   // BranchNodes memory
   this->bnode_stack = (BranchNode *) calloc(2 * this->max_length + 4, sizeof(BranchNode));
   this->bnode_stack_ptr = this->bnode_stack;
-  /* for (int i = 0; i < 2 * this->max_length + 4; i++) { */
-    /* this->bnode_stack[i]->edges = new map<int,Edge*>(); */
-  /* } */
-  // inicjalizacja wszystkich map
+  for (int i = 0; i < 2 * this->max_length + 4; i++) {
+    this->bnode_stack[i].edges = new map<int,Edge*>();
+  }
 }
 
 SuffixTree::~SuffixTree() {
@@ -196,7 +195,8 @@ BranchNode * SuffixTree::create_branch_node() {
   /* BranchNode * ptr = (BranchNode *) malloc(sizeof(BranchNode)); */
   /* assert(ptr != NULL); */
   BranchNode * ptr = bnode_stack_ptr;
-  ptr->edges = new map<int,Edge*>();
+  /* ptr->edges = new map<int,Edge*>(); */
+  ptr->edges->clear();
   ptr->longestProperSuffix = NULL;
   ptr->debugchar = bnode_counter;
 
