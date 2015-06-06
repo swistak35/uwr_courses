@@ -27,12 +27,12 @@ SuffixTree::~SuffixTree() {
   free(this->bnode_stack);
 }
 
-void SuffixTree::update(BranchNode * node, int endingChar, BranchNode ** result) {
+void SuffixTree::update(int endingChar) {
   BranchNode * oldr = this->root_node;
   BranchNode * information_node = NULL;
   BranchNode * bnode = NULL;
   int current_char = get_digit(this->source + endingChar);
-  bool end_point = test_and_split(node, endingChar - 1, current_char, &bnode);
+  bool end_point = test_and_split(current_node, endingChar - 1, current_char, &bnode);
   Edge * edge = NULL;
 
   while (!end_point) {
@@ -49,15 +49,13 @@ void SuffixTree::update(BranchNode * node, int endingChar, BranchNode ** result)
       oldr->longestProperSuffix = bnode;
     }
     oldr = bnode;
-    canonize(node->longestProperSuffix, endingChar - 1, &node);
-    end_point = test_and_split(node, endingChar - 1, current_char, &bnode);
+    canonize(current_node->longestProperSuffix, endingChar - 1);
+    end_point = test_and_split(current_node, endingChar - 1, current_char, &bnode);
   }
 
   if (oldr != this->root_node) {
-    oldr->longestProperSuffix = node;
+    oldr->longestProperSuffix = current_node;
   }
-
-  *result = node;
 }
 
 bool SuffixTree::test_and_split(BranchNode * node, int endingChar, int current_char,
@@ -103,9 +101,9 @@ bool SuffixTree::test_and_split(BranchNode * node, int endingChar, int current_c
   }
 }
 
-void SuffixTree::canonize(BranchNode * node, int endingChar, BranchNode ** result) {
+void SuffixTree::canonize(BranchNode * node, int endingChar) {
   if (endingChar < startingChar) { // pamietac o nieskonczonosci
-    *result = node;
+    current_node = node;
   } else {
     int looking_char = get_digit(this->source + startingChar);
     Edge * edge = find_edge_on_list(node, looking_char);
@@ -118,7 +116,7 @@ void SuffixTree::canonize(BranchNode * node, int endingChar, BranchNode ** resul
       }
     }
 
-    *result = node;
+    current_node = node;
   }
 }
 
@@ -148,17 +146,14 @@ void SuffixTree::initialize(unsigned char * source) {
 }
 
 void SuffixTree::insert_next() {
-  BranchNode * result = NULL;
     current_char++;
     if (SUFFIX_TREE_VERBOSE) {
       cout << "==============================================================" << endl;
       cout << "== Zaczynamy z " << current_char << endl;
       cout << "== Starting char " << startingChar << " | Current node: " << current_node->debugchar << endl;
     }
-    update(current_node, current_char, &result);
-    current_node = result;
-    canonize(current_node, current_char, &result);
-    current_node = result;
+    update(current_char);
+    canonize(current_node, current_char);
 
     if (SUFFIX_TREE_VERBOSE) {
       print_tree(root_node);

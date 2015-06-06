@@ -57,10 +57,10 @@ class SuffixTree {
     Edge * create_edge();
     Edge * find_edge_on_list(BranchNode * node, int c);
     void insert_edge_into_bnode(BranchNode * node, Edge * edge);
-    void canonize(BranchNode * node, int endingChar, BranchNode ** result);
+    void canonize(BranchNode * node, int endingChar);
     bool test_and_split(BranchNode * node, int endingChar, int current_char,
       BranchNode ** bnode);
-    void update(BranchNode * node, int endingChar, BranchNode ** result);
+    void update(int endingChar);
 
     void print_node(int depth, BranchNode * node);
     void print_tree(BranchNode * root_node);
