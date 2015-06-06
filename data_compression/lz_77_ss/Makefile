@@ -10,10 +10,10 @@ DEBUGFLAGS=-g
 # uni: uni.cpp UniBWT.o LexiBWT.o
 # 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o uni uni.cpp UniBWT.o LexiBWT.o
 
-COMPRESS_LZ77_SRCS=SimpleSW.cpp Huffman.cpp compress-lz77.cpp
+COMPRESS_LZ77_SRCS=SimpleSW.cpp Huffman.cpp
 COMPRESS_LZ77_OBJS=$(subst .cpp,.o,$(COMPRESS_LZ77_SRCS))
-compress-lz77: $(COMPRESS_LZ77_OBJS)
-	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-lz77 $(COMPRESS_LZ77_OBJS)
+compress-lz77: compress-lz77.cpp $(COMPRESS_LZ77_OBJS)
+	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-lz77 compress-lz77.cpp $(COMPRESS_LZ77_OBJS)
 
 # DECOMPRESS0_SRCS=DeBWT.cpp Huffman.cpp DemoveToFront.cpp
 # DECOMPRESS0_OBJS=$(subst .cpp,.o,$(DECOMPRESS0_SRCS))

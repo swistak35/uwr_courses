@@ -1,8 +1,8 @@
-#ifndef SUFFIX_BWT_H
-#define SUFFIX_BWT_H
+#ifndef SUFFIX_TREE_H
+#define SUFFIX_TREE_H
 
-#ifndef SUFFIX_BWT_VERBOSE
-#define SUFFIX_BWT_VERBOSE 0
+#ifndef SUFFIX_TREE_VERBOSE
+#define SUFFIX_TREE_VERBOSE 0
 #endif
 
 #include <algorithm>
@@ -12,34 +12,46 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
-#include "SuffixTree.h"
 
 using namespace std;
 
-class SuffixBWT {
+typedef struct {
+  int digit;
+  int startingChar;
+  int endingChar;
+  struct BranchNode * target;
+} Edge;
+
+typedef struct BranchNode {
+  struct BranchNode * longestProperSuffix;
+  map<int, Edge*> * edges;
+  int debugchar;
+} BranchNode;
+
+class SuffixTree {
   public:
-    SuffixBWT(int length);
-    ~SuffixBWT();
-    int transform(unsigned char * source, int * target);
+    SuffixTree(int length);
+    ~SuffixTree();
+    void initialize(unsigned char * source);
+    void insert_next();
+    BranchNode * root_node;
   private:
-    std::vector<int> ranks; // na ktorym miejscu jest i-ty string
-    std::vector<int> positions; // ktory string jest na i-tym miejscu
     void sort();
-    SuffixTree * tree;
+    int startingChar;
+    int current_char;
+    BranchNode * current_node;
 
     int get_digit(unsigned char * chr_ptr);
     int length;
     unsigned char * source;
-    int * target;
     unsigned char * source_end;
-    void set_ranks_root();
-    int current_position;
 
-    // builder
+    /* // builder */
+    // BranchNodes memory
     BranchNode * bnode_stack;
     BranchNode * bnode_stack_ptr;
+
     int bnode_counter;
-    BranchNode * root_node;
     BranchNode * pin_node;
     BranchNode * create_branch_node();
     Edge * create_edge();
@@ -55,14 +67,5 @@ class SuffixBWT {
     void print_tabs(int depth);
 };
 
-// optymalizacje:
-// - stack dla edge
-// - stack dla par przy set_ranks_root
-// - ifdef ifndef
-// - obwarowac ifdefami asserty
-// - inicjalizacja wszystkich map na poczatku
-// - valgrind!
-// - tylko raz inicjalizujemy SuffixBWT
-// - templates i korzystanie z unsigned char gdzie sie da, albo ogolnie mniejszych typow
-
 #endif
+

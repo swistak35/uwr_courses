@@ -76,29 +76,27 @@ void SuffixBWT::prepare() {
   root_node->longestProperSuffix = pin_node;
 
   this->current_node = root_node;
-  /* BranchNode * result = NULL; */
-  /* int startingChar = 0; */
-  /* int current_char = -1; */
-  /* while (current_char != this->length - 1) { */
-  /*   current_char++; */
-  /*   if (SUFFIX_BWT_VERBOSE) { */
-  /*     cout << "==============================================================" << endl; */
-  /*     cout << "== Zaczynamy z " << current_char << endl; */
-  /*     cout << "== Starting char " << startingChar << " | Current node: " << current_node->debugchar << endl; */
-  /*   } */
-  /*   startingChar = update(current_node, startingChar, current_char, &result); */
-  /*   current_node = result; */
-  /*   startingChar = canonize(current_node, startingChar, current_char, &result); */
-  /*   current_node = result; */
-
-  /*   if (SUFFIX_BWT_VERBOSE) { */
-  /*     print_tree(root_node); */
-  /*   } */
-  /* } */
+  /* this->result = NULL; // zeby sie potem nie rabnac z WindowResult! */
+  this->startingChar = 0;
+  this->current_char = -1;
 }
 
-void SuffixBWT::step() {
+void SuffixBWT::insert_next() {
+  BranchNode * result;
+  current_char++;
+  if (SUFFIX_BWT_VERBOSE) {
+    cout << "==============================================================" << endl;
+    cout << "== Zaczynamy z " << current_char << endl;
+    cout << "== Starting char " << startingChar << " | Current node: " << current_node->debugchar << endl;
+  }
+  startingChar = update(current_node, startingChar, current_char, &result);
+  current_node = result;
+  startingChar = canonize(current_node, startingChar, current_char, &result);
+  current_node = result;
 
+  if (SUFFIX_BWT_VERBOSE) {
+    print_tree(root_node);
+  }
 }
 
 int SuffixBWT::transform(unsigned char * source, int * target) {
