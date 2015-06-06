@@ -1,6 +1,6 @@
 CPPFLAGS=-Wall -Wextra -std=c++11
 DEBUGFLAGS=-g
-# DEBUGFLAGS=-O3
+DEBUGFLAGS=-O3
 # LDFLAGS=-g $(shell root-config --ldflags)
 # LDLIBS=$(shell root-config --libs)
 

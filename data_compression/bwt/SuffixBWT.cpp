@@ -12,13 +12,11 @@ SuffixBWT::SuffixBWT(int max_length, unsigned char * source, int * target) {
   this->source = source;
   this->target = target;
 
-  this->ranks = (int *) calloc(this->max_length, sizeof(int));
   this->tree = new SuffixTree(this->max_length, this->source);
 }
 
 SuffixBWT::~SuffixBWT() {
   delete this->tree;
-  free(this->ranks);
 }
 
 int SuffixBWT::transform(int length) {
@@ -29,18 +27,19 @@ int SuffixBWT::transform(int length) {
     this->tree->insert_next();
   }
 
-  set_ranks_root();
+  int original_rank = set_ranks_root();
 
-  return this->ranks[0];
+  return original_rank;
 }
 
-void SuffixBWT::set_ranks_root() {
+int SuffixBWT::set_ranks_root() {
   int current_position = 0;
   forward_list<pair<BranchNode *, int>> next_nodes_list;
   next_nodes_list.push_front(make_pair(this->tree->root_node, 0));
 
   BranchNode * node;
   int depth;
+  int original_rank = -1;
   while (!next_nodes_list.empty()) {
     node = next_nodes_list.front().first;
     depth = next_nodes_list.front().second;
@@ -50,12 +49,12 @@ void SuffixBWT::set_ranks_root() {
       int suffix_id = this->length - depth;
       assert(suffix_id >= 0);
       assert(suffix_id < this->length);
-      this->ranks[suffix_id] = current_position;
       assert(current_position < this->length);
       if (suffix_id == 0) {
-        this->target[this->ranks[suffix_id]] = 0;
+        this->target[current_position] = 0;
+        original_rank = current_position;
       } else {
-        this->target[this->ranks[suffix_id]] = this->source[suffix_id - 1];
+        this->target[current_position] = this->source[suffix_id - 1];
       }
       current_position++;
     } else {
@@ -72,4 +71,6 @@ void SuffixBWT::set_ranks_root() {
       }
     }
   }
+
+  return original_rank;
 }

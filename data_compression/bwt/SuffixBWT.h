@@ -22,22 +22,19 @@ class SuffixBWT {
     ~SuffixBWT();
     int transform(int length);
   private:
-    int * ranks;
     SuffixTree * tree;
 
     int length;
     int max_length;
     unsigned char * source;
     int * target;
-    void set_ranks_root();
+    int set_ranks_root();
 };
 
 // optymalizacje:
-// - stack dla edge
 // - stack dla par przy set_ranks_root
 // - ifdef ifndef
 // - obwarowac ifdefami asserty
-// - valgrind!
 // - templates i korzystanie z unsigned char gdzie sie da, albo ogolnie mniejszych typow
 
 #endif
