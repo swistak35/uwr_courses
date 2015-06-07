@@ -107,13 +107,13 @@ TEST_CASES = {
   },
   rfc: {
     tests: [
-      # 'rfc1.txt',
-      # 'rfc2.txt',
-      # 'rfc3.txt', # nope
-      # 'rfc4.txt', # nope
-      # 'rfc5.txt', # nope
-      # 'rfc6.txt', # nope
-      # 'rfc7.txt', # nope
+      'rfc1.txt',
+      'rfc2.txt',
+      'rfc3.txt', # nope
+      'rfc4.txt', # nope
+      'rfc5.txt', # nope
+      'rfc6.txt', # nope
+      'rfc7.txt', # nope
       'rfc8.txt',
       'rfc9.txt',
       'rfc10.txt',
@@ -124,14 +124,11 @@ TEST_CASES = {
     ],
     plans: [
       { name: "suffix", size: 100*1024 },
-      { name: "suffix", size: 200*1024 },
-      { name: "suffix", size: 300*1024 },
-      { name: "suffix", size: 400*1024 },
       { name: "suffix", size: 500*1024 },
-      { name: "suffix", size: 600*1024 },
-      { name: "suffix", size: 700*1024 },
-      { name: "suffix", size: 800*1024 },
       { name: "suffix", size: 900*1024 },
+      { name: "uni", size: 100*1024 },
+      { name: "uni", size: 500*1024 },
+      { name: "uni", size: 900*1024 },
     ]
   },
 }

@@ -32,8 +32,4 @@ class SuffixBWT {
     pair<BranchNode*,int> * next_nodes_stack;
 };
 
-// optymalizacje:
-// - obwarowac ifdefami asserty
-// - templates i korzystanie z unsigned char gdzie sie da, albo ogolnie mniejszych typow
-
 #endif
