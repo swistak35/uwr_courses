@@ -29,10 +29,10 @@ class SuffixBWT {
     unsigned char * source;
     int * target;
     int set_ranks_root();
+    pair<BranchNode*,int> * next_nodes_stack;
 };
 
 // optymalizacje:
-// - stack dla par przy set_ranks_root
 // - ifdef ifndef
 // - obwarowac ifdefami asserty
 // - templates i korzystanie z unsigned char gdzie sie da, albo ogolnie mniejszych typow

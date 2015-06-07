@@ -13,9 +13,11 @@ SuffixBWT::SuffixBWT(int max_length, unsigned char * source, int * target) {
   this->target = target;
 
   this->tree = new SuffixTree(this->max_length, this->source);
+  this->next_nodes_stack = (pair<BranchNode*,int> *) calloc(sizeof(pair<BranchNode*,int>), 2 * this->max_length + 4);
 }
 
 SuffixBWT::~SuffixBWT() {
+  free(this->next_nodes_stack);
   delete this->tree;
 }
 
@@ -33,17 +35,19 @@ int SuffixBWT::transform(int length) {
 }
 
 int SuffixBWT::set_ranks_root() {
+  pair<BranchNode*,int> * next_nodes_list = next_nodes_stack;
   int current_position = 0;
-  forward_list<pair<BranchNode *, int>> next_nodes_list;
-  next_nodes_list.push_front(make_pair(this->tree->root_node, 0));
+  next_nodes_list->first = this->tree->root_node;
+  next_nodes_list->second = 0;
+  next_nodes_list++;
 
   BranchNode * node;
   int depth;
   int original_rank = -1;
-  while (!next_nodes_list.empty()) {
-    node = next_nodes_list.front().first;
-    depth = next_nodes_list.front().second;
-    next_nodes_list.pop_front();
+  while (next_nodes_list > next_nodes_stack) {
+    next_nodes_list--;
+    node = next_nodes_list->first;
+    depth = next_nodes_list->second;
 
     if (node->edges->empty()) {
       int suffix_id = this->length - depth;
@@ -61,13 +65,13 @@ int SuffixBWT::set_ranks_root() {
       Edge * edge;
       for (map<int,Edge*>::reverse_iterator it = node->edges->rbegin(); it != node->edges->rend(); it++) {
         edge = (*it).second;
+        next_nodes_list->first = edge->target;
         if (edge->endingChar == 1000000000) {
-          next_nodes_list.push_front(make_pair(edge->target,
-                depth + this->length - 1 - edge->startingChar + 1));
+          next_nodes_list->second = depth + this->length - edge->startingChar;
         } else {
-          next_nodes_list.push_front(make_pair(edge->target,
-                depth + edge->endingChar - edge->startingChar + 1));
+          next_nodes_list->second = depth + edge->endingChar - edge->startingChar + 1;
         }
+        next_nodes_list++;
       }
     }
   }
