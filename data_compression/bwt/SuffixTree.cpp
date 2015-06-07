@@ -10,22 +10,14 @@ SuffixTree::SuffixTree(int max_length, unsigned char * source) {
   this->max_length = max_length;
   this->source = source;
 
-  // BranchNodes memory
-  this->bnode_stack = (BranchNode *) calloc(2 * this->max_length + 4, sizeof(BranchNode));
-  this->bnode_stack_ptr = this->bnode_stack;
-  for (int i = 0; i < 2 * this->max_length + 3; i++) {
-    this->bnode_stack[i].edges = new map<int,Edge*>();
-  }
+  this->bnode_memory = new StackBranchNodeMemory(this->max_length);
 
   this->edge_stack = (Edge *) calloc(2 * this->max_length + 4 + 257, sizeof(Edge));
   this->edge_stack_ptr = this->edge_stack;
 }
 
 SuffixTree::~SuffixTree() {
-  for (int i = 0; i < 2 * this->max_length + 4; i++) {
-    delete bnode_stack[i].edges;
-  }
-  free(this->bnode_stack);
+  delete this->bnode_memory;
   free(this->edge_stack);
 }
 
@@ -61,14 +53,12 @@ void SuffixTree::update(int endingChar) {
 }
 
 bool SuffixTree::test_and_split(int endingChar, int current_char, BranchNode ** bnode) {
-  if (SUFFIX_TREE_VERBOSE) {
-    printf("== test_and_split node=%d startingChar=%d endingChar=%d current_char=%d\n",
-        current_node->debugchar, startingChar, endingChar, current_char);
-  }
   if (startingChar <= endingChar) { // or endingChar == INFINITY
     int charAtStartingChar = get_digit(this->source + startingChar);
     Edge * edge = find_edge_on_list(current_node, charAtStartingChar);
+#ifdef DEBUG
     assert(edge != NULL);
+#endif
     int forward_char = get_digit(this->source + edge->startingChar + endingChar - startingChar + 1);
     if (current_char == forward_char) {
       *bnode = current_node;
@@ -123,8 +113,7 @@ void SuffixTree::canonize(BranchNode * node, int endingChar) {
 
 void SuffixTree::initialize(int length) {
   this->length = length;
-  this->bnode_counter = 0;
-  this->bnode_stack_ptr = this->bnode_stack;
+  this->bnode_memory->reset();
   this->edge_stack_ptr = this->edge_stack;
   this->source_end = source + (this->length - 1);
 
@@ -155,18 +144,24 @@ void SuffixTree::initialize(int length) {
 /* } */
 
 void SuffixTree::insert_next() {
-    current_char++;
-    if (SUFFIX_TREE_VERBOSE) {
-      cout << "==============================================================" << endl;
-      cout << "== Zaczynamy z " << current_char << endl;
-      cout << "== Starting char " << startingChar << " | Current node: " << current_node->debugchar << endl;
-    }
-    update(current_char);
-    canonize(current_node, current_char);
+  current_char++;
 
-    if (SUFFIX_TREE_VERBOSE) {
-      print_tree(root_node);
-    }
+#ifdef DEBUG
+  print_file();
+  printf("======================================================\n");
+  print_file();
+  printf("Current character: %d\n", current_char);
+  print_file();
+  printf("Starting char %d | Current node: %d", startingChar, current_node->debugchar);
+#endif
+
+  update(current_char);
+  canonize(current_node, current_char);
+
+#ifdef DEBUG
+  print_tree(root_node);
+#endif
+
 }
 
 int SuffixTree::get_digit(unsigned char * chr_ptr) {
@@ -195,19 +190,13 @@ void SuffixTree::insert_edge_into_bnode(BranchNode * bnode, Edge * edge) {
 BranchNode * SuffixTree::create_branch_node() {
   /* BranchNode * ptr = (BranchNode *) malloc(sizeof(BranchNode)); */
   /* assert(ptr != NULL); */
-  BranchNode * ptr = bnode_stack_ptr;
   /* ptr->edges = new map<int,Edge*>(); */
-  /* for (std::map<int,Edge*>::iterator it = ptr->edges->begin(); */
-      /* it != ptr->edges->end(); it++) { */
-    /* free((*it).second); */
-  /* } */
-  ptr->edges->clear();
-  ptr->longestProperSuffix = NULL;
-  ptr->debugchar = bnode_counter;
+  /* ptr->longestProperSuffix = NULL; */
+  /* ptr->debugchar = bnode_counter; */
 
-  bnode_counter++;
-  bnode_stack_ptr++;
-  return ptr;
+  /* bnode_counter++; */
+  /* return ptr; */
+  return this->bnode_memory->create();
 }
 
 Edge * SuffixTree::create_edge() {
@@ -251,6 +240,7 @@ void SuffixTree::print_node(int depth, BranchNode * node) {
 }
 
 void SuffixTree::print_tabs(int depth) {
+  print_file();
   for (int i = 0; i < depth; i++) {
     printf("-");
   }
@@ -258,4 +248,8 @@ void SuffixTree::print_tabs(int depth) {
 
 void SuffixTree::print_tree(BranchNode * node) {
   print_node(1, node);
+}
+
+void SuffixTree::print_file() {
+  printf("==SuffixTree.cpp== ");
 }

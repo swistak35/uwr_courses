@@ -1,32 +1,11 @@
 #ifndef SUFFIX_TREE_H
 #define SUFFIX_TREE_H
 
-#ifndef SUFFIX_TREE_VERBOSE
-#define SUFFIX_TREE_VERBOSE 0
-#endif
-
 #include <algorithm>
-#include <list>
-#include <forward_list>
-#include <map>
-#include <vector>
-#include <iostream>
-#include <cmath>
+#include "SuffixTreeStructures.h"
+#include "StackBranchNodeMemory.h"
 
 using namespace std;
-
-typedef struct {
-  int digit;
-  int startingChar;
-  int endingChar;
-  struct BranchNode * target;
-} Edge;
-
-typedef struct BranchNode {
-  struct BranchNode * longestProperSuffix;
-  map<int, Edge*> * edges;
-  int debugchar;
-} BranchNode;
 
 class SuffixTree {
   public:
@@ -47,10 +26,7 @@ class SuffixTree {
     unsigned char * source;
     unsigned char * source_end;
 
-    /* // builder */
-    // BranchNodes memory
-    BranchNode * bnode_stack;
-    BranchNode * bnode_stack_ptr;
+    StackBranchNodeMemory * bnode_memory;
     // Edges memory
     Edge * edge_stack;
     Edge * edge_stack_ptr;
@@ -68,6 +44,7 @@ class SuffixTree {
     void print_node(int depth, BranchNode * node);
     void print_tree(BranchNode * root_node);
     void print_tabs(int depth);
+    void print_file();
 };
 
 #endif

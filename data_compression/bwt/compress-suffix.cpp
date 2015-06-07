@@ -8,7 +8,6 @@
 using namespace std;
 
 #define DEFAULT_CHUNK_SIZE 256
-#define DEBUG 0
 
 int main(int argc, char ** argv) {
   char * input_filename;
@@ -41,9 +40,10 @@ int main(int argc, char ** argv) {
   fseek(input_file, 0, SEEK_END);
   int source_len = ftell(input_file);
   rewind(input_file);
-  if (DEBUG) {
-    cout << "Sourcelen: " << source_len << endl;
-  }
+
+#ifdef DEBUG
+  cout << "Sourcelen: " << source_len << endl;
+#endif
 
   unsigned char source[max_chunk_size + 1] = { 0 };
   int chunks, last_chunk_size;
@@ -71,19 +71,21 @@ int main(int argc, char ** argv) {
     } else {
       current_chunk_size = max_chunk_size;
     }
-    if (DEBUG) {
-      cout << "Chunk size " << i << ": " << current_chunk_size << endl;
-    }
+
+#ifdef DEBUG
+    cout << "Chunk size " << i << ": " << current_chunk_size << endl;
+#endif
+
     fread(source, current_chunk_size, 1, input_file);
     source[current_chunk_size] = 0;
 
-    if (DEBUG) {
-      cout << "Source: ";
-      for (int j = 0; j < current_chunk_size + 1; j++) {
-        cout << " " << +source[j];
-      }
-      cout << endl;
+#ifdef DEBUG
+    cout << "Source: ";
+    for (int j = 0; j < current_chunk_size + 1; j++) {
+      cout << " " << +source[j];
     }
+    cout << endl;
+#endif
 
     // run bwt
     cbeg = clock();
@@ -91,14 +93,14 @@ int main(int argc, char ** argv) {
     cend = clock();
     cbwt += (cend - cbeg);
 
-    if (DEBUG) {
-      cout << "BWT: ";
-      for (int j = 0; j < current_chunk_size + 1; j++) {
-        cout << " " << target[j];
-      }
-      cout << "\nBWTsuccessful" << endl;
-      cout << "Index of orig string: " << orig_idx << endl;
+#ifdef DEBUG
+    cout << "BWT: ";
+    for (int j = 0; j < current_chunk_size + 1; j++) {
+      cout << " " << target[j];
     }
+    cout << "\nBWTsuccessful" << endl;
+    cout << "Index of orig string: " << orig_idx << endl;
+#endif
 
     // MoveToFront
     mtf->target = mtf_tbl;
@@ -108,13 +110,13 @@ int main(int argc, char ** argv) {
     cend = clock();
     cmtf += (cend - cbeg);
 
-    if (DEBUG) {
-      cout << "MTF:";
-      for (int i = 0; i < current_chunk_size + 4 + 1; i++) {
-        cout << " " << mtf_tbl[i];
-      }
-      cout << endl;
+#ifdef DEBUG
+    cout << "MTF:";
+    for (int i = 0; i < current_chunk_size + 4 + 1; i++) {
+      cout << " " << mtf_tbl[i];
     }
+    cout << endl;
+#endif
 
     // Huffman
     huffman1->data_in = mtf_tbl;
