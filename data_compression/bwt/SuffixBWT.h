@@ -33,7 +33,6 @@ class SuffixBWT {
 };
 
 // optymalizacje:
-// - ifdef ifndef
 // - obwarowac ifdefami asserty
 // - templates i korzystanie z unsigned char gdzie sie da, albo ogolnie mniejszych typow
 
