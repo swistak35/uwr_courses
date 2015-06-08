@@ -9,18 +9,19 @@
 #include <cmath>
 #include <list>
 
+template <typename From, typename To>
 class MoveToFront {
   public:
     MoveToFront();
     ~MoveToFront();
-    void run(int * source, int count);
+    void run(From * source, int count);
     void run(int source);
     void reset();
-    int * target;
+    To * target;
   private:
-    int get_char(int c);
+    To get_char(From c);
     int batchSize;
-    std::list<int> table;
+    std::list<From> table;
 };
 
 #endif
