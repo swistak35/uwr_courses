@@ -109,11 +109,11 @@ TEST_CASES = {
     tests: [
       'rfc1.txt',
       'rfc2.txt',
-      'rfc3.txt', # nope
-      'rfc4.txt', # nope
-      'rfc5.txt', # nope
-      'rfc6.txt', # nope
-      'rfc7.txt', # nope
+      'rfc3.txt',
+      'rfc4.txt',
+      'rfc5.txt',
+      'rfc6.txt',
+      'rfc7.txt',
       'rfc8.txt',
       'rfc9.txt',
       'rfc10.txt',
