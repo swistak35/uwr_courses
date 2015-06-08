@@ -8,7 +8,6 @@
 using namespace std;
 
 #define DEFAULT_CHUNK_SIZE 256
-/* #define DEBUG */
 
 int main(int argc, char ** argv) {
   char * input_filename;
@@ -56,7 +55,7 @@ int main(int argc, char ** argv) {
     last_chunk_size = source_len % max_chunk_size;
   }
 
-  MoveToFront<int,int> * mtf = new MoveToFront<int,int>();
+  MoveToFront * mtf = new MoveToFront();
   int mtf_tbl[max_chunk_size + 5];
   int target[max_chunk_size + 1];
   SuffixBWT * bwt = new SuffixBWT(max_chunk_size + 1, source, target);

@@ -2,17 +2,14 @@
 
 using namespace std;
 
-template <typename From, typename To>
-MoveToFront<From,To>::MoveToFront() {
+MoveToFront::MoveToFront() {
   this->reset();
 }
 
-template <typename From, typename To>
-MoveToFront<From,To>::~MoveToFront() {
+MoveToFront::~MoveToFront() {
 }
 
-template <typename From, typename To>
-void MoveToFront<From,To>::reset() {
+void MoveToFront::reset() {
   this->table.clear();
 
   for (int i = 0; i < 256; i++) {
@@ -20,32 +17,29 @@ void MoveToFront<From,To>::reset() {
   }
 }
 
-template <typename From, typename To>
-void MoveToFront<From,To>::run(int i) {
+void MoveToFront::run(int i) {
   unsigned int mask = 255;
   int si = i;
   unsigned char c;
   for (int j = 0; j < 4; j++) {
     c = si & mask;
-    *this->target = get_char((From) c);
+    *this->target = get_char((int) c);
     this->target++;
     si = si >> 8;
   }
 }
 
-template <typename From, typename To>
-void MoveToFront<From,To>::run(From * source, int count) {
+void MoveToFront::run(int * source, int count) {
   for (int i = 0; i < count; i++) {
     *this->target = get_char(source[i]);
     this->target++;
   }
 }
 
-template <typename From, typename To>
-To MoveToFront<From,To>::get_char(From c) {
-  typename list<From>::iterator it = this->table.begin();
+int MoveToFront::get_char(int c) {
+  list<int>::iterator it = this->table.begin();
 
-  To pos = 0;
+  int pos = 0;
   while (it != this->table.end()) {
     if (*it == c) {
       break;
