@@ -439,6 +439,7 @@ void Huffman::compress_init(int size) {
   put_next_char(this->alphabet_size >> 8);
   put_next_char(this->alphabet_size);
 
+  put_next_char(size >> 24);
   put_next_char(size >> 16);
   put_next_char(size >> 8);
   put_next_char(size);
@@ -511,7 +512,8 @@ int Huffman::decompress_init() {
 
   huff_init(this->alphabet_size, this->alphabet_size);
 
-  size = get_next_char() << 16;
+  size = get_next_char() << 24;
+  size |= get_next_char() << 16;
   size |= get_next_char() << 8;
   size |= get_next_char();
   this->length = size;
