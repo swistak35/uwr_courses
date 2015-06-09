@@ -26,7 +26,7 @@ COMPRESS_UNI_OBJS=$(subst .cpp,.o,$(COMPRESS_UNI_SRCS))
 compress-uni: compress-uni.cpp $(COMPRESS_UNI_OBJS)
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-uni compress-uni.cpp $(COMPRESS_UNI_OBJS)
 
-COMPRESS_SUFFIX_SRCS=SuffixBWT.cpp SuffixTree.cpp Huffman.cpp MoveToFront.cpp StackBranchNodeMemory.cpp
+COMPRESS_SUFFIX_SRCS=SuffixBWT.cpp SuffixTree.cpp Huffman.cpp MoveToFront.cpp StackTreeMemory.cpp
 COMPRESS_SUFFIX_OBJS=$(subst .cpp,.o,$(COMPRESS_SUFFIX_SRCS))
 compress-suffix: compress-suffix.cpp $(COMPRESS_SUFFIX_OBJS)
 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o compress-suffix compress-suffix.cpp $(COMPRESS_SUFFIX_OBJS)

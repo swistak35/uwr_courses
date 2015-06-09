@@ -1,5 +1,5 @@
-#ifndef STACK_BRANCH_NODE_MEMORY_H
-#define STACK_BRANCH_NODE_MEMORY_H
+#ifndef STACK_TREE_MEMORY_H
+#define STACK_TREE_MEMORY_H
 
 #include <algorithm>
 #include <cstdio>
@@ -8,10 +8,10 @@
 
 using namespace std;
 
-class StackBranchNodeMemory {
+class StackTreeMemory {
   public:
-    StackBranchNodeMemory(int max_length);
-    ~StackBranchNodeMemory();
+    StackTreeMemory(int max_length);
+    ~StackTreeMemory();
     void reset();
     BranchNode * create_bnode();
     Edge * create_edge();

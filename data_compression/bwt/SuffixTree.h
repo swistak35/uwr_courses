@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include "SuffixTreeStructures.h"
-#include "StackBranchNodeMemory.h"
+#include "StackTreeMemory.h"
 
 using namespace std;
 
@@ -26,7 +26,7 @@ class SuffixTree {
     unsigned char * source;
     unsigned char * source_end;
 
-    StackBranchNodeMemory * memory;
+    StackTreeMemory * memory;
 
     BranchNode * pin_node;
     BranchNode * create_branch_node();

@@ -10,7 +10,7 @@ SuffixTree::SuffixTree(int max_length, unsigned char * source) {
   this->max_length = max_length;
   this->source = source;
 
-  this->memory = new StackBranchNodeMemory(this->max_length);
+  this->memory = new StackTreeMemory(this->max_length);
 }
 
 SuffixTree::~SuffixTree() {
