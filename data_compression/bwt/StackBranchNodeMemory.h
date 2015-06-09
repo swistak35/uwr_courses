@@ -12,14 +12,22 @@ class StackBranchNodeMemory {
   public:
     StackBranchNodeMemory(int max_length);
     ~StackBranchNodeMemory();
-    BranchNode * create();
     void reset();
+    BranchNode * create_bnode();
+    Edge * create_edge();
   private:
     int max_length;
-    int count;
-    int counter;
-    BranchNode * stack;
-    BranchNode * stack_ptr;
+
+    // BranchNodes
+    int bnodes_count;
+    int bnodes_counter;
+    BranchNode * bnodes_stack;
+    BranchNode * bnodes_stack_ptr;
+
+    // Edges
+    int edges_count;
+    Edge * edges_stack;
+    Edge * edges_stack_ptr;
 };
 
 #endif

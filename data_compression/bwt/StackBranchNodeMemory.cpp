@@ -2,37 +2,52 @@
 
 StackBranchNodeMemory::StackBranchNodeMemory(int max_length) {
   this->max_length = max_length;
-  this->count = 2 * max_length + 4;
 
-  this->stack = (BranchNode *) calloc(this->count, sizeof(BranchNode));
-  if (this->stack == NULL) {
-    printf("Malloc failed for StackBranchNodeMemory#stack\n");
+  this->bnodes_count = 2 * max_length + 4;
+  this->bnodes_stack = (BranchNode *) calloc(this->bnodes_count, sizeof(BranchNode));
+  if (this->bnodes_stack == NULL) {
+    printf("Malloc failed for StackBranchNodeMemory#bnodes_stack\n");
     exit(EXIT_FAILURE);
   }
-  for (int i = 0; i < this->count; i++) {
-    this->stack[i].edges = new map<int,Edge*>();
+  for (int i = 0; i < this->bnodes_count; i++) {
+    this->bnodes_stack[i].edges = new map<int,Edge*>();
+  }
+
+  this->edges_count = 2 * max_length + 4 + 257;
+  this->edges_stack = (Edge *) calloc(this->edges_count, sizeof(Edge));
+  if (this->edges_stack == NULL) {
+    printf("Malloc failed for StackBranchNodeMemory#edges_stack\n");
+    exit(EXIT_FAILURE);
   }
 }
 
 StackBranchNodeMemory::~StackBranchNodeMemory() {
-  for (int i = 0; i < this->count; i++) {
-    delete stack[i].edges;
+  for (int i = 0; i < this->bnodes_count; i++) {
+    delete bnodes_stack[i].edges;
   }
-  free(this->stack);
+  free(this->bnodes_stack);
+  free(this->edges_stack);
 }
 
-BranchNode * StackBranchNodeMemory::create() {
-  BranchNode * ptr = stack_ptr;
+BranchNode * StackBranchNodeMemory::create_bnode() {
+  BranchNode * ptr = bnodes_stack_ptr;
   ptr->edges->clear();
   ptr->longestProperSuffix = NULL;
-  ptr->debugchar = counter;
+  ptr->debugchar = bnodes_counter;
 
-  counter++;
-  stack_ptr++;
+  bnodes_counter++;
+  bnodes_stack_ptr++;
+  return ptr;
+}
+
+Edge * StackBranchNodeMemory::create_edge() {
+  Edge * ptr = edges_stack_ptr;
+  edges_stack_ptr++;
   return ptr;
 }
 
 void StackBranchNodeMemory::reset() {
-  this->counter = 0;
-  this->stack_ptr = this->stack;
+  this->bnodes_counter = 0;
+  this->bnodes_stack_ptr = this->bnodes_stack;
+  this->edges_stack_ptr = this->edges_stack;
 }

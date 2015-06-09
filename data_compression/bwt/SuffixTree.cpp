@@ -10,15 +10,11 @@ SuffixTree::SuffixTree(int max_length, unsigned char * source) {
   this->max_length = max_length;
   this->source = source;
 
-  this->bnode_memory = new StackBranchNodeMemory(this->max_length);
-
-  this->edge_stack = (Edge *) calloc(2 * this->max_length + 4 + 257, sizeof(Edge));
-  this->edge_stack_ptr = this->edge_stack;
+  this->memory = new StackBranchNodeMemory(this->max_length);
 }
 
 SuffixTree::~SuffixTree() {
-  delete this->bnode_memory;
-  free(this->edge_stack);
+  delete this->memory;
 }
 
 void SuffixTree::update(int endingChar) {
@@ -113,8 +109,8 @@ void SuffixTree::canonize(BranchNode * node, int endingChar) {
 
 void SuffixTree::initialize(int length) {
   this->length = length;
-  this->bnode_memory->reset();
-  this->edge_stack_ptr = this->edge_stack;
+  this->memory->reset();
+  /* this->edge_stack_ptr = this->edge_stack; */
   this->source_end = source + (this->length - 1);
 
   BranchNode * root_node = create_branch_node();
@@ -196,15 +192,16 @@ BranchNode * SuffixTree::create_branch_node() {
 
   /* bnode_counter++; */
   /* return ptr; */
-  return this->bnode_memory->create();
+  return this->memory->create_bnode();
 }
 
 Edge * SuffixTree::create_edge() {
   /* Edge * ptr = (Edge *) malloc(sizeof(Edge)); */
   /* assert(ptr != NULL); */
-  Edge * ptr = edge_stack_ptr;
-  edge_stack_ptr++;
-  return ptr;
+  /* Edge * ptr = edge_stack_ptr; */
+  /* edge_stack_ptr++; */
+  /* return ptr; */
+  return this->memory->create_edge();
 }
 
 
