@@ -1,22 +1,34 @@
-=== Data compression program
+# Data compression program
 
 These are simple programs wrote for 'Data compression' course on University of Wrocław.
 
-=== Compilation
+## Compilation
 
 `make all` will build all programs.
 
-=== Usage
+## Usage
 
 There are few versions of the programs, each one of them is using different sorting algorithm.
 
-=== Compression
+```
+compress-{lexi,uni,suffix} input_file output_file block_size
+```
+
+Default block size is 256 bytes.
+
+```
+decompress{0,1} input_file output_file block_size
+```
+
+Default block size is 256 bytes.
+
+## Compression
 
  * `compress-lexi` is using *lexi*cographical sorting algorithm. Thus, if we are sorting all shifts of string of length n, it's roughly O(n^2).
  * `compress-uni` is algorithm proposed on my *uni*versity course. It's O(n*logn) and it's kind of lexicographical sorting, but using the fact that all of sorted strings are just a shifts.
- * `compress-suffix`. This algorithm just builts the suffix tree and by looking it left to right we get sorted strings. However, we assume that there's a # letter at the end. By `#` we mean letter bigger than any other letter in used alphabet. Thus, this algorithm doesn't sort all shifts of the given string, but it sorts it's suffixes.
+ * `compress-suffix`. This algorithm just builts the *suffix* tree and by looking it left to right we get sorted strings. However, we assume that there's a # letter at the end. By `#` we mean letter bigger than any other letter in used alphabet. Thus, this algorithm doesn't sort all shifts of the given string, but it sorts it's suffixes.
 
-=== Decompression
+## Decompression
 
 There are two programs for decompression.
  * `decompress0` - use that one, when you are decompressing from `compress-lexi` or `compress-uni`.
@@ -26,15 +38,7 @@ Obviously, one could made only one decompression program, which detects which so
 
 However, remember that this is only a university project. Thus it doesn't have best file structure and somewhere DRY is violated (pretty much only in compress-* and decompress* files).
 
-=== Usage
-
-`compress-* input_file output_file block_size`
-Default block size is 256 bytes.
-
-`decompress* input_file output_file block_size`
-Default block size is 256 bytes.
-
-=== Experiments
+## Experiments
 
 Whole purpose of this programs are experiments. That's why we have another script here, `runtests.rb`. It needs ruby to be ran. I was using Ruby 2.2.2, but all rubies >= 1.9.3 should be fine.
 
