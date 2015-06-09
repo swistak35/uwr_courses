@@ -24,9 +24,9 @@ Default block size is 256 bytes.
 
 ## Compression
 
- * `compress-lexi` is using *lexi*cographical sorting algorithm. Thus, if we are sorting all shifts of string of length n, it's roughly O(n^2).
- * `compress-uni` is algorithm proposed on my *uni*versity course. It's O(n*logn) and it's kind of lexicographical sorting, but using the fact that all of sorted strings are just a shifts.
- * `compress-suffix`. This algorithm just builts the *suffix* tree and by looking it left to right we get sorted strings. However, we assume that there's a # letter at the end. By `#` we mean letter bigger than any other letter in used alphabet. Thus, this algorithm doesn't sort all shifts of the given string, but it sorts it's suffixes.
+ * `compress-lexi` is using **lexi**cographical sorting algorithm. Thus, if we are sorting all shifts of string of length n, it's roughly O(n^2).
+ * `compress-uni` is algorithm proposed on my **uni**versity course. It's O(n*logn) and it's kind of lexicographical sorting, but using the fact that all of sorted strings are just a shifts.
+ * `compress-suffix`. This algorithm just builts the **suffix** tree and by looking it left to right we get sorted strings. However, we assume that there's a # letter at the end. By `#` we mean letter bigger than any other letter in used alphabet. Thus, this algorithm doesn't sort all shifts of the given string, but it sorts it's suffixes.
 
 ## Decompression
 
