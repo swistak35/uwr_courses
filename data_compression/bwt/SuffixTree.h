@@ -27,11 +27,7 @@ class SuffixTree {
     unsigned char * source_end;
 
     StackBranchNodeMemory * memory;
-    // Edges memory
-    Edge * edge_stack;
-    Edge * edge_stack_ptr;
 
-    int bnode_counter;
     BranchNode * pin_node;
     BranchNode * create_branch_node();
     Edge * create_edge();
