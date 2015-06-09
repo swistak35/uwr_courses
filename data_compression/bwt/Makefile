@@ -52,3 +52,5 @@ clean:
 	rm -f tests/*.compressed
 	rm -f tests/*.decompressed
 	rm -f compress-lexi compress-suffix compress-uni decompress0 decompress1
+
+all: compress-lexi compress-uni compress-suffix decompress0 decompress1
