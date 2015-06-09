@@ -1,6 +1,6 @@
 # Data compression program
 
-These are simple programs wrote for 'Data compression' course on University of Wrocław.
+These are simple programs written for 'Data compression' course on University of Wrocław.
 
 ## Compilation
 
