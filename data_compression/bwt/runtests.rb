@@ -51,16 +51,28 @@ TEST_CASES = {
     plans: [ { name: "suffix", size: 256 } ]
   },
   unieff: {
-    tests: ["mobi0.mobi", "epub0.epub", "pantadeusz"],
+    tests: ["rfc3.txt", "rfc4.txt"],
     plans: [
-      { name: "uni", size: 100*1024 },
-      { name: "uni", size: 200*1024 },
-      { name: "uni", size: 500*1024 },
-      { name: "uni", size: 900*1024 },
-      { name: "suffix", size: 100*1024 },
-      { name: "suffix", size: 200*1024 },
-      { name: "suffix", size: 500*1024 },
-      { name: "suffix", size: 900*1024 },
+      { name: "suffix", size: 1*1024*1024 },
+      { name: "suffix", size: 2*1024*1024 },
+      { name: "suffix", size: 3*1024*1024 },
+      { name: "suffix", size: 4*1024*1024 },
+      { name: "suffix", size: 5*1024*1024 },
+      { name: "suffix", size: 6*1024*1024 },
+      { name: "suffix", size: 7*1024*1024 },
+      { name: "suffix", size: 8*1024*1024 },
+      { name: "suffix", size: 9*1024*1024 },
+      { name: "suffix", size: 10*1024*1024 },
+      { name: "suffix", size: 11*1024*1024 },
+      { name: "suffix", size: 12*1024*1024 },
+      { name: "suffix", size: 13*1024*1024 },
+      { name: "suffix", size: 14*1024*1024 },
+      { name: "suffix", size: 15*1024*1024 },
+      { name: "suffix", size: 16*1024*1024 },
+      { name: "suffix", size: 17*1024*1024 },
+      { name: "suffix", size: 18*1024*1024 },
+      { name: "suffix", size: 19*1024*1024 },
+      { name: "suffix", size: 20*1024*1024 },
     ],
   },
   mobi: {
@@ -75,6 +87,13 @@ TEST_CASES = {
       { name: "uni", size: 700*1024 },
       { name: "uni", size: 800*1024 },
       { name: "uni", size: 900*1024 },
+    ]
+  },
+  bmp: {
+    tests: name_generator("bmp", 10),
+    plans: [
+      { name: "suffix", size: 100*1024 },
+      { name: "suffix", size: 900*1024 },
     ]
   },
   epub: {
@@ -135,11 +154,11 @@ TEST_CASES = {
 
 COLUMN_SIZE = {
   header1_information: 32,
-  header1_per_test:    20,
+  header1_per_test:    24,
   header2_name:        16,
   header2_size:        16,
   header2_comp:        8,
-  header2_eff:         4,
+  header2_eff:         8,
   header2_decomp:      8,
 }
 
@@ -202,6 +221,7 @@ def calculate_time(time_in_ms)
   else
     "#{time_in_ms}ms"
   end
+  time_in_ms.to_s
 end
 
 def compile(name)
@@ -239,9 +259,9 @@ def calculate_efficiency(path)
   input_filesize = File.size("#{path}.input")
   compressed_filesize = File.size("#{path}.compressed")
   if input_filesize == 0
-    efficiency = 100
+    efficiency = 100.0
   else
-    efficiency = ((compressed_filesize.to_f / input_filesize) * 100).to_i
+    efficiency = ((compressed_filesize.to_f / input_filesize) * 100).round(2)
   end
 
   if efficiency >= 1000
