@@ -87,6 +87,8 @@ It should be noted that, for example in suffix implementation, sorting part of t
 ## 'Big chunk' test
 
 ![Big chunk test efficiency chart](http://i.imgur.com/XykUYDM.png)
+![Big chunk test compression time chart](http://i.imgur.com/j7btH0r.png)
+![Big chunk test decompression time chart](http://i.imgur.com/6LNnJbH.png)
 
 # Short notes & conclusions
 
