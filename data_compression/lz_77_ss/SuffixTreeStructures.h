@@ -15,6 +15,7 @@ typedef struct {
 typedef struct BranchNode {
   struct BranchNode * longestProperSuffix;
   struct BranchNode * parent;
+  Edge * incoming;
   map<int, Edge*> * edges;
   int debugchar;
 } BranchNode;

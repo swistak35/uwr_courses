@@ -37,9 +37,11 @@ void SuffixTree::update(int endingChar) {
 
     edge = create_edge();
     edge->target = information_node;
+    information_node->incoming = edge;
     edge->startingChar = endingChar;
     edge->endingChar = 1000000000;
     edge->digit = get_digit(this->source + endingChar);
+    information_node->parent = bnode;
     insert_edge_into_bnode(bnode, edge);
 
     if (oldr != this->root_node) {
@@ -74,10 +76,13 @@ bool SuffixTree::test_and_split(int endingChar, int current_char, BranchNode ** 
       new_edge->startingChar = edge->startingChar + endingChar - startingChar + 1;
       new_edge->endingChar = edge->endingChar;
       new_edge->target = previous_target;
+      previous_target->incoming = new_edge;
+      previous_target->parent = new_bnode;
       new_edge->digit = get_digit(this->source + new_edge->startingChar);
 
       edge->endingChar = edge->startingChar + endingChar - startingChar;
       edge->target = new_bnode;
+      new_bnode->incoming = edge;
       new_bnode->parent = current_node;
 
       insert_edge_into_bnode(new_bnode, new_edge);
@@ -146,17 +151,43 @@ void SuffixTree::remove() {
   // po kazdym dodanym znaku musimy dodac element do leaves
   // ten element to wskaznik na lisc lub na jakis element + przesuniecie
   // jak usuwamy jakis element, zawsze musimy usunac cos z leaves
-  assert(!leaves.empty());
-  BranchNode * removing_leaf = leaves.pop_front();
+  assert(!leaves->empty());
+  BranchNode * removing_leaf = leaves->front()->second;
+  leaves->pop_front();
   BranchNode * parent_node = removing_leaf->parent;
 
   if (current_node == parent_node) {
     int charAtStartingChar = get_digit(this->source + startingChar);
     Edge * edge = find_edge_on_list(current_node, charAtStartingChar);
+    // moglibysmy tu od razu zwracac iterator, usuwanie byloby tansze
     if (edge->target == removing_leaf) {
+      return;
       // 
+    } else {
+      current_node_incoming = current_node->incoming;
+      int incoming_length = current_node_incoming->endingChar - current_node_incoming->startingChar + 1;
+      current_node = current_node->parent;
+      startingChar -= incoming_length;
     }
   } else {
+    // delete_node(removing_leaf)
+    parent_node->edges->erase(removing_leaf->incoming->digit);
+    assert(parent_node->edges->size() >= 1);
+    if (parent_node->edges->size() == 1) {
+      map<int,Edge*>::iterator it = parent_node->edges->begin();
+      Edge * remaining_edge = it->second
+      BranchNode * remaining_child = remaining_edge->target;
+      Edge * parent_edge = parent_node->incoming;
+      BranchNode * grandparent_node = parent_node->parent;
+      int parent_edge_length = parent_edge->endingChar - parent_edge->startingChar + 1;
+      remaining_edge->startingChar = remaining_edge->startingChar - parent_node_length;
+      assert(remaining_edge->startingChar >= 0);
+      remaining_child->parent = grandparent_node;
+      // delete_node(parent_node)
+      // delete_edge(parent_edge)
+    } else {
+      // we are done? :)
+    }
   }
   /* removing node = currently first leaf; */
   /* targeting_insertion_point = */ 
@@ -202,7 +233,6 @@ Edge * SuffixTree::find_edge_on_list(BranchNode * node, int c) {
 }
 
 void SuffixTree::insert_edge_into_bnode(BranchNode * bnode, Edge * edge) {
-  edge->target->parent = bnode;
   bnode->edges->insert(pair<int,Edge*>(edge->digit, edge));
 }
 
@@ -268,6 +298,10 @@ void SuffixTree::print_tabs(int depth) {
 
 void SuffixTree::print_tree(BranchNode * node) {
   print_node(1, node);
+}
+
+void SuffixTree::print_tree() {
+  print_tree(this->root_node);
 }
 
 void SuffixTree::print_file() {

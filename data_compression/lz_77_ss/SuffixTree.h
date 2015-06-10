@@ -14,6 +14,8 @@ class SuffixTree {
     ~SuffixTree();
     void initialize(int length);
     void insert_next();
+    void remove();
+    void print_tree();
     BranchNode * root_node;
   private:
     int max_length;

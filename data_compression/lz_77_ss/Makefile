@@ -10,6 +10,9 @@ DEBUGFLAGS=-g
 # uni: uni.cpp UniBWT.o LexiBWT.o
 # 	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o uni uni.cpp UniBWT.o LexiBWT.o
 
+tescik: tescik.cpp SuffixTree.o SuffixTreeStructures.h
+	g++ $(CPPFLAGS) $(DEBUGFLAGS) -o tescik tescik.cpp SuffixTree.o
+
 COMPRESS_LZ77_SRCS=SimpleSW.cpp Huffman.cpp
 COMPRESS_LZ77_OBJS=$(subst .cpp,.o,$(COMPRESS_LZ77_SRCS))
 compress-lz77: compress-lz77.cpp $(COMPRESS_LZ77_OBJS)
