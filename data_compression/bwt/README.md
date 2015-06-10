@@ -26,7 +26,13 @@ Default block size is 256 bytes.
 
  * `compress-lexi` is using **lexi**cographical sorting algorithm. Thus, if we are sorting all shifts of string of length n, it's roughly O(n^2).
  * `compress-uni` is algorithm proposed on my **uni**versity course. It's O(n*logn) and it's kind of lexicographical sorting, but using the fact that all of sorted strings are just a shifts.
- * `compress-suffix`. This algorithm just builts the **suffix** tree and by looking it left to right we get sorted strings. However, we assume that there's a # letter at the end. By `#` we mean letter bigger than any other letter in used alphabet. Thus, this algorithm doesn't sort all shifts of the given string, but it sorts it's suffixes.
+ * `compress-suffix`. This algorithm just builts the **suffix** tree and by looking it left to right we get sorted strings.
+
+### Suffix theoretical background
+
+Suffix trees are built using Ukkonen's algorithm. As stated above, this algorithm just create suffix tree and read suffixes left to right.
+However, we assume that there's a # letter at the end. By `#` we mean letter bigger than any other letter in used alphabet. Thus, this algorithm doesn't sort all shifts of the given string, but it sorts it's suffixes.
+
 
 ## Decompression
 
@@ -89,9 +95,11 @@ It should be noted that, for example in suffix implementation, sorting part of t
 
 # Implementation notes
 
+Initially (and by accident) I started implementing McCreight algorithm, which is very similar. I tried to do it based on internet resources, but I failed with precise process how and when create suffix links in this algorithm. After that I implemented Ukkonen's algorithm, which I found quite easy to follow.
 Uni algorithm may be significantly improved. Currently it uses vectors implementation from standard c++ library. It may be the case that this do some heavy reallocating. Substituting vectors by `n*n` array is not so easy, because if we'll use chunks with size even so small as 100KiB, it will need (100 * 1000)^2 = 10GB memory, at least. However, one could try to make some experiments and try to make array with n rows, but less than n columns (assume `k` columns), and if it happen to need more columns, we could just use linked list or vector for remaining elements.
 
 Suffix implementation also probably may be improved. It represents string as a tree, so memory access to edges and branch nodes is very random. Waiting for data in our computers is estimated for 200 cycles, and if we are constantly missing the cache (because the data is scattered), we spend most time idling.
 BWT algorithm which we are using here, is also used in compression format widely known as `bzip2`. Author of `bzip2` implementation also seems to agree with this statement. Quoting from bzip documentation:
 
 > bzip2 usually allocates several megabytes of memory to operate in, and then charges all over it in a fairly random fashion. This means that performance, both for compressing and decompressing, is largely determined by the speed at which your machine can service cache misses. Because of this, small changes to the code to reduce the miss rate have been observed to give disproportionately large performance improvements. I imagine bzip2 will perform best on machines with very large caches."
+
