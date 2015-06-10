@@ -84,6 +84,10 @@ It should be noted that, for example in suffix implementation, sorting part of t
 
 # Tests & charts
 
+## 'Big chunk' test
+
+![Big chunk test efficiency chart](http://i.imgur.com/XykUYDM.png)
+
 # Short notes & conclusions
 
  * Before making this task I heard opinion that Suffix algorithm may be in the end slower than Uni algorithm because of very big constant in construction of suffix trees. From mine experiments, it looks that it's not true and Suffix algorithm is significantly better than Uni.
