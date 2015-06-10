@@ -90,6 +90,10 @@ It should be noted that, for example in suffix implementation, sorting part of t
 ![Big chunk test compression time chart](http://i.imgur.com/j7btH0r.png)
 ![Big chunk test decompression time chart](http://i.imgur.com/6LNnJbH.png)
 
+## Ebooks test
+
+## Text files test
+
 # Short notes & conclusions
 
  * Before making this task I heard opinion that Suffix algorithm may be in the end slower than Uni algorithm because of very big constant in construction of suffix trees. From mine experiments, it looks that it's not true and Suffix algorithm is significantly better than Uni.
@@ -102,6 +106,7 @@ It should be noted that, for example in suffix implementation, sorting part of t
 # Implementation notes
 
 Initially (and by accident) I started implementing McCreight algorithm, which is very similar. I tried to do it based on internet resources, but I failed with precise process how and when create suffix links in this algorithm. After that I implemented Ukkonen's algorithm, which I found quite easy to follow.
+
 Uni algorithm may be significantly improved. Currently it uses vectors implementation from standard c++ library. It may be the case that this do some heavy reallocating. Substituting vectors by `n*n` array is not so easy, because if we'll use chunks with size even so small as 100KiB, it will need (100 * 1000)^2 = 10GB memory, at least. However, one could try to make some experiments and try to make array with n rows, but less than n columns (assume `k` columns), and if it happen to need more columns, we could just use linked list or vector for remaining elements.
 
 Suffix implementation also probably may be improved. It represents string as a tree, so memory access to edges and branch nodes is very random. Waiting for data in our computers is estimated for 200 cycles, and if we are constantly missing the cache (because the data is scattered), we spend most time idling.
