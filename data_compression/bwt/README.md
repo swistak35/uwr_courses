@@ -92,7 +92,15 @@ It should be noted that, for example in suffix implementation, sorting part of t
 
 ## Ebooks test
 
+![Ebooks test efficiency chart](http://i.imgur.com/GPAs4ZG.png)
+
+
 ## Text files test
+
+![RFC test efficiency chart](http://i.imgur.com/m6EFGLd.png)
+![RFC test compression chart](http://i.imgur.com/qVS07PC.png)
+![RFC test decompression chart](http://i.imgur.com/BJ47eWD.png)
+![Pan Tadeusz test compression time chart](http://i.imgur.com/2acAdb6.png)
 
 # Short notes & conclusions
 

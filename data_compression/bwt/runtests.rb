@@ -46,6 +46,35 @@ TEST_CASES = {
       { name: "suffix", size: 900*1024 },
     ]
   },
+  lexicomp: {
+    tests: ['pantadeusz'],
+    plans: [
+      { name: "lexi", size: 256 },
+      { name: "lexi", size: 512 },
+      { name: "lexi", size: 768 },
+      { name: "lexi", size: 1024 },
+      { name: "lexi", size: 1280 },
+      { name: "lexi", size: 1536 },
+      { name: "lexi", size: 1792 },
+      { name: "lexi", size: 2048 },
+      { name: "uni", size: 256 },
+      { name: "uni", size: 512 },
+      { name: "uni", size: 768 },
+      { name: "uni", size: 1024 },
+      { name: "uni", size: 1280 },
+      { name: "uni", size: 1536 },
+      { name: "uni", size: 1792 },
+      { name: "uni", size: 2048 },
+      { name: "suffix", size: 256 },
+      { name: "suffix", size: 512 },
+      { name: "suffix", size: 768 },
+      { name: "suffix", size: 1024 },
+      { name: "suffix", size: 1280 },
+      { name: "suffix", size: 1536 },
+      { name: "suffix", size: 1792 },
+      { name: "suffix", size: 2048 },
+    ]
+  },
   trzysta: {
     tests: name_generator("trzysta", 1000),
     plans: [ { name: "suffix", size: 256 } ]

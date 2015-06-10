@@ -1,7 +1,7 @@
 
-TeeFile = "plots/big.raw"
-ImportantLines = [7,8]
-ImportantColumns = (1..20).map {|i| i*3 + 1 }
+TeeFile = "plots/lexicomp.raw"
+ImportantLines = (7..7).to_a
+ImportantColumns = (1..24).map {|i| i*3 + 1 }
 
 filelines = File.readlines(TeeFile)
 important_lines = ImportantLines.map do |i|
