@@ -30,6 +30,7 @@ TEST_CASES = {
       { name: "uni", size: 1024 },
       { name: "suffix", size: 256 },
       { name: "suffix", size: 1024 },
+      { name: "bzip", size: 100*1024 },
     ]
   },
   bin: {
@@ -171,6 +172,15 @@ TEST_CASES = {
       'rfc14.txt',
     ],
     plans: [
+      { name: "bzip", size: 100*1024 },
+      { name: "bzip", size: 200*1024 },
+      { name: "bzip", size: 300*1024 },
+      { name: "bzip", size: 400*1024 },
+      { name: "bzip", size: 500*1024 },
+      { name: "bzip", size: 600*1024 },
+      { name: "bzip", size: 700*1024 },
+      { name: "bzip", size: 800*1024 },
+      { name: "bzip", size: 900*1024 },
       { name: "suffix", size: 100*1024 },
       { name: "suffix", size: 200*1024 },
       { name: "suffix", size: 300*1024 },
@@ -240,6 +250,9 @@ def run_test_cases(testcase_name)
         when "suffix"
           compress_suffix(path, test[:size])
           decompress1(path, test[:size])
+        when "bzip"
+          compress_bzip(path, test[:size])
+          decompress_bzip(path, test[:size])
         else
           puts "Zły typ testu."
           exit(1)
@@ -342,8 +355,44 @@ def compress_suffix(path, chunk_size = nil)
   print efficiency.ljust(COLUMN_SIZE[:header2_eff])
 end
 
+def get_level(chunk_size)
+  case chunk_size
+    when 100 * 1024 then "-1"
+    when 200 * 1024 then "-2"
+    when 300 * 1024 then "-3"
+    when 400 * 1024 then "-4"
+    when 500 * 1024 then "-5"
+    when 600 * 1024 then "-6"
+    when 700 * 1024 then "-7"
+    when 800 * 1024 then "-8"
+    when 900 * 1024 then "-9"
+    else raise "Wrong chunk size"
+  end
+end
+
+def compress_bzip(path, chunk_size = nil)
+  level = get_level(chunk_size)
+  timing = execute("bzip2 -ckz #{level} #{path}.input > #{path}.compressed")
+  @timing_sum += timing
+
+  efficiency = calculate_efficiency(path)
+
+  print calculate_time(timing).ljust(COLUMN_SIZE[:header2_comp])
+  print efficiency.ljust(COLUMN_SIZE[:header2_eff])
+end
+
 def decompress0(path, chunk_size = nil)
   timing = execute("./decompress0 #{path}.compressed #{path}.decompressed #{chunk_size.to_s}")
+  @timing_sum += timing
+
+  execute("diff #{path}.input #{path}.decompressed")
+
+  print calculate_time(timing).ljust(COLUMN_SIZE[:header2_decomp])
+end
+
+def decompress_bzip(path, chunk_size = nil)
+  level = get_level(chunk_size)
+  timing = execute("bunzip2 -ckd #{level} #{path}.compressed > #{path}.decompressed")
   @timing_sum += timing
 
   execute("diff #{path}.input #{path}.decompressed")

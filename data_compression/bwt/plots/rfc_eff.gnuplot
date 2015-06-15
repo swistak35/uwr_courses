@@ -3,5 +3,7 @@ set output 'rfc_eff.png'
 set xtics 1
 set xlabel "Chunk size (100KB)"
 set ylabel "Compression level (in %, the lower the better)"
-plot "rfc_eff.data" using 1:10 title 'Efficiency' with lines
+plot "rfc_eff.data" using 1:2 title 'bzip' with lines, \
+     "rfc_eff.data" using 1:3 title 'mine' with lines
+
 
