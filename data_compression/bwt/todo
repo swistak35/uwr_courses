@@ -1,9 +1,0 @@
-// optymalizacje:
-// - obwarowac ifdefami asserty
-// - templates i korzystanie z unsigned char gdzie sie da, albo ogolnie mniejszych typow
-
-wykresy:
-- sumy czasow dla wszystkich plikow
-- dla uni, suffix, od 100KiB do 900KiB
-- efektywnosc kompresji
-- do efektywnosci dodac przynajmniej 1 liczbe dziesietna
