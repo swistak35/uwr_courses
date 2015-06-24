@@ -19,18 +19,18 @@ assert_all_perms(N, K, W) :-
   assert_for_mypermK(CL, CR, P, K),
   assert_for_mypermW(CL, CR, P, W),
   fail.
-assert_all_perms(N, K, W).
+assert_all_perms(_N, _K, _W).
 
 assert_for_mypermK(CL, CR, P, K) :-
   member((CL, CR), K),
   assert(mypermK(CL, CR, P)),
   !.
-assert_for_mypermK(CL, CR, P, K).
+assert_for_mypermK(_CL, _CR, _P, _K).
 assert_for_mypermW(CL, CR, P, W) :-
   member((CL, CR), W),
   assert(mypermW(CL, CR, P)),
   !.
-assert_for_mypermW(CL, CR, P, W).
+assert_for_mypermW(_CL, _CR, _P, _W).
 
 
 %%% Transposing
@@ -55,7 +55,7 @@ count_mono([H|T], Max, Acc, Res) :-
   !,
   NAcc is Acc + 1,
   count_mono(T, H, NAcc, Res).
-count_mono([H|T], Max, Acc, Res) :-
+count_mono([_|T], Max, Acc, Res) :-
   count_mono(T, Max, Acc, Res).
 
 check_row_right(K, L) :-
