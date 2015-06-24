@@ -1,6 +1,5 @@
 wiezowce(N, W, K, R) :-
   genBoard(N, Board),
-  % assert_all_perms(N),
   transp(Board, TransposedBoard),
   filling_row(Board, Board, TransposedBoard, N, W, K),
   R = Board.
@@ -8,7 +7,6 @@ wiezowce(N, W, K, R) :-
 fill_list(L, N) :-
   numlist(1, N, K),
   permutation(K, L).
-  % myperm(L).
 
 %%% Transposing
 transp([T], X) :-
