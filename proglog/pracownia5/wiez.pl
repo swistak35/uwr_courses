@@ -1,21 +1,9 @@
-% :- dynamic validrow/2.
-% :- dynamic myperm/1.
-
-% validrow(K, L) :- fail.
-
 wiezowce(N, W, K, R) :-
   genBoard(N, Board),
   % assert_all_perms(N),
   transp(Board, TransposedBoard),
   filling_row(Board, Board, TransposedBoard, N, W, K),
   R = Board.
-
-% assert_all_perms(N) :-
-%   numlist(1, N, L),
-%   permutation(L, P),
-%   asserta(myperm(P)),
-%   fail.
-% assert_all_perms(N).
 
 fill_list(L, N) :-
   numlist(1, N, K),
@@ -48,25 +36,8 @@ check_row(K, [_H|T], Max) :-
   check_row(K, T, Max).
 check_row(0, [], _) :- !.
 
-% check_row_left(K, L) :-
-%   validrow(K, L),
-%   !.
-% check_row_left(K, L) :-
-%   invalidrow(K, L),
-%   !,
-%   fail.
 check_row_left(K, L) :-
   check_row(K, L, 0).
-  % check_row(K, L, 0),
-  % asserta((validrow(K, L) :- !)),
-  % !.
-% check_row_left(K, L) :-
-%   asserta((invalidrow(K, L) :- !)),
-%   fail.
-% check_row_right(K, L) :-
-%   reverse(L, L2),
-%   validrow(K, L2),
-%   !.
 check_row_right(K, L) :-
   reverse(L, L2),
   check_row(K, L2, 0).
