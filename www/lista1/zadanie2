@@ -1,0 +1,11 @@
+The <span> tag is used to group inline-elements in a document.
+The <div> tag is used to group block-elements to format them with CSS.
+
+
+ One possible cause for this message is that you have attempted to put a block-level element (such as "<p>" or "<table>") inside an inline element (such as "<a>", "<span>", or "<font>"). 
+
+nie mozna zagniezdzac headingow
+mozna strong wewnatrz strong
+wewnatrz pre nie mozna bloczkow, 
+wewnatrz <p> nie mozna bloczkow
+nie mozna zagniezdzac <p>
